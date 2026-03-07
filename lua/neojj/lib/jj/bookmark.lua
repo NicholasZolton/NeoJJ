@@ -5,15 +5,25 @@ local M = {}
 ---@class NeoJJBookmarkMeta
 local meta = {}
 
----Async-compatible vim.system wrapper that yields in plenary.async coroutines.
----vim.system's callback runs in a fast event context, so we vim.schedule
----back to the main thread before resuming the coroutine.
-local jj_system = a.wrap(function(cmd, opts, callback)
-  vim.system(cmd, opts, function(result)
-    vim.schedule(function()
-      callback(result)
-    end)
-  end)
+---Async-compatible process spawner using jobstart (on_exit runs on main thread).
+local jj_spawn = a.wrap(function(cmd, cwd, callback)
+  local stdout_data = {}
+  local job = vim.fn.jobstart(cmd, {
+    cwd = cwd,
+    stdout_buffered = true,
+    on_stdout = function(_, data)
+      stdout_data = data
+    end,
+    on_exit = function(_, code)
+      if #stdout_data > 0 and stdout_data[#stdout_data] == "" then
+        table.remove(stdout_data)
+      end
+      callback(stdout_data, code)
+    end,
+  })
+  if job <= 0 then
+    callback({}, -1)
+  end
 end, 3)
 
 ---Parse `jj bookmark list` output
@@ -123,13 +133,12 @@ end
 ---@param state NeoJJRepoState
 function meta.update(state)
   local limit = 20
-  local result = jj_system(
+  local lines, code = jj_spawn(
     { "jj", "--no-pager", "--color=never", "--ignore-working-copy", "bookmark", "list" },
-    { cwd = state.worktree_root, text = true }
+    state.worktree_root
   )
 
-  if result.code == 0 and result.stdout and result.stdout ~= "" then
-    local lines = vim.split(result.stdout, "\n", { trimempty = true })
+  if code == 0 and #lines > 0 then
     local items = M.parse_list(lines)
     if #items > limit then
       state.bookmarks.items = { unpack(items, 1, limit) }

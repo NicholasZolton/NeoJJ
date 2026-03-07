@@ -5,15 +5,28 @@ local M = {}
 ---@class NeoJJStatusMeta
 local meta = {}
 
----Async-compatible vim.system wrapper that yields in plenary.async coroutines.
----vim.system's callback runs in a fast event context, so we vim.schedule
----back to the main thread before resuming the coroutine.
-local jj_system = a.wrap(function(cmd, opts, callback)
-  vim.system(cmd, opts, function(result)
-    vim.schedule(function()
-      callback(result)
-    end)
-  end)
+---Async-compatible process spawner using jobstart (on_exit runs on main thread).
+---Unlike vim.system's callback which runs in a fast event context requiring
+---vim.schedule (adding ~1s overhead), jobstart's on_exit is already on the main thread.
+local jj_spawn = a.wrap(function(cmd, cwd, callback)
+  local stdout_data = {}
+  local job = vim.fn.jobstart(cmd, {
+    cwd = cwd,
+    stdout_buffered = true,
+    on_stdout = function(_, data)
+      stdout_data = data
+    end,
+    on_exit = function(_, code)
+      -- Remove trailing empty string from buffered output
+      if #stdout_data > 0 and stdout_data[#stdout_data] == "" then
+        table.remove(stdout_data)
+      end
+      callback(stdout_data, code)
+    end,
+  })
+  if job <= 0 then
+    callback({}, -1)
+  end
 end, 3)
 
 ---Run a jj command asynchronously, returning stdout lines
@@ -21,11 +34,11 @@ end, 3)
 ---@param cwd string Working directory
 ---@return string[]|nil lines, number code
 local function jj_exec(cmd, cwd)
-  local result = jj_system(cmd, { cwd = cwd, text = true })
-  if result.code == 0 and result.stdout and result.stdout ~= "" then
-    return vim.split(result.stdout, "\n", { trimempty = true }), 0
+  local lines, code = jj_spawn(cmd, cwd)
+  if code == 0 and #lines > 0 then
+    return lines, 0
   end
-  return nil, result.code
+  return nil, code
 end
 
 ---Parse `jj diff --summary` output into file items
