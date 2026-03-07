@@ -100,6 +100,15 @@ M.popups = function(env)
     { "FetchPopup", "Fetch", popups.open("fetch", function(p)
       p(env.fetch)
     end) },
+    { "BookmarkPopup", "Bookmark", popups.open("bookmark", function(p)
+      p(env.bookmark)
+    end) },
+    { "SquashPopup", "Squash", popups.open("squash", function(p)
+      p(env.squash)
+    end) },
+    { "ChangePopup", "Change", popups.open("change", function(p)
+      p(env.change)
+    end) },
     { "ResetPopup", "Reset", popups.open("reset", function(p)
       p(env.reset)
     end) },

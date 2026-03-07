@@ -3,34 +3,11 @@
 local a = require("plenary.async")
 local jj = require("neojj.lib.jj")
 local popups = require("neojj.popups")
-local logger = require("neojj.logger")
 local input = require("neojj.lib.input")
 local notification = require("neojj.lib.notification")
-local util = require("neojj.lib.util")
-local config = require("neojj.config")
 local jump = require("neojj.lib.jump")
 
 local fn = vim.fn
-local api = vim.api
-
-local function cleanup_items(items)
-  if vim.in_fast_event() then
-    a.util.scheduler()
-  end
-
-  for _, item in ipairs(items) do
-    local path = item.absolute_path or item.name
-    logger.debug("[cleanup_items()] Cleaning " .. vim.inspect(path))
-    assert(path, "cleanup_items() - item must have a name")
-
-    local bufnr = fn.bufnr(path)
-    if bufnr > 0 then
-      api.nvim_buf_delete(bufnr, { force = false })
-    end
-
-    fn.delete(fn.fnameescape(path))
-  end
-end
 
 ---@param self StatusBuffer
 ---@param item StatusItem
@@ -706,6 +683,8 @@ M.n_help_popup = function(self)
 
     p {
       bookmark = {},
+      change = {},
+      commit = {},
       diff = {
         section = { name = section_name },
         item = { name = item },
@@ -752,6 +731,18 @@ M.n_rebase_popup = function(self)
   return popups.open("rebase", function(p)
     p {}
   end)
+end
+
+---@param _self StatusBuffer
+---@return fun(): nil
+M.n_commit_popup = function(_self)
+  return popups.open("commit")
+end
+
+---@param _self StatusBuffer
+---@return fun(): nil
+M.n_change_popup = function(_self)
+  return popups.open("change")
 end
 
 return M
