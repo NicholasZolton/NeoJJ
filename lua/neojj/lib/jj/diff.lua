@@ -193,7 +193,7 @@ function M.build(item)
   setmetatable(item, {
     __index = function(self, method)
       if method == "diff" then
-        -- Use jobstart+jobwait directly — no Process overhead, no 200ms vim.wait polling.
+        -- Use vim.system — fast (~20ms) with native cwd support, no side effects.
         -- --ignore-working-copy is safe here: the status refresh already snapshotted.
         local cwd
         local ok, jj_mod = pcall(require, "neojj.lib.jj")
@@ -204,26 +204,16 @@ function M.build(item)
           end
         end
 
-        local stdout = {}
-        local job = vim.fn.jobstart(
-          { "jj", "--no-pager", "--color=never", "--ignore-working-copy", "diff", "--git", "--", item.name },
-          {
-            cwd = cwd or vim.fn.getcwd(),
-            stdout_buffered = true,
-            on_stdout = function(_, data)
-              stdout = data
-            end,
-          }
-        )
+        local result = vim
+          .system(
+            { "jj", "--no-pager", "--color=never", "--ignore-working-copy", "diff", "--git", "--", item.name },
+            { cwd = cwd or vim.fn.getcwd(), text = true }
+          )
+          :wait()
 
-        local code = vim.fn.jobwait({ job })[1]
-        -- Remove trailing empty string from buffered output
-        if #stdout > 0 and stdout[#stdout] == "" then
-          stdout[#stdout] = nil
-        end
-
-        if code == 0 and #stdout > 0 then
-          self.diff = M.parse(stdout)
+        if result.code == 0 and result.stdout and result.stdout ~= "" then
+          local lines = vim.split(result.stdout, "\n", { trimempty = true })
+          self.diff = M.parse(lines)
         else
           self.diff = empty_diff
         end
