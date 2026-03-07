@@ -168,6 +168,12 @@ end
 ---overhead per command due to Neovim plugin event processing.
 ---@param opts? { callback?: fun(), source?: string }
 function Repo:refresh(opts)
+  -- Diagnostic: measure raw fork() overhead with /usr/bin/true
+  local t_true = vim.uv.hrtime()
+  local h = io.popen("/usr/bin/true")
+  if h then h:close() end
+  vim.notify(("[FORK] /usr/bin/true: %.0fms (io.popen)"):format((vim.uv.hrtime() - t_true) / 1e6))
+
   local t_refresh = vim.uv.hrtime()
   opts = opts or {}
 
