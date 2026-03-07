@@ -59,22 +59,22 @@ Replace git internals with jj equivalents.
 ## Phase 2: Status Buffer
 
 ### Status UI (`buffers/status/ui.lua`)
-- [ ] Section 1: Current change (change ID short, description, parent info with bookmarks)
-- [ ] Section 2: Modified files (single flat list)
-- [ ] Section 3: Conflicts (shown when conflicts exist)
-- [ ] Section 4: Recent changes (log with change IDs, descriptions, bookmarks, conflict/empty markers)
-- [ ] Section 5: Bookmarks (local and remote)
+- [x] Section 1: Current change (change ID short, description, parent info with bookmarks)
+- [x] Section 2: Modified files (single flat list)
+- [x] Section 3: Conflicts (shown when conflicts exist)
+- [x] Section 4: Recent changes (log with change IDs, descriptions, bookmarks, conflict/empty markers)
+- [x] Section 5: Bookmarks (local and remote)
 
 ### Status Actions (`buffers/status/actions.lua`)
-- [ ] Remove: stage, unstage
-- [ ] Keep: fold/unfold, navigate sections, open file in split/tab/vsplit, refresh, close
-- [ ] Adapt: "Discard file" → `jj restore <path>`
-- [ ] Adapt: Diff viewing → `jj diff` for current change
-- [ ] Add: describe (edit current change description)
+- [x] Remove: stage, unstage
+- [x] Keep: fold/unfold, navigate sections, open file in split/tab/vsplit, refresh, close
+- [x] Adapt: "Discard file" → `jj restore <path>`
+- [x] Adapt: Diff viewing → `jj diff` for current change
+- [x] Add: describe (edit current change description)
 
 ### Diff Display
-- [ ] Use `jj diff --git` for git-compatible diff format
-- [ ] Per-file diffs loaded lazily (same architecture as Neogit)
+- [x] Use `jj diff --git` for git-compatible diff format
+- [x] Per-file diffs loaded lazily (same architecture as Neogit)
 
 ---
 
