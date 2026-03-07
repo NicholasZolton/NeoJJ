@@ -2,12 +2,12 @@
 
 local logger = require("neojj.logger")
 local util = require("neojj.lib.util")
-local git = require("neojj.lib.git")
+local jj = require("neojj.lib.jj")
 local config = require("neojj.config")
 local a = require("plenary.async")
 
 ---@class Watcher
----@field git_dir string
+---@field jj_dir string
 ---@field buffers table<StatusBuffer|RefsViewBuffer>
 ---@field running boolean
 ---@field fs_event_handler uv_fs_event_t
@@ -19,7 +19,7 @@ Watcher.__index = Watcher
 function Watcher.new(root)
   local instance = {
     buffers = {},
-    git_dir = git.cli.worktree_git_dir(root),
+    jj_dir = root .. "/.jj",
     running = false,
     fs_event_handler = assert(vim.uv.new_fs_event()),
   }
@@ -82,9 +82,9 @@ function Watcher:start()
     return self
   end
 
-  logger.debug("[WATCHER] Watching git dir: " .. self.git_dir)
+  logger.debug("[WATCHER] Watching jj dir: " .. self.jj_dir)
   self.running = true
-  self.fs_event_handler:start(self.git_dir, {}, self:fs_event_callback())
+  self.fs_event_handler:start(self.jj_dir, {}, self:fs_event_callback())
   return self
 end
 
@@ -98,17 +98,15 @@ function Watcher:stop()
     return self
   end
 
-  logger.debug("[WATCHER] Stopped watching git dir: " .. self.git_dir)
+  logger.debug("[WATCHER] Stopped watching jj dir: " .. self.jj_dir)
   self.running = false
   self.fs_event_handler:stop()
   return self
 end
 
 local WATCH_IGNORE = {
-  index = true,
-  ORIG_HEAD = true,
-  FETCH_HEAD = true,
-  COMMIT_EDITMSG = true,
+  -- jj internal files that change frequently but don't affect UI state
+  ["working_copy"] = true,
 }
 
 function Watcher:fs_event_callback()
@@ -122,12 +120,12 @@ function Watcher:fs_event_callback()
 
   return function(err, filename, events)
     if err then
-      logger.error(string.format("[WATCHER] Git dir update error: %s", err))
+      logger.error(string.format("[WATCHER] JJ dir update error: %s", err))
       return
     end
 
     local info = string.format(
-      "[WATCHER] Git dir update: '%s' %s",
+      "[WATCHER] JJ dir update: '%s' %s",
       filename,
       vim.inspect(events, { indent = "", newline = " " })
     )
@@ -148,7 +146,7 @@ function Watcher:fs_event_callback()
 end
 
 function Watcher:dispatch_refresh()
-  git.repo:dispatch_refresh {
+  jj.repo:dispatch_refresh {
     source = "watcher",
     callback = function()
       for name, buffer in pairs(self.buffers) do
