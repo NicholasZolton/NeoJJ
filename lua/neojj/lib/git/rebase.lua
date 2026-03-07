@@ -84,7 +84,7 @@ function M.reword(commit)
   local status = client.wrap(
     git.cli.commit.only.allow_empty.edit.with_message(("amend! %s\n\n%s"):format(commit, message)),
     {
-      autocmd = "NeogitCommitComplete",
+      autocmd = "NeoJJCommitComplete",
       msg = {
         success = "Commit Updated",
       },

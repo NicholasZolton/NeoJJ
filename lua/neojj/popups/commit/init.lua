@@ -6,7 +6,7 @@ local M = {}
 function M.create(env)
   local p = popup
     .builder()
-    :name("NeogitCommitPopup")
+    :name("NeoJJCommitPopup")
     :switch("a", "all", "Stage all modified and deleted files")
     :switch("e", "allow-empty", "Allow empty commit", { persisted = false })
     :switch("v", "verbose", "Show diff of changes to be committed")

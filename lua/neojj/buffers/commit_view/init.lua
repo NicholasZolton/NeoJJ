@@ -229,8 +229,8 @@ function M:open(kind)
   M.instance = self
 
   self.buffer = Buffer.create {
-    name = "NeogitCommitView",
-    filetype = "NeogitCommitView",
+    name = "NeoJJCommitView",
+    filetype = "NeoJJCommitView",
     kind = kind,
     status_column = not config.values.disable_signs and "" or nil,
     context_highlight = not config.values.disable_context_highlighting,

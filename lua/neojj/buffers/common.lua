@@ -257,7 +257,7 @@ M.CommitEntry = Component.new(function(commit, remotes, args)
             return lines
           end
         end),
-        { highlight = "NeogitCommitViewDescription" }
+        { highlight = "NeoJJCommitViewDescription" }
       ),
     }
   end

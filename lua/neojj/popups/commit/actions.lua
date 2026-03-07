@@ -35,7 +35,7 @@ end
 
 local function do_commit(popup, cmd)
   client.wrap(cmd.arg_list(popup:get_arguments()), {
-    autocmd = "NeogitCommitComplete",
+    autocmd = "NeoJJCommitComplete",
     msg = {
       success = "Committed",
       fail = "Commit failed",

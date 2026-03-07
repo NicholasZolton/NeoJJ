@@ -101,7 +101,7 @@ end
 ---| "floating_console" Open in a floating window across the bottom of the screen
 ---| "auto" vsplit if window would have 80 cols, otherwise split
 
----@class NeogitCommitBufferConfig Commit buffer options
+---@class NeoJJCommitBufferConfig Commit buffer options
 ---@field kind WindowKind The type of window that should be opened
 ---@field verify_commit boolean Show commit signature information in the buffer
 
@@ -123,7 +123,7 @@ end
 ---| "split_above" Like :top split
 ---| "auto" "vsplit" if window would have 80 cols, otherwise "split"
 
----@class NeogitCommitEditorConfigPopup Popup window options
+---@class NeoJJCommitEditorConfigPopup Popup window options
 ---@field kind WindowKind The type of window that should be opened
 ---@field show_staged_diff? boolean Display staged changes in a buffer when committing
 ---@field staged_diff_split_kind? StagedDiffSplitKind Whether to show staged changes in a vertical or horizontal split
@@ -317,7 +317,7 @@ end
 ---| "unicode"
 ---| "kitty"
 ---
----@alias NeogitCommitOrder
+---@alias NeoJJCommitOrder
 ---| ""
 ---| "topo"
 ---| "author-date"
@@ -365,7 +365,7 @@ end
 ---@field use_per_project_settings? boolean Scope persisted settings on a per-project basis
 ---@field remember_settings? boolean Whether neogit should persist flags from popups, e.g. git push flags
 ---@field sort_branches? string Value used for `--sort` for the `git branch` command
----@field commit_order? NeogitCommitOrder Value used for `--<commit_order>-order` for the `git log` command
+---@field commit_order? NeoJJCommitOrder Value used for `--<commit_order>-order` for the `git log` command
 ---@field initial_branch_name? string Default for new branch name prompts
 ---@field initial_branch_rename? string Default for rename branch prompt. If not set, the current branch name is used
 ---@field kind? WindowKind The default type of window neogit should open in
@@ -377,10 +377,10 @@ end
 ---@field auto_show_console_on? string Specify "output" (show always; default) or "error" if `auto_show_console` enabled
 ---@field auto_close_console? boolean Automatically hide the console if the process exits with a 0 status
 ---@field status? NeogitConfigStatusOptions Status buffer options
----@field commit_editor? NeogitCommitEditorConfigPopup Commit editor options
+---@field commit_editor? NeoJJCommitEditorConfigPopup Commit editor options
 ---@field commit_select_view? NeogitConfigPopup Commit select view options
 ---@field stash? NeogitConfigPopup Commit select view options
----@field commit_view? NeogitCommitBufferConfig Commit buffer options
+---@field commit_view? NeoJJCommitBufferConfig Commit buffer options
 ---@field log_view? NeogitConfigPopup Log view options
 ---@field rebase_editor? NeogitConfigPopup Rebase editor options
 ---@field reflog_view? NeogitConfigPopup Reflog view options
@@ -392,7 +392,7 @@ end
 ---@field integrations? { diffview: boolean, codediff: boolean, telescope: boolean, fzf_lua: boolean, mini_pick: boolean, snacks: boolean } Which integrations to enable
 ---@field diff_viewer? "diffview"|"codediff"|nil Which diff viewer to use (nil = auto-detect)
 ---@field sections? NeogitConfigSections
----@field ignored_settings? string[] Settings to never persist, format: "Filetype--cli-value", i.e. "NeogitCommitPopup--author"
+---@field ignored_settings? string[] Settings to never persist, format: "Filetype--cli-value", i.e. "NeoJJCommitPopup--author"
 ---@field mappings? NeogitConfigMappings
 ---@field notification_icon? string
 ---@field use_default_keymaps? boolean

@@ -1,6 +1,6 @@
 local api = vim.api
 
-api.nvim_create_user_command("Neogit", function(o)
+api.nvim_create_user_command("NeoJJ", function(o)
   local neogit = require("neojj")
   neogit.open(require("neojj.lib.util").parse_command_args(o.fargs))
 end, {
@@ -12,11 +12,11 @@ end, {
   end,
 })
 
-api.nvim_create_user_command("NeogitResetState", function()
+api.nvim_create_user_command("NeoJJResetState", function()
   require("neojj.lib.state")._reset()
 end, { nargs = "*", desc = "Reset any saved flags" })
 
-api.nvim_create_user_command("NeogitLogCurrent", function(args)
+api.nvim_create_user_command("NeoJJLogCurrent", function(args)
   local action = require("neojj").action
   local path = vim.fn.expand(args.fargs[1] or "%")
 
@@ -32,7 +32,7 @@ end, {
   complete = "file",
 })
 
-api.nvim_create_user_command("NeogitCommit", function(args)
+api.nvim_create_user_command("NeoJJCommit", function(args)
   local commit = args.fargs[1] or "HEAD"
   local CommitViewBuffer = require("neojj.buffers.commit_view")
   CommitViewBuffer.new(commit):open()

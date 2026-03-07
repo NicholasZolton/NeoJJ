@@ -516,16 +516,16 @@ The following mappings can all be customized via the setup function.
                                                                        *:Neogit*
 :Neogit                 In a Git repository, opens a new NeogitStatus tab.
 
-                                                             *:NeogitResetState*
-:NeogitResetState       Performs a full reset of saved flags for all popups.
+                                                             *:NeoJJResetState*
+:NeoJJResetState       Performs a full reset of saved flags for all popups.
 
                                                                     *:NeogitLog*
 :NeogitLog              Opens log buffer for any changes to the current file,
                         or a path the user has specified. Optionally, a range
                         can be specified to further filter the log entries.
 
-                                                                 *:NeogitCommit*
-:NeogitCommit           Opens the commit view for the specified SHA, or `HEAD`
+                                                                 *:NeoJJCommit*
+:NeoJJCommit           Opens the commit view for the specified SHA, or `HEAD`
                         if left blank.
 
 ==============================================================================
@@ -537,7 +537,7 @@ The following events are emitted by Neogit:
   When: Status has been reloaded
   Data: `{}`
 
-• `NeogitCommitComplete`
+• `NeoJJCommitComplete`
   When: Commit has been created
   Data: `{}`
 
@@ -837,7 +837,7 @@ NeogitDiffHeaderCursor
 
 COMMIT BUFFER
 NeogitFilePath              Applied to filepath
-NeogitCommitViewHeader      Applied to header of Commit View
+NeoJJCommitViewHeader      Applied to header of Commit View
 
 LOG VIEW BUFFER
 NeogitGraphAuthor           Applied to the commit's author in graph view
@@ -2219,7 +2219,7 @@ Reflog Buffer                                             *neogit_reflog_buffer*
 ==============================================================================
 Commit Buffer                                             *neogit_commit_buffer*
 The commit buffer shows a single commit, including metadata, summary, and an
-inline diff. It opens via |:NeogitCommit|, from log/graph views, or when
+inline diff. It opens via |:NeoJJCommit|, from log/graph views, or when
 pressing `<cr>` on a commit hash elsewhere in Neogit.
 
 Mappings (normal mode):

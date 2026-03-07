@@ -587,7 +587,7 @@ local BisectDetailsSection = Component.new(function(props)
     EmptyLine(),
     col(
       map(props.commit.description, text),
-      { highlight = "NeogitCommitViewDescription", tag = "Description" }
+      { highlight = "NeoJJCommitViewDescription", tag = "Description" }
     ),
     EmptyLine(),
   }, {

@@ -55,7 +55,7 @@ function M.in_prepared_repo(cb)
   return function()
     M.prepare_repository()
     require("neojj").setup {}
-    vim.cmd("Neogit")
+    vim.cmd("NeoJJ")
   end
 end
 
