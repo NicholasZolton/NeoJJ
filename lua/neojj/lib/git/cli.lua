@@ -7,8 +7,7 @@ local runner = require("neojj.runner")
 ---Get the configured git executable path
 ---@return string
 local function get_git_executable()
-  local config = require("neojj.config")
-  return config.get_git_executable()
+  return "git"
 end
 
 local hook_commands = {
