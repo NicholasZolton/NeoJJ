@@ -1,30 +1,7 @@
-local a = require("plenary.async")
-
 local M = {}
 
 ---@class NeoJJLogMeta
 local meta = {}
-
----Async-compatible process spawner using jobstart (on_exit runs on main thread).
-local jj_spawn = a.wrap(function(cmd, cwd, callback)
-  local stdout_data = {}
-  local job = vim.fn.jobstart(cmd, {
-    cwd = cwd,
-    stdout_buffered = true,
-    on_stdout = function(_, data)
-      stdout_data = data
-    end,
-    on_exit = function(_, code)
-      if #stdout_data > 0 and stdout_data[#stdout_data] == "" then
-        table.remove(stdout_data)
-      end
-      callback(stdout_data, code)
-    end,
-  })
-  if job <= 0 then
-    callback({}, -1)
-  end
-end, 3)
 
 ---Parse concatenated JSON objects from jj log -T 'json(self)'
 ---Handles the format: {...}{...}{...} with no separator
@@ -179,20 +156,19 @@ function M.list(revset, limit)
   return entries
 end
 
----Update repository state with recent changes (async-compatible)
+---Update repository state with recent changes
 ---@param state NeoJJRepoState
 function meta.update(state)
   local limit = 20
   local revset = "ancestors(@, " .. limit .. ")"
-  local lines, code = jj_spawn({
+  local result = vim.system({
     "jj", "--no-pager", "--color=never", "--ignore-working-copy",
     "log", "--no-graph", "-T", "json(self)", "-r", revset,
-  }, state.worktree_root)
+  }, { cwd = state.worktree_root, text = true }):wait()
 
   local entries = {}
-  if code == 0 and #lines > 0 then
-    local text = table.concat(lines, "\n")
-    local objects = M.parse_json_objects(text)
+  if result.code == 0 and result.stdout and result.stdout ~= "" then
+    local objects = M.parse_json_objects(result.stdout)
     for _, obj in ipairs(objects) do
       table.insert(entries, M.json_to_entry(obj))
     end

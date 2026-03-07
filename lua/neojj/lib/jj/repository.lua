@@ -1,4 +1,3 @@
-local a = require("plenary.async")
 local logger = require("neojj.logger")
 
 ---@class NeoJJRepoHead
@@ -163,22 +162,10 @@ function Repo:reset()
   self.state.worktree_root = self.worktree_root
 end
 
----Build async task for a named module
----@param name string
----@param mod table
----@return function
-function Repo:_make_task(name, mod)
-  return function()
-    local start = vim.uv.hrtime()
-    mod.update(self.state)
-    local elapsed = (vim.uv.hrtime() - start) / 1e6
-    vim.notify(("[REPO] %s: %.0fms"):format(name, elapsed))
-    logger.trace(("[REPO] %s updated in %.1fms"):format(name, elapsed))
-  end
-end
-
----Refresh all state from jj
----Status runs first (triggers working copy snapshot), then log/bookmark run concurrently.
+---Refresh all state from jj (synchronous).
+---All commands use vim.system:wait() which is ~20-90ms each.
+---Async approaches (jobstart/vim.system callbacks) add ~800-900ms of event loop
+---overhead per command due to Neovim plugin event processing.
 ---@param opts? { callback?: fun(), source?: string }
 function Repo:refresh(opts)
   opts = opts or {}
@@ -187,31 +174,30 @@ function Repo:refresh(opts)
     self:register_callback(opts.source, opts.callback)
   end
 
-  -- Phase 1: status must run first (triggers jj snapshot via diff/status commands)
-  if self.lib.status and self.lib.status.update then
-    self:_make_task("status", self.lib.status)()
-  end
-
-  -- Phase 2: log and bookmark use --ignore-working-copy, safe to run concurrently
-  local parallel_tasks = {}
+  -- Status first (triggers jj working copy snapshot), then log/bookmark
   for name, mod in pairs(self.lib) do
-    if name ~= "status" and mod.update then
-      table.insert(parallel_tasks, self:_make_task(name, mod))
+    if name == "status" and mod.update then
+      local start = vim.uv.hrtime()
+      mod.update(self.state)
+      logger.trace(("[REPO] %s updated in %.1fms"):format(name, (vim.uv.hrtime() - start) / 1e6))
     end
   end
 
-  if #parallel_tasks > 0 then
-    a.util.run_all(parallel_tasks, function()
-      self:run_callbacks()
-    end)
-  else
-    self:run_callbacks()
+  for name, mod in pairs(self.lib) do
+    if name ~= "status" and mod.update then
+      local start = vim.uv.hrtime()
+      mod.update(self.state)
+      logger.trace(("[REPO] %s updated in %.1fms"):format(name, (vim.uv.hrtime() - start) / 1e6))
+    end
   end
+
+  self:run_callbacks()
 end
 
----Async dispatch refresh
+---Dispatch refresh (runs synchronously, then callbacks update UI).
+---Wrapped in vim.schedule to avoid blocking the caller's context.
 function Repo:dispatch_refresh(opts)
-  a.run(function()
+  vim.schedule(function()
     self:refresh(opts)
   end)
 end

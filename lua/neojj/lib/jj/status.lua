@@ -1,44 +1,20 @@
-local a = require("plenary.async")
-
 local M = {}
 
 ---@class NeoJJStatusMeta
 local meta = {}
 
----Async-compatible process spawner using jobstart (on_exit runs on main thread).
----Unlike vim.system's callback which runs in a fast event context requiring
----vim.schedule (adding ~1s overhead), jobstart's on_exit is already on the main thread.
-local jj_spawn = a.wrap(function(cmd, cwd, callback)
-  local stdout_data = {}
-  local job = vim.fn.jobstart(cmd, {
-    cwd = cwd,
-    stdout_buffered = true,
-    on_stdout = function(_, data)
-      stdout_data = data
-    end,
-    on_exit = function(_, code)
-      -- Remove trailing empty string from buffered output
-      if #stdout_data > 0 and stdout_data[#stdout_data] == "" then
-        table.remove(stdout_data)
-      end
-      callback(stdout_data, code)
-    end,
-  })
-  if job <= 0 then
-    callback({}, -1)
-  end
-end, 3)
-
----Run a jj command asynchronously, returning stdout lines
+---Run a jj command synchronously via vim.system:wait().
+---Async approaches (jobstart, vim.system callbacks) add ~800-900ms of event loop
+---overhead per command. Synchronous is ~20-90ms total — imperceptible.
 ---@param cmd string[] Command array
 ---@param cwd string Working directory
 ---@return string[]|nil lines, number code
 local function jj_exec(cmd, cwd)
-  local lines, code = jj_spawn(cmd, cwd)
-  if code == 0 and #lines > 0 then
-    return lines, 0
+  local result = vim.system(cmd, { cwd = cwd, text = true }):wait()
+  if result.code == 0 and result.stdout and result.stdout ~= "" then
+    return vim.split(result.stdout, "\n", { trimempty = true }), 0
   end
-  return nil, code
+  return nil, result.code
 end
 
 ---Parse `jj diff --summary` output into file items
@@ -152,12 +128,10 @@ end
 ---Update repository state with jj status data
 ---@param state NeoJJRepoState
 function meta.update(state)
-  local t0 = vim.uv.hrtime()
   local cwd = state.worktree_root
 
   -- Get file changes (needs working copy snapshot, no --ignore-working-copy)
   local diff_lines = jj_exec({ "jj", "--no-pager", "--color=never", "diff", "-s" }, cwd)
-  vim.notify(("[STATUS] diff -s: %.0fms"):format((vim.uv.hrtime() - t0) / 1e6))
   if diff_lines then
     state.files.items = M.parse_diff_summary(diff_lines, cwd)
 
@@ -169,9 +143,7 @@ function meta.update(state)
   end
 
   -- Get status (working copy + parent info, snapshot already done by diff above)
-  local t1 = vim.uv.hrtime()
   local status_lines = jj_exec({ "jj", "--no-pager", "--color=never", "status" }, cwd)
-  vim.notify(("[STATUS] status: %.0fms, total: %.0fms"):format((vim.uv.hrtime() - t1) / 1e6, (vim.uv.hrtime() - t0) / 1e6))
   if status_lines then
     local parsed = M.parse_status_lines(status_lines)
     state.head.change_id = parsed.head.change_id

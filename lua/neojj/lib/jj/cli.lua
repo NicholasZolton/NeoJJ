@@ -552,13 +552,13 @@ function M.workspace_root(dir)
     return cached ~= false and cached or nil
   end
 
-  local result = Process.new({
-    cmd = { "jj", "--no-pager", "--color=never", "workspace", "root" },
-    cwd = dir,
-  }):spawn_blocking()
+  local result = vim.system(
+    { "jj", "--no-pager", "--color=never", "workspace", "root" },
+    { cwd = dir, text = true }
+  ):wait()
 
-  if result and result.code == 0 and result.stdout[1] then
-    local root = result.stdout[1]:gsub("%s+$", "")
+  if result.code == 0 and result.stdout and result.stdout ~= "" then
+    local root = vim.trim(result.stdout)
     workspace_root_cache[key] = root
     -- Also cache root→root so lookups from the root dir hit cache
     local root_key = vim.fn.fnamemodify(root, ":p")
