@@ -106,10 +106,28 @@ function M.forget(name)
   return jj.cli.bookmark_forget.args(name).call()
 end
 
----Update repository state with bookmark data
+---Update repository state with bookmark data (fast path via vim.system)
 ---@param state NeoJJRepoState
 function meta.update(state)
-  state.bookmarks.items = M.list()
+  local limit = 20
+  local result = vim
+    .system(
+      { "jj", "--no-pager", "--color=never", "--ignore-working-copy", "bookmark", "list" },
+      { cwd = state.worktree_root, text = true }
+    )
+    :wait()
+
+  if result.code == 0 and result.stdout and result.stdout ~= "" then
+    local lines = vim.split(result.stdout, "\n", { trimempty = true })
+    local items = M.parse_list(lines)
+    if #items > limit then
+      state.bookmarks.items = { unpack(items, 1, limit) }
+    else
+      state.bookmarks.items = items
+    end
+  else
+    state.bookmarks.items = {}
+  end
 end
 
 M.meta = meta

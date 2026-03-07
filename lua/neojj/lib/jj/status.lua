@@ -3,6 +3,18 @@ local M = {}
 ---@class NeoJJStatusMeta
 local meta = {}
 
+---Run a jj command quickly via vim.system, returning stdout lines
+---@param cmd string[] Command array
+---@param cwd string Working directory
+---@return string[]|nil lines, number code
+local function jj_exec(cmd, cwd)
+  local result = vim.system(cmd, { cwd = cwd, text = true }):wait()
+  if result.code == 0 and result.stdout and result.stdout ~= "" then
+    return vim.split(result.stdout, "\n", { trimempty = true }), 0
+  end
+  return nil, result.code
+end
+
 ---Parse `jj diff --summary` output into file items
 ---@param lines string[]
 ---@param root string Workspace root for absolute paths
@@ -114,12 +126,12 @@ end
 ---Update repository state with jj status data
 ---@param state NeoJJRepoState
 function meta.update(state)
-  local jj = require("neojj.lib.jj")
+  local cwd = state.worktree_root
 
-  -- Get file changes
-  local diff_result = jj.cli.diff.summary.call { hidden = true, trim = true }
-  if diff_result and diff_result.code == 0 then
-    state.files.items = M.parse_diff_summary(diff_result.stdout, state.worktree_root)
+  -- Get file changes (needs working copy snapshot, no --ignore-working-copy)
+  local diff_lines = jj_exec({ "jj", "--no-pager", "--color=never", "diff", "-s" }, cwd)
+  if diff_lines then
+    state.files.items = M.parse_diff_summary(diff_lines, cwd)
 
     -- Attach lazy diff loading to each file item
     local jj_diff = require("neojj.lib.jj.diff")
@@ -128,10 +140,10 @@ function meta.update(state)
     end
   end
 
-  -- Get status (working copy + parent info)
-  local status_result = jj.cli.status.call { hidden = true, trim = true }
-  if status_result and status_result.code == 0 then
-    local parsed = M.parse_status_lines(status_result.stdout)
+  -- Get status (working copy + parent info, snapshot already done by diff above)
+  local status_lines = jj_exec({ "jj", "--no-pager", "--color=never", "status" }, cwd)
+  if status_lines then
+    local parsed = M.parse_status_lines(status_lines)
     state.head.change_id = parsed.head.change_id
     state.head.commit_id = parsed.head.commit_id
     state.head.empty = parsed.head.empty
@@ -145,7 +157,7 @@ function meta.update(state)
     state.parent.bookmarks = parsed.parent.bookmarks
 
     -- Parse conflicts
-    state.conflicts.items = M.parse_conflicts(status_result.stdout, state.worktree_root)
+    state.conflicts.items = M.parse_conflicts(status_lines, cwd)
   end
 end
 

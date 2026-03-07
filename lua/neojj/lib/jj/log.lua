@@ -156,10 +156,25 @@ function M.list(revset, limit)
   return entries
 end
 
----Update repository state with recent changes
+---Update repository state with recent changes (fast path via vim.system)
 ---@param state NeoJJRepoState
 function meta.update(state)
-  local entries = M.list(nil, 20)
+  local limit = 20
+  local revset = "ancestors(@, " .. limit .. ")"
+  local result = vim
+    .system({
+      "jj", "--no-pager", "--color=never", "--ignore-working-copy",
+      "log", "--no-graph", "-T", "json(self)", "-r", revset,
+    }, { cwd = state.worktree_root, text = true })
+    :wait()
+
+  local entries = {}
+  if result.code == 0 and result.stdout and result.stdout ~= "" then
+    local objects = M.parse_json_objects(result.stdout)
+    for _, obj in ipairs(objects) do
+      table.insert(entries, M.json_to_entry(obj))
+    end
+  end
   state.recent.items = entries
 
   -- Enrich head description from log if status didn't provide it
