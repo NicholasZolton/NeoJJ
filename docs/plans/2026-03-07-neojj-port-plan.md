@@ -12,15 +12,15 @@ Hard fork of Neogit to create a Magit-style Neovim UI for jj (Jujutsu VCS).
 
 ## Phase 0: Mechanical Rename (neogit → neojj)
 
-- [ ] Rename `lua/neogit/` → `lua/neojj/`
-- [ ] Rename `plugin/neogit.lua` → `plugin/neojj.lua`
-- [ ] Replace all `require("neogit` → `require("neojj`
-- [ ] Rename user commands: `:Neogit` → `:NeoJJ`, `:NeogitResetState` → `:NeoJJResetState`, etc.
-- [ ] Rename highlights: `Neogit*` → `NeoJJ*`
-- [ ] Rename autocmd groups, buffer names, config keys
-- [ ] Rename internal variable references
-- [ ] Update doc files
-- [ ] Verify plugin still loads and opens (as a git plugin with new names)
+- [x] Rename `lua/neogit/` → `lua/neojj/`
+- [x] Rename `plugin/neogit.lua` → `plugin/neojj.lua`
+- [x] Replace all `require("neogit` → `require("neojj`
+- [x] Rename user commands: `:Neogit` → `:NeoJJ`, `:NeogitResetState` → `:NeoJJResetState`, etc.
+- [x] Rename highlights: `Neogit*` → `NeoJJ*`
+- [x] Rename autocmd groups, buffer names, config keys
+- [x] Rename internal variable references
+- [x] Update doc files
+- [x] Verify plugin still loads and opens (as a git plugin with new names)
 
 ---
 
