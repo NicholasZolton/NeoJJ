@@ -193,12 +193,8 @@ function M.build(item)
   setmetatable(item, {
     __index = function(self, method)
       if method == "diff" then
-        local Process = require("neojj.process")
-
-        -- Build command directly with --ignore-working-copy to skip redundant snapshot.
-        -- The status refresh already triggered a working copy snapshot, so this is safe.
-        local cmd = { "jj", "--no-pager", "--color=never", "--ignore-working-copy", "diff", "--git", "--", item.name }
-
+        -- Use jobstart+jobwait directly — no Process overhead, no 200ms vim.wait polling.
+        -- --ignore-working-copy is safe here: the status refresh already snapshotted.
         local cwd
         local ok, jj_mod = pcall(require, "neojj.lib.jj")
         if ok then
@@ -207,18 +203,27 @@ function M.build(item)
             cwd = repo.worktree_root
           end
         end
-        cwd = cwd or vim.fn.getcwd()
 
-        local process = Process.new {
-          cmd = cmd,
-          cwd = cwd,
-          suppress_console = true,
-        }
+        local stdout = {}
+        local job = vim.fn.jobstart(
+          { "jj", "--no-pager", "--color=never", "--ignore-working-copy", "diff", "--git", "--", item.name },
+          {
+            cwd = cwd or vim.fn.getcwd(),
+            stdout_buffered = true,
+            on_stdout = function(_, data)
+              stdout = data
+            end,
+          }
+        )
 
-        local result = process:spawn_blocking()
-        if result and result.code == 0 and #result.stdout > 0 then
-          result:trim()
-          self.diff = M.parse(result.stdout)
+        local code = vim.fn.jobwait({ job })[1]
+        -- Remove trailing empty string from buffered output
+        if #stdout > 0 and stdout[#stdout] == "" then
+          stdout[#stdout] = nil
+        end
+
+        if code == 0 and #stdout > 0 then
+          self.diff = M.parse(stdout)
         else
           self.diff = empty_diff
         end
