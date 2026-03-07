@@ -80,12 +80,12 @@ Replace git internals with jj equivalents.
 
 ## Phase 3: Basic Actions
 
-- [ ] `jj describe` — edit change description (via editor buffer)
-- [ ] `jj new` — create new change (on top of current, or specified parent)
-- [ ] `jj squash` — move diff from current into parent
-- [ ] `jj abandon` — abandon current change
-- [ ] `jj restore <path>` — discard file changes
-- [ ] Diff viewing for files in status buffer
+- [x] `jj describe` — edit change description (via editor buffer)
+- [x] `jj new` — create new change (on top of current, or specified parent)
+- [x] `jj squash` — move diff from current into parent
+- [x] `jj abandon` — abandon current change
+- [x] `jj restore <path>` — discard file changes
+- [x] Diff viewing for files in status buffer
 
 ---
 
