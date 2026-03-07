@@ -24,7 +24,7 @@ function M.setup()
       if
         not autocmd_disabled
         and status_buffer.is_open()
-        and not api.nvim_get_option_value("filetype", { buf = o.buf }):match("^Neogit")
+        and not api.nvim_get_option_value("filetype", { buf = o.buf }):match("^NeoJJ")
       then
         local path = git.files.relpath_from_repository(o.file)
         if path then

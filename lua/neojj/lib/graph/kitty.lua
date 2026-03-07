@@ -1164,8 +1164,8 @@ function M.build(commits, color)
   local lines, highlights = graph_to_lines(graph)
 
   --
-  -- BEGIN NEOGIT COMPATIBILITY CODE
-  -- Transform graph into what neogit needs to render
+  -- BEGIN NEOJJ COMPATIBILITY CODE
+  -- Transform graph into what neojj needs to render
   --
   local result = {}
   local hl = {}

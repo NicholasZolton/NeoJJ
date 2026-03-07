@@ -11,10 +11,10 @@ describe("lib.git.log.parse", function()
       "",
       "    Fixes finding the right section",
       "",
-      "diff --git a/lua/neogit/status.lua b/lua/neogit/status.lua",
+      "diff --git a/lua/neojj/status.lua b/lua/neojj/status.lua",
       "index 020bb25b..e17bf025 100644",
-      "--- a/lua/neogit/status.lua",
-      "+++ b/lua/neogit/status.lua",
+      "--- a/lua/neojj/status.lua",
+      "+++ b/lua/neojj/status.lua",
       "@@ -692,33 +692,28 @@ end",
       " ---@param first_line number",
       " ---@param last_line number",
@@ -85,7 +85,7 @@ describe("lib.git.log.parse", function()
       description = { "Fixes finding the right section" },
       diffs = {
         {
-          file = "lua/neogit/status.lua",
+          file = "lua/neojj/status.lua",
           hunks = {
             {
               diff_from = 1,
@@ -96,7 +96,7 @@ describe("lib.git.log.parse", function()
               index_from = 692,
               index_len = 33,
               length = 40,
-              file = "lua/neogit/status.lua",
+              file = "lua/neojj/status.lua",
               line = "@@ -692,33 +692,28 @@ end",
               lines = {
                 " ---@param first_line number",
@@ -150,7 +150,7 @@ describe("lib.git.log.parse", function()
               index_from = 734,
               index_len = 14,
               length = 15,
-              file = "lua/neogit/status.lua",
+              file = "lua/neojj/status.lua",
               line = "@@ -734,14 +729,10 @@ function M.get_item_hunks(item, first_line, last_line, partial)",
               lines = {
                 "       setmetatable(o, o)",

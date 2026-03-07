@@ -17,7 +17,7 @@ end
 
 ---@return Path
 function M.filepath(config)
-  local state_path = Path:new(vim.fn.stdpath("state")):joinpath("neogit")
+  local state_path = Path:new(vim.fn.stdpath("state")):joinpath("neojj")
   local filename = "state"
 
   if config.use_per_project_settings then

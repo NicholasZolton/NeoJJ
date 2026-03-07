@@ -2,11 +2,11 @@ local M = {}
 
 local did_setup = false
 
----Setup neogit
+---Setup neojj
 ---@param opts NeoJJConfig
 function M.setup(opts)
   if vim.fn.has("nvim-0.10") ~= 1 then
-    vim.notify("Neogit HEAD requires at least NVIM 0.10 - Pin to tag 'v0.0.1' for NVIM 0.9.x")
+    vim.notify("NeoJJ HEAD requires at least NVIM 0.10 - Pin to tag 'v0.0.1' for NVIM 0.9.x")
     return
   end
 
@@ -95,7 +95,7 @@ local function construct_opts(opts)
 end
 
 local function open_popup(name)
-  local has_pop, popup = pcall(require, "neogit.popups." .. name)
+  local has_pop, popup = pcall(require, "neojj.popups." .. name)
   if not has_pop then
     M.notification.error(("Invalid popup %q"):format(name))
   else
@@ -107,7 +107,7 @@ local function open_status_buffer(opts)
   local status = require("neojj.buffers.status")
   local config = require("neojj.config")
 
-  -- We need to construct the repo instance manually here since the actual CWD may not be the directory neogit is
+  -- We need to construct the repo instance manually here since the actual CWD may not be the directory neojj is
   -- going to open into. We will use vim.fn.lcd() in the status buffer constructor, so this will eventually be
   -- correct.
   local repo = require("neojj.lib.git.repository").instance(opts.cwd)
@@ -177,11 +177,11 @@ function M.open(opts)
 end
 
 -- This can be used to create bindable functions for custom keybindings:
---   local neogit = require("neojj")
---   vim.keymap.set('n', '<leader>gcc', neogit.action('commit', 'commit', { '--verbose', '--all' }))
+--   local neojj = require("neojj")
+--   vim.keymap.set('n', '<leader>gcc', neojj.action('commit', 'commit', { '--verbose', '--all' }))
 --
----@param popup  string Name of popup, as found in `lua/neogit/popups/*`
----@param action string Name of action for popup, found in `lua/neogit/popups/*/actions.lua`
+---@param popup  string Name of popup, as found in `lua/neojj/popups/*`
+---@param action string Name of action for popup, found in `lua/neojj/popups/*/actions.lua`
 ---@param args   table? CLI arguments to pass to git command
 ---@return function
 function M.action(popup, action, args)
@@ -199,7 +199,7 @@ function M.action(popup, action, args)
 
   return function()
     a.void(function()
-      local ok, actions = pcall(require, "neogit.popups." .. popup .. ".actions")
+      local ok, actions = pcall(require, "neojj.popups." .. popup .. ".actions")
       if ok then
         local fn = actions[action]
         if fn then
@@ -286,7 +286,7 @@ function M.complete(arglead)
 end
 
 function M.get_log_file_path()
-  return vim.fn.stdpath("cache") .. "/neogit.log"
+  return vim.fn.stdpath("cache") .. "/neojj.log"
 end
 
 function M.get_config()

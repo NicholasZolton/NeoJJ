@@ -1,6 +1,6 @@
 local config = require("neojj.config")
 
-describe("Neogit config", function()
+describe("NeoJJ config", function()
   before_each(function()
     config.values = config.get_default_values()
   end)
@@ -435,7 +435,7 @@ describe("Neogit config", function()
       end)
 
       it("should return invalid when ignored_settings has an invalid setting format", function()
-        config.values.ignored_settings = { "invalid setting format!", "Filetype-yep", "Neogit+example" }
+        config.values.ignored_settings = { "invalid setting format!", "Filetype-yep", "NeoJJ+example" }
         assert.True(vim.tbl_count(require("neojj.config").validate_config()) ~= 0)
 
         config.values.ignored_settings = { "Valid--format", "Invalid-format" }

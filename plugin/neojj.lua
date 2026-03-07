@@ -1,14 +1,14 @@
 local api = vim.api
 
 api.nvim_create_user_command("NeoJJ", function(o)
-  local neogit = require("neojj")
-  neogit.open(require("neojj.lib.util").parse_command_args(o.fargs))
+  local neojj = require("neojj")
+  neojj.open(require("neojj.lib.util").parse_command_args(o.fargs))
 end, {
   nargs = "*",
-  desc = "Open Neogit",
+  desc = "Open NeoJJ",
   complete = function(arglead)
-    local neogit = require("neojj")
-    return neogit.complete(arglead)
+    local neojj = require("neojj")
+    return neojj.complete(arglead)
   end,
 })
 

@@ -6,12 +6,12 @@
 
 -- User configuration section
 local default_config = {
-  plugin = "neogit",
+  plugin = "neojj",
 
-  use_console = vim.env.NEOGIT_LOG_CONSOLE or false,
-  highlights = vim.env.NEOGIT_LOG_HIGHLIGHTS or (vim.env.NEOGIT_LOG_CONSOLE or false),
-  use_file = vim.env.NEOGIT_LOG_FILE or false,
-  level = vim.env.NEOGIT_LOG_LEVEL or "info",
+  use_console = vim.env.NEOJJ_LOG_CONSOLE or false,
+  highlights = vim.env.NEOJJ_LOG_HIGHLIGHTS or (vim.env.NEOJJ_LOG_CONSOLE or false),
+  use_file = vim.env.NEOJJ_LOG_FILE or false,
+  level = vim.env.NEOJJ_LOG_LEVEL or "info",
 
   modes = {
     { name = "trace", hl = "Comment" },
@@ -85,7 +85,7 @@ log.new = function(config, standalone)
 
     local msg = message_maker(...)
     local info = debug.getinfo(2, "Sl")
-    local lineinfo = info.short_src:gsub(".+/neogit/lua/neogit/", "") .. ":" .. info.currentline
+    local lineinfo = info.short_src:gsub(".+/neojj/lua/neojj/", "") .. ":" .. info.currentline
 
     -- Output to console
     if config.use_console then

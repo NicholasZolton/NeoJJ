@@ -35,7 +35,7 @@ function Buffer:new(handle, win_handle)
     kind = nil, -- how the buffer was opened. For more information look at the create function
     name = nil,
     namespaces = {
-      default = api.nvim_create_namespace("neogit-buffer-" .. handle),
+      default = api.nvim_create_namespace("neojj-buffer-" .. handle),
     },
   }
 
@@ -355,7 +355,7 @@ function Buffer:show()
       api.nvim_win_set_cursor(content_window, { 1, 0 })
       win = content_window
     elseif self.kind == "popup" then
-      -- local title, _ = self.name:gsub("^Neogit", ""):gsub("Popup$", "")
+      -- local title, _ = self.name:gsub("^NeoJJ", ""):gsub("Popup$", "")
 
       local content_window = api.nvim_open_win(self.handle, true, {
         anchor = "SW",
@@ -504,7 +504,7 @@ end
 function Buffer:create_namespace(name)
   assert(name, "Namespace must have a name")
 
-  local namespace = "neogit-buffer-" .. self.handle .. "-" .. name
+  local namespace = "neojj-buffer-" .. self.handle .. "-" .. name
   if not self.namespaces[namespace] then
     self.namespaces[namespace] = api.nvim_create_namespace(namespace)
   end
@@ -517,7 +517,7 @@ end
 function Buffer:get_namespace_id(name)
   local ns_id
   if name and name ~= "default" then
-    ns_id = self.namespaces["neogit-buffer-" .. self.handle .. "-" .. name]
+    ns_id = self.namespaces["neojj-buffer-" .. self.handle .. "-" .. name]
   else
     ns_id = self.namespaces.default
   end
@@ -871,7 +871,7 @@ function Buffer.create(config)
         local cursor = fn.line(".")
         local start = math.max(context.position.row_start, fn.line("w0"))
         local stop = math.min(context.position.row_end, fn.line("w$"))
-        local disable_hl = vim.b.neogit_disable_hunk_highlight == true
+        local disable_hl = vim.b.neojj_disable_hunk_highlight == true
 
         for line = start, stop do
           local is_cursor = line == cursor

@@ -122,7 +122,7 @@ local function ordered_tabpages()
   return order
 end
 
----@return integer? A window handle that doesn't belong to Neogit
+---@return integer? A window handle that doesn't belong to NeoJJ
 local function find_user_window()
   for _, tab in ipairs(ordered_tabpages()) do
     for _, win in ipairs(api.nvim_tabpage_list_wins(tab)) do

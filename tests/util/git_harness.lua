@@ -1,4 +1,4 @@
-local neogit = require("neojj")
+local neojj = require("neojj")
 local a = require("plenary.async")
 local M = {}
 local util = require("tests.util.util")
@@ -21,8 +21,8 @@ function M.setup_bare_repo()
     util.system { "mv", workspace_dir .. "/.repo/" .. name, workspace_dir .. "/" }
   end
 
-  util.system { "git", "config", "user.email", "test@neogit-test.test" }
-  util.system { "git", "config", "user.name", "Neogit Test" }
+  util.system { "git", "config", "user.email", "test@neojj-test.test" }
+  util.system { "git", "config", "user.name", "NeoJJ Test" }
   util.system { "git", "add", "." }
   util.system { "git", "commit", "-m", "temp commit to be soft unstaged later" }
 
@@ -45,8 +45,8 @@ function M.prepare_repository()
   util.system { "git", "checkout", "second-branch" }
   util.system { "git", "switch", "master" }
   util.system { "git", "config", "remote.origin.url", "git@github.com:example/example.git" }
-  util.system { "git", "config", "user.email", "test@neogit-test.test" }
-  util.system { "git", "config", "user.name", "Neogit Test" }
+  util.system { "git", "config", "user.email", "test@neojj-test.test" }
+  util.system { "git", "config", "user.name", "NeoJJ Test" }
 
   return working_dir
 end

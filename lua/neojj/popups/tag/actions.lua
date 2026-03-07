@@ -12,7 +12,7 @@ local event = require("neojj.lib.event")
 function M.create_tag(popup)
   local tag_input = input.get_user_input("Create tag", {
     strip_spaces = true,
-    completion = "customlist,v:lua.require'neogit.lib.git'.refs.list_tags",
+    completion = "customlist,v:lua.require'neojj.lib.git'.refs.list_tags",
   })
   if not tag_input then
     return

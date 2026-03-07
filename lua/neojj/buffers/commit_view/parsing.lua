@@ -15,7 +15,7 @@ function M.parse_commit_overview(raw)
   for i = 2, #raw - 1 do
     local file = {}
     if raw[i] ~= "" then
-      -- matches: tests/specs/neogit/popups/rebase_spec.lua | 2 +-
+      -- matches: tests/specs/neojj/popups/rebase_spec.lua | 2 +-
       file.path, file.changes, file.insertions, file.deletions = raw[i]:match(" (.*)%s+|%s+(%d+) ?(%+*)(%-*)")
 
       if vim.tbl_isempty(file) then

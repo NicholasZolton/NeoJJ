@@ -8,7 +8,7 @@ local FuzzyFinderBuffer = require("neojj.buffers.fuzzy_finder")
 local RemoteConfigPopup = require("neojj.popups.remote_config")
 
 local function ask_to_set_pushDefault()
-  local repo_config = git.config.get("neogit.askSetPushDefault")
+  local repo_config = git.config.get("neojj.askSetPushDefault")
   local current_value = git.config.get("remote.pushDefault")
 
   if current_value:is_unset() and (repo_config:is_unset() or repo_config:read() == "ask-if-unset") then

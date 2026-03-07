@@ -13,7 +13,7 @@ function M.open(name, f)
   end
 
   return function()
-    local ok, value = pcall(require, "neogit.popups." .. name)
+    local ok, value = pcall(require, "neojj.popups." .. name)
     if ok then
       assert(value, "popup is not nil")
       assert(value.create, "popup has create function")

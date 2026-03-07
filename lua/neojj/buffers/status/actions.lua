@@ -1282,7 +1282,7 @@ M.n_unstage_staged = function(self)
   end)
 end
 
----Opens neogit on the parent repo if if we are in a submodule
+---Opens neojj on the parent repo if if we are in a submodule
 ---@param self StatusBuffer
 M.n_goto_parent_repo = function(self)
   return function()

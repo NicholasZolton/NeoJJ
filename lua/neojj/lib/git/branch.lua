@@ -124,7 +124,7 @@ end
 
 ---@return string|nil
 function M.base_branch()
-  local value = git.config.get("neogit.baseBranch")
+  local value = git.config.get("neojj.baseBranch")
   if value:is_set() then
     return value:read() ---@type string
   else

@@ -66,8 +66,8 @@ function M.create(env)
     :config("P", "remote.pushDefault", {
       options = actions.remotes_for_config(),
     })
-    :config("b", "neogit.baseBranch")
-    :config("A", "neogit.askSetPushDefault", {
+    :config("b", "neojj.baseBranch")
+    :config("A", "neojj.askSetPushDefault", {
       options = {
         { display = "ask", value = "ask" },
         { display = "ask-if-unset", value = "" },

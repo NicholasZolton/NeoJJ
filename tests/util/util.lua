@@ -36,7 +36,7 @@ function M.system(cmd, ignore_err, error_msg)
   return result.stdout
 end
 
-M.neogit_test_base_dir = "/tmp/neogit-testing/"
+M.neojj_test_base_dir = "/tmp/neojj-testing/"
 
 local function is_macos()
   return vim.uv.os_uname().sysname == "Darwin"
@@ -51,7 +51,7 @@ end
 ---@param suffix string? The suffix to be appended to the temp directory, ideally avoid spaces in your suffix
 ---@return string The path to the temporary directory
 function M.create_temp_dir(suffix)
-  suffix = "neogit-" .. (suffix or "")
+  suffix = "neojj-" .. (suffix or "")
 
   local cmd
   if is_gnu_mktemp() then

@@ -96,7 +96,7 @@ function M:show()
       end
 
       return filter_map(self.state, function(item)
-        if item.hidden and not os.getenv("NEOGIT_DEBUG") then
+        if item.hidden and not os.getenv("NEOJJ_DEBUG") then
           return
         end
 
@@ -119,7 +119,7 @@ function M:show()
         return col({
           row {
             text.highlight("NeoJJGraphAuthor")(
-              os.getenv("NEOGIT_DEBUG") and (item.hidden and "H" or " ") or ""
+              os.getenv("NEOJJ_DEBUG") and (item.hidden and "H" or " ") or ""
             ),
             text.highlight(highlight_code)(code),
             text(" "),

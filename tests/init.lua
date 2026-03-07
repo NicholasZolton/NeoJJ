@@ -6,9 +6,9 @@ if os.getenv("CI") then
   vim.opt.runtimepath:prepend(vim.fn.getcwd() .. "/tmp/telescope")
 
   vim.cmd([[runtime! plugin/plenary.vim]])
-  vim.cmd([[runtime! plugin/neogit.lua]])
+  vim.cmd([[runtime! plugin/neojj.lua]])
 else
-  util.ensure_installed("nvim-lua/plenary.nvim", util.neogit_test_base_dir)
+  util.ensure_installed("nvim-lua/plenary.nvim", util.neojj_test_base_dir)
 end
 
 local directory = os.getenv("TEST_FILES") == "" and "tests/specs" or os.getenv("TEST_FILES") or "tests/specs"

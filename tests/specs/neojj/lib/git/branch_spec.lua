@@ -1,17 +1,17 @@
 local gb = require("neojj.lib.git.branch")
-local neogit = require("neojj")
+local neojj = require("neojj")
 local git_harness = require("tests.util.git_harness")
-local neogit_util = require("neojj.lib.util")
+local neojj_util = require("neojj.lib.util")
 local util = require("tests.util.util")
 local input = require("tests.mocks.input")
 
-neogit.setup {}
+neojj.setup {}
 
 pending("lib.git.branch", function()
   describe("#exists", function()
     before_each(function()
       git_harness.prepare_repository()
-      neogit.reset()
+      neojj.reset()
     end)
 
     it("returns true when branch exists", function()
@@ -26,7 +26,7 @@ pending("lib.git.branch", function()
   describe("#is_unmerged", function()
     before_each(function()
       git_harness.prepare_repository()
-      neogit.reset()
+      neojj.reset()
     end)
 
     it("returns true when feature branch has commits base branch doesn't", function()
@@ -68,7 +68,7 @@ pending("lib.git.branch", function()
   describe("#delete", function()
     before_each(function()
       git_harness.prepare_repository()
-      neogit.reset()
+      neojj.reset()
     end)
 
     describe("when branch is unmerged", function()
@@ -110,7 +110,7 @@ pending("lib.git.branch", function()
   describe("recent branches", function()
     before_each(function()
       git_harness.prepare_repository()
-      -- neogit.reset()
+      -- neojj.reset()
     end)
 
     it(
@@ -160,13 +160,13 @@ pending("lib.git.branch", function()
 
     before_each(function()
       git_harness.prepare_repository()
-      -- neogit.reset()
+      -- neojj.reset()
       setup_local_git_branches()
     end)
 
     it("properly detects all local branches", function()
       local branches_detected = gb.get_local_branches(true)
-      assert.True(neogit_util.lists_equal(branches, branches_detected))
+      assert.True(neojj_util.lists_equal(branches, branches_detected))
     end)
 
     it("properly detects all branches but the current branch", function()
@@ -174,10 +174,10 @@ pending("lib.git.branch", function()
       if vim.v.shell_error ~= 0 then
         error("Failed to checkout master branch!")
       end
-      neogit_util.remove_item_from_table(branches, "master")
+      neojj_util.remove_item_from_table(branches, "master")
 
       local branches_detected = gb.get_local_branches(false)
-      assert.True(neogit_util.lists_equal(branches, branches_detected))
+      assert.True(neojj_util.lists_equal(branches, branches_detected))
     end)
   end)
 end)

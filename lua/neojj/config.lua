@@ -136,7 +136,7 @@ end
 ---@field item NeoJJConfigSignsIcon The icons to use for open and closed items
 ---@field section NeoJJConfigSignsIcon The icons to use for open and closed sections
 
----@class NeoJJConfigSection A section to show in the Neogit Status buffer, e.g. Staged/Unstaged/Untracked
+---@class NeoJJConfigSection A section to show in the NeoJJ Status buffer, e.g. Staged/Unstaged/Untracked
 ---@field folded boolean Whether or not this section should be open or closed by default
 ---@field hidden boolean Whether or not this section should be shown
 
@@ -346,7 +346,7 @@ end
 ---@field commit? string
 ---@field tree? string
 
----@class NeoJJConfig Neogit configuration settings
+---@class NeoJJConfig NeoJJ configuration settings
 ---@field filewatcher? NeoJJFilewatcherConfig Values for filewatcher
 ---@field graph_style? NeoJJGraphStyle Style for graph
 ---@field git_executable? string Path to git executable (defaults to "git")
@@ -354,7 +354,7 @@ end
 ---@field log_date_format? string Log date format
 ---@field disable_hint? boolean Remove the top hint in the Status buffer
 ---@field disable_context_highlighting? boolean Disable context highlights based on cursor position
----@field disable_signs? boolean Special signs to draw for sections etc. in Neogit
+---@field disable_signs? boolean Special signs to draw for sections etc. in NeoJJ
 ---@field prompt_force_push? boolean Offer to force push when branches diverge
 ---@field prompt_amend_commit? boolean Request confirmation when amending already published commits
 ---@field git_services? NeoJJConfigGitService[] Templates to use when opening a pull request for a branch, or commit
@@ -363,12 +363,12 @@ end
 ---@field process_spinner? boolean Hide/Show the process spinner
 ---@field disable_insert_on_commit? boolean|"auto" Disable automatically entering insert mode in commit dialogues
 ---@field use_per_project_settings? boolean Scope persisted settings on a per-project basis
----@field remember_settings? boolean Whether neogit should persist flags from popups, e.g. git push flags
+---@field remember_settings? boolean Whether neojj should persist flags from popups, e.g. git push flags
 ---@field sort_branches? string Value used for `--sort` for the `git branch` command
 ---@field commit_order? NeoJJCommitOrder Value used for `--<commit_order>-order` for the `git log` command
 ---@field initial_branch_name? string Default for new branch name prompts
 ---@field initial_branch_rename? string Default for rename branch prompt. If not set, the current branch name is used
----@field kind? WindowKind The default type of window neogit should open in
+---@field kind? WindowKind The default type of window neojj should open in
 ---@field floating? NeoJJConfigFloating The floating window style
 ---@field disable_line_numbers? boolean Whether to disable line numbers
 ---@field disable_relative_line_numbers? boolean Whether to disable line numbers
@@ -399,7 +399,7 @@ end
 ---@field highlight? HighlightOptions
 ---@field builders? { [string]: fun(builder: PopupBuilder) }
 
----Returns the default Neogit configuration
+---Returns the default NeoJJ configuration
 ---@return NeoJJConfig
 function M.get_default_values()
   return {
@@ -1392,10 +1392,10 @@ function M.setup(opts)
   if vim.tbl_count(config_errs) == 0 then
     return
   end
-  local header = "====Neogit Configuration Errors===="
+  local header = "====NeoJJ Configuration Errors===="
   local header_message = {
-    "Neogit has NOT been setup!",
-    "You have a misconfiguration in your Neogit setup!",
+    "NeoJJ has NOT been setup!",
+    "You have a misconfiguration in your NeoJJ setup!",
     'Validate that your configuration passed to `require("neojj").setup()` is valid!',
   }
   local header_sep = ""

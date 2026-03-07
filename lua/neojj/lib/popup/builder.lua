@@ -87,7 +87,7 @@ local M = {}
 
 ---@class PopupSwitchOpts
 ---@field enabled? boolean Controls if the switch should default to 'on' state
----@field internal? boolean Whether the switch is internal to neogit or should be included in the cli command. If `true` we don't include it in the cli command.
+---@field internal? boolean Whether the switch is internal to neojj or should be included in the cli command. If `true` we don't include it in the cli command.
 ---@field incompatible? string[] A table of strings that represent other cli switches/options that this one cannot be used with
 ---@field key_prefix? string Allows overwriting the default '-' to toggle switch
 ---@field cli_prefix? string Allows overwriting the default '--' that's used to create the cli flag. Sometimes you may want to use '++' or '-'.

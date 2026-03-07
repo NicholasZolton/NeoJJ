@@ -8,14 +8,14 @@ local fmt = string.format
 local M = {}
 
 function M.get_nvim_remote_editor(show_diff)
-  local neogit_path = debug.getinfo(1, "S").source:sub(2, -#"lua/neogit/client.lua" - 2)
+  local neojj_path = debug.getinfo(1, "S").source:sub(2, -#"lua/neojj/client.lua" - 2)
   local nvim_path = fn.shellescape(vim.v.progpath)
 
-  logger.debug("[CLIENT] Neogit path: " .. neogit_path)
+  logger.debug("[CLIENT] NeoJJ path: " .. neojj_path)
   logger.debug("[CLIENT] Neovim path: " .. nvim_path)
-  local runtimepath_cmd = fn.shellescape(fmt("set runtimepath^=%s", fn.fnameescape(tostring(neogit_path))))
+  local runtimepath_cmd = fn.shellescape(fmt("set runtimepath^=%s", fn.fnameescape(tostring(neojj_path))))
   local lua_cmd =
-    fn.shellescape("lua require('neogit.client').client({ show_diff = " .. tostring(show_diff) .. " })")
+    fn.shellescape("lua require('neojj.client').client({ show_diff = " .. tostring(show_diff) .. " })")
 
   local shell_cmd = {
     nvim_path,
@@ -41,10 +41,10 @@ function M.get_envs_git_editor(show_diff)
     GIT_EDITOR = nvim_cmd,
   }
 
-  if os.getenv("NEOGIT_DEBUG") then
-    env.NEOGIT_LOG_LEVEL = "debug"
-    env.NEOGIT_LOG_FILE = "true"
-    env.NEOGIT_DEBUG = true
+  if os.getenv("NEOJJ_DEBUG") then
+    env.NEOJJ_LOG_LEVEL = "debug"
+    env.NEOJJ_LOG_FILE = "true"
+    env.NEOJJ_DEBUG = true
   end
 
   return env
