@@ -84,11 +84,9 @@ local function construct_opts(opts)
 
   if not opts.cwd then
     local jj_cli = require("neojj.lib.jj.cli")
-    opts.cwd = jj_cli.workspace_root(".")
-
-    if not opts.cwd or opts.cwd == "" then
-      opts.cwd = vim.uv.cwd()
-    end
+    local root = jj_cli.workspace_root(".")
+    opts.cwd = root or vim.uv.cwd()
+    opts._workspace_root = root
   end
 
   return opts
@@ -107,11 +105,9 @@ local function open_status_buffer(opts)
   local status = require("neojj.buffers.status")
   local config = require("neojj.config")
 
-  -- We need to construct the repo instance manually here since the actual CWD may not be the directory neojj is
-  -- going to open into. We will use vim.fn.lcd() in the status buffer constructor, so this will eventually be
-  -- correct.
+  local root = opts._workspace_root or opts.cwd
   local repo = require("neojj.lib.jj.repository").instance(opts.cwd)
-  status.new(config.values, repo.worktree_root, opts.cwd):open(opts.kind):dispatch_refresh()
+  status.new(config.values, repo.worktree_root or root, opts.cwd):open(opts.kind):dispatch_refresh()
 end
 
 ---@alias Popup
@@ -145,9 +141,7 @@ function M.open(opts)
 
   opts = construct_opts(opts)
 
-  local jj_cli = require("neojj.lib.jj.cli")
-  if not jj_cli.is_inside_workspace(opts.cwd) then
-    -- TODO: jj init support will be added in a future phase
+  if not opts._workspace_root then
     M.notification.error("The current working directory is not a jj workspace")
     return
   end

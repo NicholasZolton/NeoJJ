@@ -560,6 +560,11 @@ function M.workspace_root(dir)
   if result and result.code == 0 and result.stdout[1] then
     local root = result.stdout[1]:gsub("%s+$", "")
     workspace_root_cache[key] = root
+    -- Also cache root→root so lookups from the root dir hit cache
+    local root_key = vim.fn.fnamemodify(root, ":p")
+    if root_key ~= key then
+      workspace_root_cache[root_key] = root
+    end
     return root
   end
 
