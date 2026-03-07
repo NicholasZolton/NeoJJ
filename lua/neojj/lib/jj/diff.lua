@@ -211,14 +211,13 @@ function M.build(item)
         end
 
         local target_cwd = cwd or vim.fn.getcwd()
-        local t_diff = vim.uv.hrtime()
-        local lines = vim.fn.systemlist({
+        local shell = require("neojj.lib.jj.shell")
+        local lines, exit_code = shell.exec({
           "jj", "--no-pager", "--color=never", "--ignore-working-copy",
           "-R", target_cwd,
           "diff", "--git", "--", item.name,
-        })
-        local exit_code = vim.v.shell_error
-        vim.notify(("[JJ] diff %s: %.0fms"):format(item.name, (vim.uv.hrtime() - t_diff) / 1e6))
+        }, target_cwd)
+        lines = lines or {}
 
         if exit_code == 0 and #lines > 0 then
           self.diff = M.parse(lines)

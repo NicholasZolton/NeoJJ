@@ -109,16 +109,14 @@ end
 ---Update repository state with bookmark data
 ---@param state NeoJJRepoState
 function meta.update(state)
+  local shell = require("neojj.lib.jj.shell")
   local limit = 20
-  local t = vim.uv.hrtime()
-  local result = vim.system(
+  local lines, code = shell.exec(
     { "jj", "--no-pager", "--color=never", "--ignore-working-copy", "bookmark", "list" },
-    { cwd = state.worktree_root, text = true }
-  ):wait()
-  vim.notify(("[JJ] bookmark list: %.0fms"):format((vim.uv.hrtime() - t) / 1e6))
+    state.worktree_root
+  )
 
-  if result.code == 0 and result.stdout and result.stdout ~= "" then
-    local lines = vim.split(result.stdout, "\n", { trimempty = true })
+  if code == 0 and lines then
     local items = M.parse_list(lines)
     if #items > limit then
       state.bookmarks.items = { unpack(items, 1, limit) }

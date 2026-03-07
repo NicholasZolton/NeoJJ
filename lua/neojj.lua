@@ -76,7 +76,6 @@ function M.setup(opts)
 end
 
 local function construct_opts(opts)
-  local t = vim.uv.hrtime()
   opts = opts or {}
 
   if opts.cwd and not opts.no_expand then
@@ -90,7 +89,6 @@ local function construct_opts(opts)
     opts._workspace_root = root
   end
 
-  vim.notify(("[NEOJJ] construct_opts: %.0fms"):format((vim.uv.hrtime() - t) / 1e6))
   return opts
 end
 
@@ -104,15 +102,12 @@ local function open_popup(name)
 end
 
 local function open_status_buffer(opts)
-  local t = vim.uv.hrtime()
   local status = require("neojj.buffers.status")
   local config = require("neojj.config")
 
   local root = opts._workspace_root or opts.cwd
   local repo = require("neojj.lib.jj.repository").instance(opts.cwd)
-  vim.notify(("[NEOJJ] open_status_buffer setup: %.0fms"):format((vim.uv.hrtime() - t) / 1e6))
   status.new(config.values, repo.worktree_root or root, opts.cwd):open(opts.kind):dispatch_refresh()
-  vim.notify(("[NEOJJ] open+dispatch: %.0fms"):format((vim.uv.hrtime() - t) / 1e6))
 end
 
 ---@alias Popup

@@ -163,83 +163,27 @@ function Repo:reset()
 end
 
 ---Refresh all state from jj (synchronous).
----All commands use vim.system:wait() which is ~20-90ms each.
----Async approaches (jobstart/vim.system callbacks) add ~800-900ms of event loop
----overhead per command due to Neovim plugin event processing.
 ---@param opts? { callback?: fun(), source?: string }
 function Repo:refresh(opts)
-  local cwd = self.state.worktree_root
-  local jj_path = vim.fn.exepath("jj")
-
-  -- Test 1: raw fork overhead
-  local t_true = vim.uv.hrtime()
-  local h = io.popen("/usr/bin/true")
-  if h then h:close() end
-  vim.notify(("[FORK] /usr/bin/true: %.0fms"):format((vim.uv.hrtime() - t_true) / 1e6))
-
-  -- Test 2: jj via vim.uv.spawn with EMPTY env (no shell at all)
-  local t_uv = vim.uv.hrtime()
-  local done = false
-  local proc
-  proc = vim.uv.spawn(jj_path, {
-    args = { "--no-pager", "--color=never", "--ignore-working-copy", "status" },
-    cwd = cwd,
-    env = { "HOME=" .. vim.env.HOME, "PATH=/usr/bin:/bin" },
-  }, function()
-    proc:close()
-    done = true
-  end)
-  vim.wait(10000, function() return done end, 1) -- 1ms poll interval
-  vim.notify(("[FORK] jj uv.spawn empty env: %.0fms"):format((vim.uv.hrtime() - t_uv) / 1e6))
-
-  -- Test 3: jj via vim.uv.spawn with INHERITED env
-  local t_uv2 = vim.uv.hrtime()
-  local done2 = false
-  local proc2
-  proc2 = vim.uv.spawn(jj_path, {
-    args = { "--no-pager", "--color=never", "--ignore-working-copy", "status" },
-    cwd = cwd,
-  }, function()
-    proc2:close()
-    done2 = true
-  end)
-  vim.wait(10000, function() return done2 end, 1)
-  vim.notify(("[FORK] jj uv.spawn inherited env: %.0fms"):format((vim.uv.hrtime() - t_uv2) / 1e6))
-
-  -- Test 4: git for comparison
-  local t_git = vim.uv.hrtime()
-  local h3 = io.popen("git --no-pager -C " .. vim.fn.shellescape(cwd) .. " status --porcelain 2>/dev/null")
-  if h3 then h3:read("*a"); h3:close() end
-  vim.notify(("[FORK] git status: %.0fms"):format((vim.uv.hrtime() - t_git) / 1e6))
-
-  -- Test 5: jj on a TINY repo (to check if repo size matters)
-  local t_tmp = vim.uv.hrtime()
-  os.execute("mkdir -p /tmp/jj-test-repo && cd /tmp/jj-test-repo && " .. vim.fn.shellescape(jj_path) .. " git init --colocate 2>/dev/null || true")
-  local h4 = io.popen(vim.fn.shellescape(jj_path) .. " --no-pager --color=never -R /tmp/jj-test-repo status 2>/dev/null")
-  if h4 then h4:read("*a"); h4:close() end
-  vim.notify(("[FORK] jj tiny repo: %.0fms"):format((vim.uv.hrtime() - t_tmp) / 1e6))
-
-  local t_refresh = vim.uv.hrtime()
   opts = opts or {}
 
   if opts.callback and opts.source then
     self:register_callback(opts.source, opts.callback)
   end
 
-  -- Status first (triggers jj working copy snapshot), then log/bookmark
-  for name, mod in pairs(self.lib) do
-    if name == "status" and mod.update then
-      mod.update(self.state)
-    end
+  -- Status first (triggers jj working copy snapshot)
+  if self.lib.status and self.lib.status.update then
+    self.lib.status.update(self.state)
   end
 
-  for name, mod in pairs(self.lib) do
-    if name ~= "status" and mod.update then
-      mod.update(self.state)
-    end
+  -- Log and bookmark
+  if self.lib.log and self.lib.log.update then
+    self.lib.log.update(self.state)
+  end
+  if self.lib.bookmark and self.lib.bookmark.update then
+    self.lib.bookmark.update(self.state)
   end
 
-  vim.notify(("[REPO] refresh total: %.0fms"):format((vim.uv.hrtime() - t_refresh) / 1e6))
   self:run_callbacks()
 end
 

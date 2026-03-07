@@ -3,40 +3,13 @@ local M = {}
 ---@class NeoJJStatusMeta
 local meta = {}
 
----Run a jj command synchronously via vim.system:wait().
----Async approaches (jobstart, vim.system callbacks) add ~800-900ms of event loop
----overhead per command. Synchronous is ~20-90ms total — imperceptible.
----@param cmd string[] Command array
----@param cwd string Working directory
----@return string[]|nil lines, number code
----Run a jj command via io.popen (bypasses ALL Neovim process infrastructure)
+---Run a jj command via the shell module (resolves real binary, bypasses shims)
 ---@param cmd string[] Command array
 ---@param cwd string Working directory
 ---@return string[]|nil lines, number code
 local function jj_exec(cmd, cwd)
-  local label = cmd[#cmd] ~= "-s" and cmd[4] or "diff -s"
-
-  -- Build shell command with cd + escaped args
-  local parts = { "cd", vim.fn.shellescape(cwd), "&&" }
-  for _, arg in ipairs(cmd) do
-    table.insert(parts, vim.fn.shellescape(arg))
-  end
-  local shell_cmd = table.concat(parts, " ") .. " 2>/dev/null"
-
-  local t = vim.uv.hrtime()
-  local handle = io.popen(shell_cmd, "r")
-  if not handle then
-    vim.notify(("[JJ] %s: io.popen FAILED"):format(label))
-    return nil, -1
-  end
-  local output = handle:read("*a")
-  handle:close()
-  vim.notify(("[JJ] %s: %.0fms (io.popen)"):format(label, (vim.uv.hrtime() - t) / 1e6))
-
-  if output and output ~= "" then
-    return vim.split(output, "\n", { trimempty = true }), 0
-  end
-  return nil, 1
+  local shell = require("neojj.lib.jj.shell")
+  return shell.exec(cmd, cwd)
 end
 
 ---Parse `jj diff --summary` output into file items
@@ -59,6 +32,38 @@ function M.parse_diff_summary(lines, root)
       })
     end
   end
+  return items
+end
+
+---Parse changed files from `jj status` output (the "Working copy changes:" section)
+---@param lines string[]
+---@param root string Workspace root for absolute paths
+---@return NeoJJFileItem[]
+function M.parse_status_files(lines, root)
+  local items = {}
+  local in_changes = false
+
+  for _, line in ipairs(lines) do
+    if line:match("^Working copy changes:") then
+      in_changes = true
+    elseif in_changes then
+      local mode, name = line:match("^(%a)%s+(.+)$")
+      if mode and name then
+        table.insert(items, {
+          name = name,
+          mode = mode,
+          absolute_path = root .. "/" .. name,
+          escaped_path = vim.fn.fnameescape(name),
+          original_name = nil,
+          diff = nil,
+          folded = nil,
+        })
+      else
+        in_changes = false
+      end
+    end
+  end
+
   return items
 end
 
@@ -152,21 +157,19 @@ end
 function meta.update(state)
   local cwd = state.worktree_root
 
-  -- Get file changes (needs working copy snapshot, no --ignore-working-copy)
-  local diff_lines = jj_exec({ "jj", "--no-pager", "--color=never", "diff", "-s" }, cwd)
-  if diff_lines then
-    state.files.items = M.parse_diff_summary(diff_lines, cwd)
+  -- Single jj status call: parses files, head/parent info, and conflicts
+  local status_lines = jj_exec({ "jj", "--no-pager", "--color=never", "status" }, cwd)
+  if status_lines then
+    -- Parse file changes from "Working copy changes:" section
+    state.files.items = M.parse_status_files(status_lines, cwd)
 
     -- Attach lazy diff loading to each file item
     local jj_diff = require("neojj.lib.jj.diff")
     for _, item in ipairs(state.files.items) do
       jj_diff.build(item)
     end
-  end
 
-  -- Get status (working copy + parent info, snapshot already done by diff above)
-  local status_lines = jj_exec({ "jj", "--no-pager", "--color=never", "status" }, cwd)
-  if status_lines then
+    -- Parse head/parent info
     local parsed = M.parse_status_lines(status_lines)
     state.head.change_id = parsed.head.change_id
     state.head.commit_id = parsed.head.commit_id

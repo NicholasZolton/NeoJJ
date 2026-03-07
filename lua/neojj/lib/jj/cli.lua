@@ -119,7 +119,8 @@ function M._build_cmd(tbl)
   local state = rawget(tbl, k_state)
   local command = rawget(tbl, k_command)
 
-  local cmd = { "jj", "--no-pager", "--color=never" }
+  local jj_bin = require("neojj.lib.jj.shell").resolve_jj()
+  local cmd = { jj_bin, "--no-pager", "--color=never" }
 
   -- Add --ignore-working-copy for commands that don't need live working copy state.
   -- NOTE: diff and status are intentionally excluded — they must see the current
@@ -540,6 +541,24 @@ setmetatable(M, {
 ---@type table<string, string|false>
 local workspace_root_cache = {}
 
+---Find workspace root by walking up looking for .jj directory (no subprocess needed)
+---@param dir string Starting directory
+---@return string|nil root
+local function find_jj_root(dir)
+  local path = vim.fn.fnamemodify(dir, ":p"):gsub("/$", "")
+  while path and path ~= "" do
+    if vim.uv.fs_stat(path .. "/.jj") then
+      return path
+    end
+    local parent = vim.fn.fnamemodify(path, ":h")
+    if parent == path then
+      break
+    end
+    path = parent
+  end
+  return nil
+end
+
 ---Get the workspace root directory
 ---@param dir? string Directory to check from
 ---@return string|nil root
@@ -552,17 +571,10 @@ function M.workspace_root(dir)
     return cached ~= false and cached or nil
   end
 
-  local t = vim.uv.hrtime()
-  local result = vim.system(
-    { "jj", "--no-pager", "--color=never", "workspace", "root" },
-    { cwd = dir, text = true }
-  ):wait()
-  vim.notify(("[JJ] workspace root: %.0fms"):format((vim.uv.hrtime() - t) / 1e6))
+  local root = find_jj_root(dir)
 
-  if result.code == 0 and result.stdout and result.stdout ~= "" then
-    local root = vim.trim(result.stdout)
+  if root then
     workspace_root_cache[key] = root
-    -- Also cache root→root so lookups from the root dir hit cache
     local root_key = vim.fn.fnamemodify(root, ":p")
     if root_key ~= key then
       workspace_root_cache[root_key] = root

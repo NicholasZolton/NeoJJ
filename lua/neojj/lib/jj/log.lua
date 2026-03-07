@@ -159,18 +159,18 @@ end
 ---Update repository state with recent changes
 ---@param state NeoJJRepoState
 function meta.update(state)
+  local shell = require("neojj.lib.jj.shell")
   local limit = 20
   local revset = "ancestors(@, " .. limit .. ")"
-  local t = vim.uv.hrtime()
-  local result = vim.system({
+  local lines, code = shell.exec({
     "jj", "--no-pager", "--color=never", "--ignore-working-copy",
     "log", "--no-graph", "-T", "json(self)", "-r", revset,
-  }, { cwd = state.worktree_root, text = true }):wait()
-  vim.notify(("[JJ] log: %.0fms"):format((vim.uv.hrtime() - t) / 1e6))
+  }, state.worktree_root)
 
   local entries = {}
-  if result.code == 0 and result.stdout and result.stdout ~= "" then
-    local objects = M.parse_json_objects(result.stdout)
+  if code == 0 and lines then
+    local text = table.concat(lines, "")
+    local objects = M.parse_json_objects(text)
     for _, obj in ipairs(objects) do
       table.insert(entries, M.json_to_entry(obj))
     end

@@ -272,6 +272,7 @@ end
 ---@field refs_view? { [string]: NeoJJConfigMappingsRefsView } A dictionary that uses Refs view editor commands to set a single keybind
 
 ---@class NeoJJConfig NeoJJ configuration settings
+---@field jj_binary? string Path to jj binary (bypasses shim detection). "auto" = auto-detect (default).
 ---@field filewatcher? NeoJJFilewatcherConfig Values for filewatcher
 ---@field graph_style? NeoJJGraphStyle Style for graph
 ---@field commit_date_format? string Commit date format
@@ -317,6 +318,7 @@ end
 ---@return NeoJJConfig
 function M.get_default_values()
   return {
+    jj_binary = "auto",
     use_default_keymaps = true,
     disable_hint = false,
     disable_context_highlighting = false,
