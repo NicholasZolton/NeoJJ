@@ -1,0 +1,212 @@
+# NeoJJ: Neogit → jj Port Plan
+
+Hard fork of Neogit to create a Magit-style Neovim UI for jj (Jujutsu VCS).
+
+## Status Key
+
+- [ ] Not started
+- [~] In progress
+- [x] Complete
+
+---
+
+## Phase 0: Mechanical Rename (neogit → neojj)
+
+- [ ] Rename `lua/neogit/` → `lua/neojj/`
+- [ ] Rename `plugin/neogit.lua` → `plugin/neojj.lua`
+- [ ] Replace all `require("neogit` → `require("neojj`
+- [ ] Rename user commands: `:Neogit` → `:NeoJJ`, `:NeogitResetState` → `:NeoJJResetState`, etc.
+- [ ] Rename highlights: `Neogit*` → `NeoJJ*`
+- [ ] Rename autocmd groups, buffer names, config keys
+- [ ] Rename internal variable references
+- [ ] Update doc files
+- [ ] Verify plugin still loads and opens (as a git plugin with new names)
+
+---
+
+## Phase 1: Core Infrastructure
+
+Replace git internals with jj equivalents.
+
+### CLI Builder (`lib/jj/cli.lua`)
+- [ ] Create jj fluent CLI builder (replacing git CLI builder)
+- [ ] Commands: `status`, `log`, `diff`, `show`, `describe`, `new`, `commit`, `squash`, `split`, `bookmark`, `git push`, `git fetch`, `rebase`, `abandon`, `restore`, `resolve`, `undo`, `op log`
+- [ ] Use `--no-pager`, `--color=never` for programmatic use
+- [ ] Use `-T 'json(self)'` template for machine-readable output where possible
+
+### Repository State (`lib/jj/repository.lua`)
+- [ ] Define `NeoJJRepoState`:
+  - `head`: current change (change_id, commit_id, description, empty, conflict)
+  - `parent`: parent change (change_id, commit_id, description, bookmarks[])
+  - `files`: modified files in working-copy change (single flat list, no staged/unstaged)
+  - `conflicts`: files with first-class conflict status
+  - `recent`: recent changes (change_id primary, commit_id secondary)
+  - `bookmarks`: local and remote bookmarks
+- [ ] Populate state from `jj status`, `jj log -T 'json(self)'`, `jj bookmark list`
+
+### Status Parsing (`lib/jj/status.lua`)
+- [ ] Parse `jj status` output for modified/added/deleted files
+- [ ] Parse `jj diff --summary` for file-level change info
+- [ ] No index/staging concepts
+
+### Log Parsing (`lib/jj/log.lua`)
+- [ ] Parse `jj log` with JSON templates
+- [ ] Change ID as primary identifier, commit ID secondary
+- [ ] Track: change_id, commit_id, description, author, bookmarks, empty, conflict, immutable
+
+---
+
+## Phase 2: Status Buffer
+
+### Status UI (`buffers/status/ui.lua`)
+- [ ] Section 1: Current change (change ID short, description, parent info with bookmarks)
+- [ ] Section 2: Modified files (single flat list)
+- [ ] Section 3: Conflicts (shown when conflicts exist)
+- [ ] Section 4: Recent changes (log with change IDs, descriptions, bookmarks, conflict/empty markers)
+- [ ] Section 5: Bookmarks (local and remote)
+
+### Status Actions (`buffers/status/actions.lua`)
+- [ ] Remove: stage, unstage
+- [ ] Keep: fold/unfold, navigate sections, open file in split/tab/vsplit, refresh, close
+- [ ] Adapt: "Discard file" → `jj restore <path>`
+- [ ] Adapt: Diff viewing → `jj diff` for current change
+- [ ] Add: describe (edit current change description)
+
+### Diff Display
+- [ ] Use `jj diff --git` for git-compatible diff format
+- [ ] Per-file diffs loaded lazily (same architecture as Neogit)
+
+---
+
+## Phase 3: Basic Actions
+
+- [ ] `jj describe` — edit change description (via editor buffer)
+- [ ] `jj new` — create new change (on top of current, or specified parent)
+- [ ] `jj squash` — move diff from current into parent
+- [ ] `jj abandon` — abandon current change
+- [ ] `jj restore <path>` — discard file changes
+- [ ] Diff viewing for files in status buffer
+
+---
+
+## Phase 4: Core Popups
+
+### Commit Popup
+- [ ] `jj commit` (finish change & start new)
+- [ ] `jj describe` (edit message)
+- [ ] Options: message, reset-author, etc.
+
+### Change Popup (new, jj-specific)
+- [ ] `jj new` (new change on top of current)
+- [ ] `jj new <rev>` (new change on specified parent)
+- [ ] `jj new @ A` (merge — multiple parents)
+- [ ] `--insert-before`, `--insert-after` options
+
+### Squash Popup
+- [ ] `jj squash` (into parent)
+- [ ] `jj squash --into <rev>` (into arbitrary ancestor)
+- [ ] `jj squash -i` (interactive)
+
+### Bookmark Popup
+- [ ] `jj bookmark create <name> [-r <rev>]`
+- [ ] `jj bookmark move <name> --to <rev>`
+- [ ] `jj bookmark delete <name>`
+- [ ] `jj bookmark track <name>@<remote>`
+- [ ] `jj bookmark forget <name>`
+- [ ] `jj bookmark list`
+
+### Push Popup
+- [ ] `jj git push --bookmark <name>`
+- [ ] `jj git push --change <rev>`
+- [ ] `jj git push --all`
+- [ ] `--remote` option
+
+### Fetch Popup
+- [ ] `jj git fetch`
+- [ ] `--remote`, `--all-remotes` options
+
+---
+
+## Phase 5: Views
+
+### Log View (`buffers/log_view/`)
+- [ ] Show change IDs as primary, commit IDs secondary
+- [ ] Support revset filtering (`-r` option)
+- [ ] Graph display with change IDs
+- [ ] Pagination for large logs
+
+### Diff View (`buffers/diff/`)
+- [ ] Parse `jj diff --git` output
+- [ ] Mostly unchanged from Neogit architecture
+
+### Operations View (new)
+- [ ] Browse `jj op log`
+- [ ] Select operations to restore/revert
+- [ ] `jj undo` action
+
+### Editor Buffer (`buffers/editor/`)
+- [ ] Adapt for `jj describe` message editing
+
+---
+
+## Phase 6: Remaining Popups
+
+### Rebase Popup
+- [ ] `jj rebase -s <source> -d <dest>`
+- [ ] `jj rebase -b <bookmark> -d <dest>`
+- [ ] `jj rebase -r <rev> --before/--after <target>`
+
+### Split Popup
+- [ ] `jj split` (interactive, split working copy)
+- [ ] `jj split -r <rev>` (split arbitrary change)
+
+### Resolve Popup
+- [ ] `jj resolve` (launch merge tool for conflicted files)
+- [ ] File selection for multi-file conflicts
+
+### Other Popups
+- [ ] Remote: `jj git remote` (add, remove, rename, list)
+- [ ] Yank: copy change ID / commit ID to clipboard
+- [ ] Diff: `jj diff` format options (--summary, --stat, --git, --color-words)
+- [ ] Log: `jj log` filtering (-r revset, -p patch, --no-graph)
+- [ ] Help: adapted for jj keybindings
+
+---
+
+## Phase 7: Polish
+
+- [ ] Clean up config.lua (remove git-specific options, add jj-specific ones)
+- [ ] Update all highlights and signs
+- [ ] Write documentation (doc/ help files)
+- [ ] Remove dead code (git-only modules: stash, bisect, cherry_pick, index, worktree, etc.)
+- [ ] Update README
+
+---
+
+## Removed from Neogit (no jj equivalent)
+
+- Stash popup/view (replaced by `jj new @-` workflow)
+- Cherry-pick popup (replaced by `jj duplicate`)
+- Reset popup (replaced by `jj restore` / `jj abandon`)
+- Merge popup (subsumed by `jj new @ A` in change popup)
+- Bisect popup/view (jj has no bisect)
+- Branch config / remote config popups (git-specific)
+- Rebase editor buffer (no interactive rebase todo in jj)
+- Stash list view, reflog view (replaced by operations view)
+- Index/staging concepts throughout
+
+---
+
+## Key jj Concepts Reference
+
+- **Change ID**: Immutable identifier for a change (stays constant as content evolves)
+- **Commit ID**: SHA hash that changes on every rewrite
+- **`@`**: Working-copy change (revset symbol)
+- **`@-`**: Parent of working copy
+- **No staging area**: All file changes are part of the current change automatically
+- **Auto-snapshotting**: Working copy is snapshotted on every jj command
+- **First-class conflicts**: Conflicts stored in commits, don't block operations
+- **Bookmarks**: Named pointers to commits (replaces git branches)
+- **Operations log**: Every repo operation is recorded, supports undo/restore
+- **Revsets**: Functional language for selecting revision sets
+- **Templates**: `jj log -T 'json(self)' --no-graph` for machine-readable output
