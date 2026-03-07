@@ -9,14 +9,34 @@ local meta = {}
 ---@param cmd string[] Command array
 ---@param cwd string Working directory
 ---@return string[]|nil lines, number code
+---Run a jj command via io.popen (bypasses ALL Neovim process infrastructure)
+---@param cmd string[] Command array
+---@param cwd string Working directory
+---@return string[]|nil lines, number code
 local function jj_exec(cmd, cwd)
-  local t = vim.uv.hrtime()
-  local result = vim.system(cmd, { cwd = cwd, text = true }):wait()
-  vim.notify(("[JJ] %s: %.0fms"):format(cmd[#cmd] ~= "-s" and cmd[4] or "diff -s", (vim.uv.hrtime() - t) / 1e6))
-  if result.code == 0 and result.stdout and result.stdout ~= "" then
-    return vim.split(result.stdout, "\n", { trimempty = true }), 0
+  local label = cmd[#cmd] ~= "-s" and cmd[4] or "diff -s"
+
+  -- Build shell command with cd + escaped args
+  local parts = { "cd", vim.fn.shellescape(cwd), "&&" }
+  for _, arg in ipairs(cmd) do
+    table.insert(parts, vim.fn.shellescape(arg))
   end
-  return nil, result.code
+  local shell_cmd = table.concat(parts, " ") .. " 2>/dev/null"
+
+  local t = vim.uv.hrtime()
+  local handle = io.popen(shell_cmd, "r")
+  if not handle then
+    vim.notify(("[JJ] %s: io.popen FAILED"):format(label))
+    return nil, -1
+  end
+  local output = handle:read("*a")
+  handle:close()
+  vim.notify(("[JJ] %s: %.0fms (io.popen)"):format(label, (vim.uv.hrtime() - t) / 1e6))
+
+  if output and output ~= "" then
+    return vim.split(output, "\n", { trimempty = true }), 0
+  end
+  return nil, 1
 end
 
 ---Parse `jj diff --summary` output into file items
