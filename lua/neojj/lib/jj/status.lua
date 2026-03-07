@@ -120,6 +120,12 @@ function meta.update(state)
   local diff_result = jj.cli.diff.summary.call { hidden = true, trim = true }
   if diff_result and diff_result.code == 0 then
     state.files.items = M.parse_diff_summary(diff_result.stdout, state.worktree_root)
+
+    -- Attach lazy diff loading to each file item
+    local jj_diff = require("neojj.lib.jj.diff")
+    for _, item in ipairs(state.files.items) do
+      jj_diff.build(item)
+    end
   end
 
   -- Get status (working copy + parent info)

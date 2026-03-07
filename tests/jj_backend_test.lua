@@ -221,6 +221,49 @@ test("Log entry conversion strips trailing newline", function()
   assert(entry.author_email == "test@example.com")
 end)
 
+-- Test 13: Diff parser
+test("Diff parser parses git-format diff", function()
+  local diff = require("neojj.lib.jj.diff")
+  local raw = {
+    "diff --git a/hello.txt b/hello.txt",
+    "index 802992c422..a7074a73f9 100644",
+    "--- a/hello.txt",
+    "+++ b/hello.txt",
+    "@@ -1,1 +1,2 @@",
+    " Hello world",
+    "+modified",
+  }
+  local parsed = diff.parse(raw)
+  assert(parsed.kind == "modified", "kind: " .. parsed.kind)
+  assert(parsed.file == "hello.txt", "file: " .. parsed.file)
+  assert(#parsed.hunks == 1, "hunks: " .. #parsed.hunks)
+  assert(parsed.hunks[1].index_from == 1)
+  assert(parsed.hunks[1].disk_from == 1)
+  assert(parsed.hunks[1].disk_len == 2)
+  assert(#parsed.hunks[1].lines == 2, "hunk lines: " .. #parsed.hunks[1].lines)
+  assert(parsed.hunks[1].lines[1] == " Hello world")
+  assert(parsed.hunks[1].lines[2] == "+modified")
+end)
+
+-- Test 14: Diff parser new file
+test("Diff parser handles new file", function()
+  local diff = require("neojj.lib.jj.diff")
+  local raw = {
+    "diff --git a/src.lua b/src.lua",
+    "new file mode 100644",
+    "index 0000000000..fa49b07797",
+    "--- /dev/null",
+    "+++ b/src.lua",
+    "@@ -0,0 +1,1 @@",
+    "+new file",
+  }
+  local parsed = diff.parse(raw)
+  assert(parsed.kind == "new file", "kind: " .. parsed.kind)
+  assert(parsed.file == "src.lua", "file: " .. parsed.file)
+  assert(#parsed.hunks == 1)
+  assert(#parsed.hunks[1].lines == 1)
+end)
+
 -- Summary
 print(string.format("\n%d passed, %d failed", pass_count, fail_count))
 if fail_count > 0 then
