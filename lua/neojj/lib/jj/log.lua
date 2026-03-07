@@ -53,7 +53,7 @@ function M.json_to_entry(obj)
   return {
     change_id = obj.change_id or "",
     commit_id = obj.commit_id or "",
-    description = (obj.description or ""):gsub("\n$", ""),
+    description = vim.split((obj.description or ""):gsub("\n+$", ""), "\n")[1],
     author_name = obj.author and obj.author.name or "",
     author_email = obj.author and obj.author.email or "",
     author_date = obj.author and obj.author.timestamp or "",

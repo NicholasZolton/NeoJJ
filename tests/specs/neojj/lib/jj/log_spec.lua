@@ -143,5 +143,14 @@ describe("jj log parser", function()
       assert.are.equal("", entry.author_email)
       assert.are.equal("", entry.author_date)
     end)
+
+    it("takes only first line of multi-line descriptions", function()
+      local entry = log.json_to_entry({
+        change_id = "abc",
+        commit_id = "def",
+        description = "subject line\n\nmore details\nand more\n",
+      })
+      assert.are.equal("subject line", entry.description)
+    end)
   end)
 end)
