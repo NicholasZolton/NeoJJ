@@ -121,12 +121,12 @@ function M._build_cmd(tbl)
 
   local cmd = { "jj", "--no-pager", "--color=never" }
 
-  -- Add --ignore-working-copy for read-only commands
+  -- Add --ignore-working-copy for commands that don't need live working copy state.
+  -- NOTE: diff and status are intentionally excluded — they must see the current
+  -- working copy, so jj needs to auto-snapshot before running them.
   local readonly_commands = {
     ["log"] = true,
-    ["diff"] = true,
     ["show"] = true,
-    ["status"] = true,
     ["bookmark list"] = true,
     ["op log"] = true,
     ["file list"] = true,

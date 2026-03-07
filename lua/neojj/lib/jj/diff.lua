@@ -1,6 +1,3 @@
-local a = require("plenary.async")
-local logger = require("neojj.logger")
-
 local insert = table.insert
 local sha256 = vim.fn.sha256
 
@@ -180,29 +177,51 @@ end
 -- ============================================================
 
 ---Attach lazy diff loading to a file item
----When item.diff is accessed, it runs `jj diff --git` for that file and parses the result
+---When item.diff is accessed, it runs `jj diff --git` for that file and parses the result.
+---Uses --ignore-working-copy because the status refresh already triggered a snapshot.
 ---@param item NeoJJFileItem
 function M.build(item)
+  local empty_diff = {
+    kind = "modified",
+    lines = {},
+    file = item.name,
+    info = {},
+    stats = { additions = 0, deletions = 0 },
+    hunks = {},
+  }
+
   setmetatable(item, {
     __index = function(self, method)
       if method == "diff" then
-        self.diff = a.util.block_on(function()
-          logger.debug("[DIFF] Loading jj diff for: " .. item.name)
-          local jj = require("neojj.lib.jj")
-          local result = jj.cli.diff.git.files(item.name).call { hidden = true, trim = true }
-          if result and result.code == 0 and #result.stdout > 0 then
-            return M.parse(result.stdout)
+        local Process = require("neojj.process")
+
+        -- Build command directly with --ignore-working-copy to skip redundant snapshot.
+        -- The status refresh already triggered a working copy snapshot, so this is safe.
+        local cmd = { "jj", "--no-pager", "--color=never", "--ignore-working-copy", "diff", "--git", "--", item.name }
+
+        local cwd
+        local ok, jj_mod = pcall(require, "neojj.lib.jj")
+        if ok then
+          local rok, repo = pcall(function() return jj_mod.repo end)
+          if rok and repo then
+            cwd = repo.worktree_root
           end
-          -- Return empty diff if no output
-          return {
-            kind = "modified",
-            lines = {},
-            file = item.name,
-            info = {},
-            stats = { additions = 0, deletions = 0 },
-            hunks = {},
-          }
-        end)
+        end
+        cwd = cwd or vim.fn.getcwd()
+
+        local process = Process.new {
+          cmd = cmd,
+          cwd = cwd,
+          suppress_console = true,
+        }
+
+        local result = process:spawn_blocking()
+        if result and result.code == 0 and #result.stdout > 0 then
+          result:trim()
+          self.diff = M.parse(result.stdout)
+        else
+          self.diff = empty_diff
+        end
 
         return self.diff
       end
