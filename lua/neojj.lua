@@ -23,7 +23,7 @@ function M.setup(opts)
   end
   did_setup = true
 
-  M.autocmd_group = vim.api.nvim_create_augroup("Neogit", { clear = false })
+  M.autocmd_group = vim.api.nvim_create_augroup("NeoJJ", { clear = false })
 
   M.status = require("neojj.buffers.status")
 

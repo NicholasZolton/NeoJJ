@@ -91,7 +91,7 @@ local function window_belongs_to_user(win)
   end
 
   local filetype = api.nvim_get_option_value("filetype", { buf = buf }) or ""
-  return not vim.startswith(filetype, "Neogit")
+  return not vim.startswith(filetype, "NeoJJ")
 end
 
 ---@return table Ordered list of tabs to check for user windows
@@ -233,7 +233,7 @@ function M.goto_file_in_commit_at(target_commit, path, cursor, reopen_cb)
     lines = { "" }
   end
 
-  local bufname = ("neogit://%s/%s"):format(target_commit, path)
+  local bufname = ("neojj://%s/%s"):format(target_commit, path)
   local filetype = vim.filetype.match { filename = path }
   open_lines_in_virtual_file_in_tab(bufname, filetype, cursor, lines, reopen_cb)
 end

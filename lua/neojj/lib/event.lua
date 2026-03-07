@@ -6,7 +6,7 @@ function M.send(name, data)
   assert(name, "event must have name")
 
   vim.api.nvim_exec_autocmds("User", {
-    pattern = "Neogit" .. name,
+    pattern = "NeoJJ" .. name,
     modeline = false,
     data = data,
   })

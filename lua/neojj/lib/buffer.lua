@@ -28,7 +28,7 @@ Buffer.__index = Buffer
 ---@return Buffer
 function Buffer:new(handle, win_handle)
   local this = {
-    autocmd_group = api.nvim_create_augroup("Neogit-augroup-" .. handle, { clear = true }),
+    autocmd_group = api.nvim_create_augroup("NeoJJ-augroup-" .. handle, { clear = true }),
     handle = handle,
     win_handle = win_handle,
     border = nil,
