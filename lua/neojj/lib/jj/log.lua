@@ -161,10 +161,12 @@ end
 function meta.update(state)
   local limit = 20
   local revset = "ancestors(@, " .. limit .. ")"
+  local t = vim.uv.hrtime()
   local result = vim.system({
     "jj", "--no-pager", "--color=never", "--ignore-working-copy",
     "log", "--no-graph", "-T", "json(self)", "-r", revset,
   }, { cwd = state.worktree_root, text = true }):wait()
+  vim.notify(("[JJ] log: %.0fms"):format((vim.uv.hrtime() - t) / 1e6))
 
   local entries = {}
   if result.code == 0 and result.stdout and result.stdout ~= "" then

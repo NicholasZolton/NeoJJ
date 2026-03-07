@@ -552,10 +552,12 @@ function M.workspace_root(dir)
     return cached ~= false and cached or nil
   end
 
+  local t = vim.uv.hrtime()
   local result = vim.system(
     { "jj", "--no-pager", "--color=never", "workspace", "root" },
     { cwd = dir, text = true }
   ):wait()
+  vim.notify(("[JJ] workspace root: %.0fms"):format((vim.uv.hrtime() - t) / 1e6))
 
   if result.code == 0 and result.stdout and result.stdout ~= "" then
     local root = vim.trim(result.stdout)

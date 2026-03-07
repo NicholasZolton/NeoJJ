@@ -10,7 +10,9 @@ local meta = {}
 ---@param cwd string Working directory
 ---@return string[]|nil lines, number code
 local function jj_exec(cmd, cwd)
+  local t = vim.uv.hrtime()
   local result = vim.system(cmd, { cwd = cwd, text = true }):wait()
+  vim.notify(("[JJ] %s: %.0fms"):format(cmd[#cmd] ~= "-s" and cmd[4] or "diff -s", (vim.uv.hrtime() - t) / 1e6))
   if result.code == 0 and result.stdout and result.stdout ~= "" then
     return vim.split(result.stdout, "\n", { trimempty = true }), 0
   end

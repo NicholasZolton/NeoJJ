@@ -110,10 +110,12 @@ end
 ---@param state NeoJJRepoState
 function meta.update(state)
   local limit = 20
+  local t = vim.uv.hrtime()
   local result = vim.system(
     { "jj", "--no-pager", "--color=never", "--ignore-working-copy", "bookmark", "list" },
     { cwd = state.worktree_root, text = true }
   ):wait()
+  vim.notify(("[JJ] bookmark list: %.0fms"):format((vim.uv.hrtime() - t) / 1e6))
 
   if result.code == 0 and result.stdout and result.stdout ~= "" then
     local lines = vim.split(result.stdout, "\n", { trimempty = true })

@@ -168,6 +168,7 @@ end
 ---overhead per command due to Neovim plugin event processing.
 ---@param opts? { callback?: fun(), source?: string }
 function Repo:refresh(opts)
+  local t_refresh = vim.uv.hrtime()
   opts = opts or {}
 
   if opts.callback and opts.source then
@@ -177,20 +178,17 @@ function Repo:refresh(opts)
   -- Status first (triggers jj working copy snapshot), then log/bookmark
   for name, mod in pairs(self.lib) do
     if name == "status" and mod.update then
-      local start = vim.uv.hrtime()
       mod.update(self.state)
-      logger.trace(("[REPO] %s updated in %.1fms"):format(name, (vim.uv.hrtime() - start) / 1e6))
     end
   end
 
   for name, mod in pairs(self.lib) do
     if name ~= "status" and mod.update then
-      local start = vim.uv.hrtime()
       mod.update(self.state)
-      logger.trace(("[REPO] %s updated in %.1fms"):format(name, (vim.uv.hrtime() - start) / 1e6))
     end
   end
 
+  vim.notify(("[REPO] refresh total: %.0fms"):format((vim.uv.hrtime() - t_refresh) / 1e6))
   self:run_callbacks()
 end
 

@@ -210,15 +210,15 @@ function M.build(item)
           end
         end
 
-        -- Use vim.fn.systemlist — fully synchronous, no event loop interaction,
-        -- safe inside plenary.async coroutines (unlike vim.system:wait()).
         local target_cwd = cwd or vim.fn.getcwd()
+        local t_diff = vim.uv.hrtime()
         local lines = vim.fn.systemlist({
           "jj", "--no-pager", "--color=never", "--ignore-working-copy",
           "-R", target_cwd,
           "diff", "--git", "--", item.name,
         })
         local exit_code = vim.v.shell_error
+        vim.notify(("[JJ] diff %s: %.0fms"):format(item.name, (vim.uv.hrtime() - t_diff) / 1e6))
 
         if exit_code == 0 and #lines > 0 then
           self.diff = M.parse(lines)
