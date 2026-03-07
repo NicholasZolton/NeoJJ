@@ -168,11 +168,29 @@ end
 ---overhead per command due to Neovim plugin event processing.
 ---@param opts? { callback?: fun(), source?: string }
 function Repo:refresh(opts)
-  -- Diagnostic: measure raw fork() overhead with /usr/bin/true
+  -- Diagnostic: measure fork and env impact
   local t_true = vim.uv.hrtime()
   local h = io.popen("/usr/bin/true")
   if h then h:close() end
-  vim.notify(("[FORK] /usr/bin/true: %.0fms (io.popen)"):format((vim.uv.hrtime() - t_true) / 1e6))
+  vim.notify(("[FORK] /usr/bin/true: %.0fms"):format((vim.uv.hrtime() - t_true) / 1e6))
+
+  -- Test jj with stripped env (only PATH and HOME)
+  local jj_path = vim.fn.exepath("jj")
+  local cwd = self.state.worktree_root
+  local t_env = vim.uv.hrtime()
+  local h2 = io.popen(("env -i PATH=/usr/bin:/bin HOME=%s %s --no-pager --color=never --ignore-working-copy -R %s status 2>/dev/null"):format(
+    vim.fn.shellescape(vim.env.HOME),
+    vim.fn.shellescape(jj_path),
+    vim.fn.shellescape(cwd)
+  ))
+  if h2 then h2:read("*a"); h2:close() end
+  vim.notify(("[FORK] jj status (env -i): %.0fms"):format((vim.uv.hrtime() - t_env) / 1e6))
+
+  -- Test git for comparison
+  local t_git = vim.uv.hrtime()
+  local h3 = io.popen("git --no-pager -C " .. vim.fn.shellescape(cwd) .. " status --porcelain 2>/dev/null")
+  if h3 then h3:read("*a"); h3:close() end
+  vim.notify(("[FORK] git status: %.0fms"):format((vim.uv.hrtime() - t_git) / 1e6))
 
   local t_refresh = vim.uv.hrtime()
   opts = opts or {}
