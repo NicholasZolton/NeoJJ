@@ -1,7 +1,14 @@
+local a = require("plenary.async")
+
 local M = {}
 
 ---@class NeoJJLogMeta
 local meta = {}
+
+---Async-compatible vim.system wrapper that yields in plenary.async coroutines
+local jj_system = a.wrap(function(cmd, opts, callback)
+  vim.system(cmd, opts, callback)
+end, 3)
 
 ---Parse concatenated JSON objects from jj log -T 'json(self)'
 ---Handles the format: {...}{...}{...} with no separator
@@ -156,17 +163,15 @@ function M.list(revset, limit)
   return entries
 end
 
----Update repository state with recent changes (fast path via vim.system)
+---Update repository state with recent changes (async-compatible)
 ---@param state NeoJJRepoState
 function meta.update(state)
   local limit = 20
   local revset = "ancestors(@, " .. limit .. ")"
-  local result = vim
-    .system({
-      "jj", "--no-pager", "--color=never", "--ignore-working-copy",
-      "log", "--no-graph", "-T", "json(self)", "-r", revset,
-    }, { cwd = state.worktree_root, text = true })
-    :wait()
+  local result = jj_system({
+    "jj", "--no-pager", "--color=never", "--ignore-working-copy",
+    "log", "--no-graph", "-T", "json(self)", "-r", revset,
+  }, { cwd = state.worktree_root, text = true })
 
   local entries = {}
   if result.code == 0 and result.stdout and result.stdout ~= "" then

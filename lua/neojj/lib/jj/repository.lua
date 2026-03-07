@@ -163,24 +163,21 @@ function Repo:reset()
   self.state.worktree_root = self.worktree_root
 end
 
----Build async task list from registered modules
----@return function[]
-function Repo:tasks()
-  local tasks = {}
-  for name, mod in pairs(self.lib) do
-    if mod.update then
-      table.insert(tasks, function()
-        local start = vim.uv.hrtime()
-        mod.update(self.state)
-        local elapsed = (vim.uv.hrtime() - start) / 1e6
-        logger.trace(("[REPO] %s updated in %.1fms"):format(name, elapsed))
-      end)
-    end
+---Build async task for a named module
+---@param name string
+---@param mod table
+---@return function
+function Repo:_make_task(name, mod)
+  return function()
+    local start = vim.uv.hrtime()
+    mod.update(self.state)
+    local elapsed = (vim.uv.hrtime() - start) / 1e6
+    logger.trace(("[REPO] %s updated in %.1fms"):format(name, elapsed))
   end
-  return tasks
 end
 
 ---Refresh all state from jj
+---Status runs first (triggers working copy snapshot), then log/bookmark run concurrently.
 ---@param opts? { callback?: fun(), source?: string }
 function Repo:refresh(opts)
   opts = opts or {}
@@ -189,9 +186,21 @@ function Repo:refresh(opts)
     self:register_callback(opts.source, opts.callback)
   end
 
-  local tasks = self:tasks()
-  if #tasks > 0 then
-    a.util.run_all(tasks, function()
+  -- Phase 1: status must run first (triggers jj snapshot via diff/status commands)
+  if self.lib.status and self.lib.status.update then
+    self:_make_task("status", self.lib.status)()
+  end
+
+  -- Phase 2: log and bookmark use --ignore-working-copy, safe to run concurrently
+  local parallel_tasks = {}
+  for name, mod in pairs(self.lib) do
+    if name ~= "status" and mod.update then
+      table.insert(parallel_tasks, self:_make_task(name, mod))
+    end
+  end
+
+  if #parallel_tasks > 0 then
+    a.util.run_all(parallel_tasks, function()
       self:run_callbacks()
     end)
   else

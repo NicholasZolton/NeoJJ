@@ -179,6 +179,7 @@ end
 ---Attach lazy diff loading to a file item
 ---When item.diff is accessed, it runs `jj diff --git` for that file and parses the result.
 ---Uses --ignore-working-copy because the status refresh already triggered a snapshot.
+---Supports both sync (vim.system:wait) and async (plenary.async) contexts.
 ---@param item NeoJJFileItem
 function M.build(item)
   local empty_diff = {
@@ -193,8 +194,6 @@ function M.build(item)
   setmetatable(item, {
     __index = function(self, method)
       if method == "diff" then
-        -- Use vim.system — fast (~20ms) with native cwd support, no side effects.
-        -- --ignore-working-copy is safe here: the status refresh already snapshotted.
         local cwd
         local ok, jj_mod = pcall(require, "neojj.lib.jj")
         if ok then
@@ -204,12 +203,18 @@ function M.build(item)
           end
         end
 
-        local result = vim
-          .system(
-            { "jj", "--no-pager", "--color=never", "--ignore-working-copy", "diff", "--git", "--", item.name },
-            { cwd = cwd or vim.fn.getcwd(), text = true }
-          )
-          :wait()
+        local cmd = { "jj", "--no-pager", "--color=never", "--ignore-working-copy", "diff", "--git", "--", item.name }
+        local opts = { cwd = cwd or vim.fn.getcwd(), text = true }
+
+        -- Use async wrapper if in a coroutine, else fall back to sync
+        local result
+        if coroutine.running() then
+          local a = require("plenary.async")
+          local jj_system = a.wrap(function(c, o, cb) vim.system(c, o, cb) end, 3)
+          result = jj_system(cmd, opts)
+        else
+          result = vim.system(cmd, opts):wait()
+        end
 
         if result.code == 0 and result.stdout and result.stdout ~= "" then
           local lines = vim.split(result.stdout, "\n", { trimempty = true })

@@ -1,7 +1,14 @@
+local a = require("plenary.async")
+
 local M = {}
 
 ---@class NeoJJBookmarkMeta
 local meta = {}
+
+---Async-compatible vim.system wrapper that yields in plenary.async coroutines
+local jj_system = a.wrap(function(cmd, opts, callback)
+  vim.system(cmd, opts, callback)
+end, 3)
 
 ---Parse `jj bookmark list` output
 ---Format: "name: change_id commit_id [| ] description"
@@ -106,16 +113,14 @@ function M.forget(name)
   return jj.cli.bookmark_forget.args(name).call()
 end
 
----Update repository state with bookmark data (fast path via vim.system)
+---Update repository state with bookmark data (async-compatible)
 ---@param state NeoJJRepoState
 function meta.update(state)
   local limit = 20
-  local result = vim
-    .system(
-      { "jj", "--no-pager", "--color=never", "--ignore-working-copy", "bookmark", "list" },
-      { cwd = state.worktree_root, text = true }
-    )
-    :wait()
+  local result = jj_system(
+    { "jj", "--no-pager", "--color=never", "--ignore-working-copy", "bookmark", "list" },
+    { cwd = state.worktree_root, text = true }
+  )
 
   if result.code == 0 and result.stdout and result.stdout ~= "" then
     local lines = vim.split(result.stdout, "\n", { trimempty = true })

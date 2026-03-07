@@ -1,14 +1,24 @@
+local a = require("plenary.async")
+
 local M = {}
 
 ---@class NeoJJStatusMeta
 local meta = {}
 
----Run a jj command quickly via vim.system, returning stdout lines
+---Async-compatible vim.system wrapper that yields in plenary.async coroutines
+---@param cmd string[] Command array
+---@param opts table vim.system options
+---@return vim.SystemCompleted
+local jj_system = a.wrap(function(cmd, opts, callback)
+  vim.system(cmd, opts, callback)
+end, 3)
+
+---Run a jj command asynchronously, returning stdout lines
 ---@param cmd string[] Command array
 ---@param cwd string Working directory
 ---@return string[]|nil lines, number code
 local function jj_exec(cmd, cwd)
-  local result = vim.system(cmd, { cwd = cwd, text = true }):wait()
+  local result = jj_system(cmd, { cwd = cwd, text = true })
   if result.code == 0 and result.stdout and result.stdout ~= "" then
     return vim.split(result.stdout, "\n", { trimempty = true }), 0
   end
