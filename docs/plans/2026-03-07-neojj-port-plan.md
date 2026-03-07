@@ -130,22 +130,22 @@ Replace git internals with jj equivalents.
 ## Phase 5: Views
 
 ### Log View (`buffers/log_view/`)
-- [ ] Show change IDs as primary, commit IDs secondary
-- [ ] Support revset filtering (`-r` option)
-- [ ] Graph display with change IDs
-- [ ] Pagination for large logs
+- [x] Show change IDs as primary, commit IDs secondary
+- [x] Support revset filtering (`-r` option)
+- [x] Graph display with change IDs
+- [x] Pagination for large logs
 
 ### Diff View (`buffers/diff/`)
-- [ ] Parse `jj diff --git` output
-- [ ] Mostly unchanged from Neogit architecture
+- [x] Parse `jj diff --git` output
+- [x] Mostly unchanged from Neogit architecture
 
 ### Operations View (new)
-- [ ] Browse `jj op log`
-- [ ] Select operations to restore/revert
-- [ ] `jj undo` action
+- [x] Browse `jj op log`
+- [x] Select operations to restore/revert
+- [x] `jj undo` action
 
 ### Editor Buffer (`buffers/editor/`)
-- [ ] Adapt for `jj describe` message editing
+- [x] Adapt for `jj describe` message editing
 
 ---
 
