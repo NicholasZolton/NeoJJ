@@ -1,7 +1,7 @@
-local Ui = require("neogit.lib.ui")
-local Component = require("neogit.lib.ui.component")
-local util = require("neogit.lib.util")
-local config = require("neogit.config")
+local Ui = require("neojj.lib.ui")
+local Component = require("neojj.lib.ui.component")
+local util = require("neojj.lib.util")
+local config = require("neojj.config")
 
 local text = Ui.text
 local col = Ui.col

@@ -1,6 +1,6 @@
 local eq = assert.are.same
 
-local generate_patch_from_selection = require("neogit.lib.git").index.generate_patch
+local generate_patch_from_selection = require("neojj.lib.git").index.generate_patch
 
 -- Helper-function to keep the testsuite clean, since the interface to the
 -- function under test is quite bloated

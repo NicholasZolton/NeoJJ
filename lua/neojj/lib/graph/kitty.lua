@@ -372,7 +372,7 @@ local BRANCH_COLORS = {
 
 local NUM_BRANCH_COLORS = #BRANCH_COLORS
 
-local util = require("neogit.lib.util")
+local util = require("neojj.lib.util")
 
 ---@param commits CommitLogEntry[]
 ---@param color boolean?

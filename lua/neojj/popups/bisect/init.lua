@@ -1,8 +1,8 @@
 local M = {}
 
-local popup = require("neogit.lib.popup")
-local git = require("neogit.lib.git")
-local actions = require("neogit.popups.bisect.actions")
+local popup = require("neojj.lib.popup")
+local git = require("neojj.lib.git")
+local actions = require("neojj.popups.bisect.actions")
 
 function M.create(env)
   local in_progress = git.bisect.in_progress()

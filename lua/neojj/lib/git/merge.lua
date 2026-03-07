@@ -1,7 +1,7 @@
-local client = require("neogit.client")
-local git = require("neogit.lib.git")
-local notification = require("neogit.lib.notification")
-local event = require("neogit.lib.event")
+local client = require("neojj.client")
+local git = require("neojj.lib.git")
+local notification = require("neojj.lib.notification")
+local event = require("neojj.lib.event")
 
 ---@class NeogitGitMerge
 local M = {}

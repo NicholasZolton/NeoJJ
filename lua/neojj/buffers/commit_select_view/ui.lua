@@ -1,7 +1,7 @@
-local util = require("neogit.lib.util")
+local util = require("neojj.lib.util")
 
-local Commit = require("neogit.buffers.common").CommitEntry
-local Graph = require("neogit.buffers.common").CommitGraph
+local Commit = require("neojj.buffers.common").CommitEntry
+local Graph = require("neojj.buffers.common").CommitGraph
 
 local M = {}
 

@@ -1,4 +1,4 @@
-local FuzzyFinderBuffer = require("neogit.buffers.fuzzy_finder")
+local FuzzyFinderBuffer = require("neojj.buffers.fuzzy_finder")
 
 local M = {
   value = "",

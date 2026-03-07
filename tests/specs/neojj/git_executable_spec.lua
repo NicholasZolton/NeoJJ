@@ -1,4 +1,4 @@
-local config = require("neogit.config")
+local config = require("neojj.config")
 
 describe("git_executable configuration", function()
   before_each(function()

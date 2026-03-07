@@ -1,10 +1,10 @@
 local M = {}
 
-local util = require("neogit.lib.util")
+local util = require("neojj.lib.util")
 local NONE = function() end
 
-local status_mappings = require("neogit.config").get_reversed_status_maps()
-local popup_mappings = require("neogit.config").get_reversed_popup_maps()
+local status_mappings = require("neojj.config").get_reversed_status_maps()
+local popup_mappings = require("neojj.config").get_reversed_popup_maps()
 
 local function present(commands)
   local presenter = util.map(commands, function(command)
@@ -43,16 +43,16 @@ local function present(commands)
 end
 
 M.popups = function(env)
-  local popups = require("neogit.popups")
+  local popups = require("neojj.popups")
   local items = {
     {
       "CommandHistory",
       "History",
       function()
-        require("neogit.buffers.git_command_history"):new():show()
+        require("neojj.buffers.git_command_history"):new():show()
       end,
     },
-    { "InitRepo", "Init", require("neogit.lib.git").init.init_repo },
+    { "InitRepo", "Init", require("neojj.lib.git").init.init_repo },
     -- { "HelpPopup", "Help", M.open("help") },
     { "DiffPopup", "Diff", popups.open("diff", function(p)
       p(env.diff)
@@ -115,7 +115,7 @@ M.popups = function(env)
     { "StashPopup", "Stash", popups.open("stash", function(p)
       p(env.stash)
     end) },
-    { "Command", "Command", require("neogit.buffers.status.actions").n_command(nil) },
+    { "Command", "Command", require("neojj.buffers.status.actions").n_command(nil) },
   }
 
   return present(items)
@@ -139,7 +139,7 @@ M.essential = function()
       "RefreshBuffer",
       "Refresh",
       function()
-        local status = require("neogit.buffers.status")
+        local status = require("neojj.buffers.status")
         if status.is_open() then
           status.instance():dispatch_refresh(nil, "user_refresh")
         end

@@ -1,7 +1,7 @@
 local a = require("plenary.async")
-local git = require("neogit.lib.git")
-local util = require("neogit.lib.util")
-local logger = require("neogit.logger")
+local git = require("neojj.lib.git")
+local util = require("neojj.lib.util")
+local logger = require("neojj.logger")
 
 local insert = table.insert
 local sha256 = vim.fn.sha256

@@ -34,9 +34,9 @@ local Git = {}
 setmetatable(Git, {
   __index = function(_, k)
     if k == "repo" then
-      return require("neogit.lib.git.repository").instance()
+      return require("neojj.lib.git.repository").instance()
     else
-      return require("neogit.lib.git." .. k)
+      return require("neojj.lib.git." .. k)
     end
   end,
 })

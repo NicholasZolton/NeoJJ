@@ -1,12 +1,12 @@
 local M = {}
 
-local config = require("neogit.config")
-local git = require("neogit.lib.git")
-local client = require("neogit.client")
-local notification = require("neogit.lib.notification")
-local input = require("neogit.lib.input")
-local util = require("neogit.lib.util")
-local FuzzyFinderBuffer = require("neogit.buffers.fuzzy_finder")
+local config = require("neojj.config")
+local git = require("neojj.lib.git")
+local client = require("neojj.client")
+local notification = require("neojj.lib.notification")
+local input = require("neojj.lib.input")
+local util = require("neojj.lib.util")
+local FuzzyFinderBuffer = require("neojj.buffers.fuzzy_finder")
 
 ---@param popup any
 ---@param thing string

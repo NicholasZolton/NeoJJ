@@ -14,7 +14,7 @@
 
 --#endregion
 
-local Color = require("neogit.lib.color").Color
+local Color = require("neojj.lib.color").Color
 local hl_store
 local M = {}
 

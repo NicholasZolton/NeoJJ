@@ -1,4 +1,4 @@
-local input = require("neogit.lib.input")
+local input = require("neojj.lib.input")
 ---@class InputMock
 local M = {
   ---@type string[]

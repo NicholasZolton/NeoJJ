@@ -1,6 +1,6 @@
-local git = require("neogit.lib.git")
+local git = require("neojj.lib.git")
 local Path = require("plenary.path")
-local util = require("neogit.lib.util")
+local util = require("neojj.lib.util")
 
 ---@param path string
 ---@return string
@@ -151,7 +151,7 @@ end
 -- Make sure the index is in sync as git-status skips it
 -- Do this manually since the `cli` add --no-optional-locks
 function M.update()
-  require("neogit.process")
+  require("neojj.process")
     .new({
       cmd = { "git", "update-index", "-q", "--refresh" },
       on_error = function(_)

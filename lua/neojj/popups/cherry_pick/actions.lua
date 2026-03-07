@@ -1,10 +1,10 @@
 local M = {}
-local util = require("neogit.lib.util")
-local git = require("neogit.lib.git")
-local notification = require("neogit.lib.notification")
+local util = require("neojj.lib.util")
+local git = require("neojj.lib.git")
+local notification = require("neojj.lib.notification")
 
-local CommitSelectViewBuffer = require("neogit.buffers.commit_select_view")
-local FuzzyFinderBuffer = require("neogit.buffers.fuzzy_finder")
+local CommitSelectViewBuffer = require("neojj.buffers.commit_select_view")
+local FuzzyFinderBuffer = require("neojj.buffers.fuzzy_finder")
 
 ---@param popup any
 ---@return table

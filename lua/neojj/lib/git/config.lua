@@ -1,5 +1,5 @@
-local git = require("neogit.lib.git")
-local logger = require("neogit.logger")
+local git = require("neojj.lib.git")
+local logger = require("neojj.logger")
 
 ---@class NeogitGitConfig
 local M = {}

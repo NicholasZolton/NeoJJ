@@ -1,9 +1,9 @@
 local a = require("plenary.async")
-local logger = require("neogit.logger")
+local logger = require("neojj.logger")
 local Path = require("plenary.path")
-local git = require("neogit.lib.git")
-local ItemFilter = require("neogit.lib.item_filter")
-local util = require("neogit.lib.util")
+local git = require("neojj.lib.git")
+local ItemFilter = require("neojj.lib.item_filter")
+local util = require("neojj.lib.util")
 
 local modules = {
   "status",
@@ -228,7 +228,7 @@ function Repo.new(dir)
   setmetatable(instance, Repo)
 
   for _, m in ipairs(modules) do
-    require("neogit.lib.git." .. m).register(instance.lib)
+    require("neojj.lib.git." .. m).register(instance.lib)
   end
 
   return instance

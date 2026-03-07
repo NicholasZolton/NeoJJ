@@ -1,8 +1,8 @@
-local Buffer = require("neogit.lib.buffer")
-local Git = require("neogit.lib.git")
-local Ui = require("neogit.lib.ui")
-local util = require("neogit.lib.util")
-local status_maps = require("neogit.config").get_reversed_status_maps()
+local Buffer = require("neojj.lib.buffer")
+local Git = require("neojj.lib.git")
+local Ui = require("neojj.lib.ui")
+local util = require("neojj.lib.util")
+local status_maps = require("neojj.config").get_reversed_status_maps()
 
 local map = util.map
 local filter_map = util.filter_map

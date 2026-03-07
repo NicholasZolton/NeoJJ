@@ -1,7 +1,7 @@
-local git = require("neogit.lib.git")
-local config = require("neogit.config")
-local record = require("neogit.lib.record")
-local util = require("neogit.lib.util")
+local git = require("neojj.lib.git")
+local config = require("neojj.config")
+local record = require("neojj.lib.record")
+local util = require("neojj.lib.util")
 
 ---@class NeogitGitRefs
 local M = {}

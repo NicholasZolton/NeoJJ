@@ -1,11 +1,11 @@
 local M = {}
 
-local git = require("neogit.lib.git")
-local input = require("neogit.lib.input")
-local notification = require("neogit.lib.notification")
+local git = require("neojj.lib.git")
+local input = require("neojj.lib.input")
+local notification = require("neojj.lib.notification")
 
-local FuzzyFinderBuffer = require("neogit.buffers.fuzzy_finder")
-local RemoteConfigPopup = require("neogit.popups.remote_config")
+local FuzzyFinderBuffer = require("neojj.buffers.fuzzy_finder")
+local RemoteConfigPopup = require("neojj.popups.remote_config")
 
 local function ask_to_set_pushDefault()
   local repo_config = git.config.get("neogit.askSetPushDefault")

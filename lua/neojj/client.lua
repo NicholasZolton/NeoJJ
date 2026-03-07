@@ -1,6 +1,6 @@
-local RPC = require("neogit.lib.rpc")
-local logger = require("neogit.logger")
-local config = require("neogit.config")
+local RPC = require("neojj.lib.rpc")
+local logger = require("neojj.logger")
+local config = require("neojj.config")
 
 local fn = vim.fn
 local fmt = string.format
@@ -64,7 +64,7 @@ function M.client(opts)
   local client = fn.serverstart()
   logger.debug(("[CLIENT] Client address: %s"):format(client))
 
-  local lua_cmd = fmt('lua require("neogit.client").editor(%q, %q, %s)', file_target, client, opts.show_diff)
+  local lua_cmd = fmt('lua require("neojj.client").editor(%q, %q, %s)', file_target, client, opts.show_diff)
   local rpc_server = RPC.create_connection(nvim_server)
   rpc_server:send_cmd(lua_cmd)
 end
@@ -75,7 +75,7 @@ end
 ---@param show_diff boolean
 function M.editor(target, client, show_diff)
   logger.debug(("[CLIENT] Invoked editor with target: %s, from: %s"):format(target, client))
-  require("neogit.process").hide_preview_buffers()
+  require("neojj.process").hide_preview_buffers()
 
   local rpc_client = RPC.create_connection(client)
 
@@ -106,9 +106,9 @@ function M.editor(target, client, show_diff)
 
   local editor
   if target:find("git%-rebase%-todo$") then
-    editor = require("neogit.buffers.rebase_editor")
+    editor = require("neojj.buffers.rebase_editor")
   else
-    editor = require("neogit.buffers.editor")
+    editor = require("neojj.buffers.editor")
   end
 
   editor.new(target, send_client_quit, show_diff):open(kind)
@@ -129,7 +129,7 @@ end
 ---@param opts WrapOpts
 ---@return integer code of `cmd`
 function M.wrap(cmd, opts)
-  local notification = require("neogit.lib.notification")
+  local notification = require("neojj.lib.notification")
   local a = require("plenary.async")
 
   a.util.scheduler()

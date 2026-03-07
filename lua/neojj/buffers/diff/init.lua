@@ -1,7 +1,7 @@
-local Buffer = require("neogit.lib.buffer")
-local ui = require("neogit.buffers.diff.ui")
-local git = require("neogit.lib.git")
-local config = require("neogit.config")
+local Buffer = require("neojj.lib.buffer")
+local ui = require("neojj.buffers.diff.ui")
+local git = require("neojj.lib.git")
+local config = require("neojj.config")
 
 local api = vim.api
 

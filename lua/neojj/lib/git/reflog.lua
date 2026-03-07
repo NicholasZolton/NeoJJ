@@ -1,6 +1,6 @@
-local git = require("neogit.lib.git")
-local util = require("neogit.lib.util")
-local config = require("neogit.config")
+local git = require("neojj.lib.git")
+local util = require("neojj.lib.util")
+local config = require("neojj.config")
 
 ---@class NeogitGitReflog
 local M = {}

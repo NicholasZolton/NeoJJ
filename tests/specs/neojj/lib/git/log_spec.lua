@@ -1,4 +1,4 @@
-local subject = require("neogit.lib.git.log")
+local subject = require("neojj.lib.git.log")
 
 describe("lib.git.log.parse", function()
   it("parses commit with message and diff", function()

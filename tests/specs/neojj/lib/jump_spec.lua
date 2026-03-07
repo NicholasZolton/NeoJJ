@@ -1,4 +1,4 @@
-local subject = require("neogit.lib.jump")
+local subject = require("neojj.lib.jump")
 
 describe("lib.jump.translate_hunk_location", function()
   local hunk

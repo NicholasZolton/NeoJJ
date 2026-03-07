@@ -1,4 +1,4 @@
-local git = require("neogit.lib.git")
+local git = require("neojj.lib.git")
 
 ---@class NeogitGitTag
 local M = {}

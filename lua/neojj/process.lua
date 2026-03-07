@@ -1,12 +1,12 @@
 local a = require("plenary.async")
-local notification = require("neogit.lib.notification")
+local notification = require("neojj.lib.notification")
 
-local config = require("neogit.config")
-local logger = require("neogit.logger")
-local util = require("neogit.lib.util")
+local config = require("neojj.config")
+local logger = require("neojj.logger")
+local util = require("neojj.lib.util")
 
-local ProcessBuffer = require("neogit.buffers.process")
-local Spinner = require("neogit.spinner")
+local ProcessBuffer = require("neojj.buffers.process")
+local Spinner = require("neojj.spinner")
 
 local api = vim.api
 local fn = vim.fn

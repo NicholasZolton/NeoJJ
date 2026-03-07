@@ -1,9 +1,9 @@
-local util = require("neogit.lib.util")
+local util = require("neojj.lib.util")
 
-local Commit = require("neogit.buffers.common").CommitEntry
-local Graph = require("neogit.buffers.common").CommitGraph
+local Commit = require("neojj.buffers.common").CommitEntry
+local Graph = require("neojj.buffers.common").CommitGraph
 
-local Ui = require("neogit.lib.ui")
+local Ui = require("neojj.lib.ui")
 local text = Ui.text
 local col = Ui.col
 local row = Ui.row

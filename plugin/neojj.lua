@@ -1,23 +1,23 @@
 local api = vim.api
 
 api.nvim_create_user_command("Neogit", function(o)
-  local neogit = require("neogit")
-  neogit.open(require("neogit.lib.util").parse_command_args(o.fargs))
+  local neogit = require("neojj")
+  neogit.open(require("neojj.lib.util").parse_command_args(o.fargs))
 end, {
   nargs = "*",
   desc = "Open Neogit",
   complete = function(arglead)
-    local neogit = require("neogit")
+    local neogit = require("neojj")
     return neogit.complete(arglead)
   end,
 })
 
 api.nvim_create_user_command("NeogitResetState", function()
-  require("neogit.lib.state")._reset()
+  require("neojj.lib.state")._reset()
 end, { nargs = "*", desc = "Reset any saved flags" })
 
 api.nvim_create_user_command("NeogitLogCurrent", function(args)
-  local action = require("neogit").action
+  local action = require("neojj").action
   local path = vim.fn.expand(args.fargs[1] or "%")
 
   if args.range > 0 then
@@ -34,7 +34,7 @@ end, {
 
 api.nvim_create_user_command("NeogitCommit", function(args)
   local commit = args.fargs[1] or "HEAD"
-  local CommitViewBuffer = require("neogit.buffers.commit_view")
+  local CommitViewBuffer = require("neojj.buffers.commit_view")
   CommitViewBuffer.new(commit):open()
 end, {
   nargs = "?",

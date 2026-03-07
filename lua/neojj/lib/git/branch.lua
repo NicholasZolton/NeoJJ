@@ -1,8 +1,8 @@
-local git = require("neogit.lib.git")
-local config = require("neogit.config")
-local util = require("neogit.lib.util")
+local git = require("neojj.lib.git")
+local config = require("neojj.config")
+local util = require("neojj.lib.util")
 
-local FuzzyFinderBuffer = require("neogit.buffers.fuzzy_finder")
+local FuzzyFinderBuffer = require("neojj.buffers.fuzzy_finder")
 
 ---@class NeogitGitBranch
 local M = {}
@@ -170,7 +170,7 @@ end
 ---@param name string
 ---@return boolean
 function M.delete(name)
-  local input = require("neogit.lib.input")
+  local input = require("neojj.lib.input")
 
   local result
   if M.is_unmerged(name) then

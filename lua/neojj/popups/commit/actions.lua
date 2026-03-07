@@ -1,11 +1,11 @@
 local M = {}
 
-local CommitSelectViewBuffer = require("neogit.buffers.commit_select_view")
-local git = require("neogit.lib.git")
-local client = require("neogit.client")
-local input = require("neogit.lib.input")
-local notification = require("neogit.lib.notification")
-local config = require("neogit.config")
+local CommitSelectViewBuffer = require("neojj.buffers.commit_select_view")
+local git = require("neojj.lib.git")
+local client = require("neojj.client")
+local input = require("neojj.lib.input")
+local notification = require("neojj.lib.notification")
+local config = require("neojj.config")
 local a = require("plenary.async")
 
 ---@param popup PopupData

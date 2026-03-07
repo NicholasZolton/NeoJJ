@@ -1,4 +1,4 @@
-local subject = require("neogit.lib.record")
+local subject = require("neojj.lib.record")
 
 describe("lib.record", function()
   describe("#encode", function()

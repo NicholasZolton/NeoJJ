@@ -20,7 +20,7 @@ function M.open(name, f)
 
       f(value.create)
     else
-      local notification = require("neogit.lib.notification")
+      local notification = require("neojj.lib.notification")
       notification.error(string.format("Failed to load popup: %q\n%s", name, value))
     end
   end
@@ -30,7 +30,7 @@ end
 ---@param name string
 ---@return string|string[]
 function M.mapping_for(name)
-  local mappings = require("neogit.config").get_reversed_popup_maps()
+  local mappings = require("neojj.config").get_reversed_popup_maps()
 
   if mappings[name] then
     return mappings[name]

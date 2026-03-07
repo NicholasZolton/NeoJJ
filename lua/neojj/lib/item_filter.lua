@@ -1,4 +1,4 @@
-local Collection = require("neogit.lib.collection")
+local Collection = require("neojj.lib.collection")
 
 ---@class ItemFilter
 ---@field new fun(table): ItemFilter

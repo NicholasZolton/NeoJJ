@@ -6,8 +6,8 @@ local CDiffView = require("diffview.api.views.diff.diff_view").CDiffView
 local dv_lib = require("diffview.lib")
 local dv_utils = require("diffview.utils")
 
-local Watcher = require("neogit.watcher")
-local git = require("neogit.lib.git")
+local Watcher = require("neojj.watcher")
+local git = require("neojj.lib.git")
 local a = require("plenary.async")
 
 local function get_local_diff_view(section_name, item_name, opts)

@@ -1,4 +1,4 @@
-local notification = require("neogit.lib.notification")
+local notification = require("neojj.lib.notification")
 local M = {}
 
 ---@param key string

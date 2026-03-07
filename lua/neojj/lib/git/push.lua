@@ -1,5 +1,5 @@
-local git = require("neogit.lib.git")
-local util = require("neogit.lib.util")
+local git = require("neojj.lib.git")
+local util = require("neojj.lib.util")
 
 ---@class NeogitGitPush
 local M = {}
@@ -46,7 +46,7 @@ local function update_unmerged(state)
       util.filter_map(git.log.list({ "@{upstream}.." }, nil, {}, true), git.log.present_commit)
   end
 
-  local pushRemote = require("neogit.lib.git").branch.pushRemote_ref()
+  local pushRemote = require("neojj.lib.git").branch.pushRemote_ref()
   if pushRemote then
     state.pushRemote.unmerged.items =
       util.filter_map(git.log.list({ pushRemote .. ".." }, nil, {}, true), git.log.present_commit)

@@ -4,14 +4,14 @@ local api = vim.api
 
 function M.setup()
   local a = require("plenary.async")
-  local status_buffer = require("neogit.buffers.status")
-  local git = require("neogit.lib.git")
-  local group = require("neogit").autocmd_group
+  local status_buffer = require("neojj.buffers.status")
+  local git = require("neojj.lib.git")
+  local group = require("neojj").autocmd_group
 
   api.nvim_create_autocmd({ "ColorScheme" }, {
     callback = function()
-      local config = require("neogit.config")
-      local highlight = require("neogit.lib.hl")
+      local config = require("neojj.config")
+      local highlight = require("neojj.lib.hl")
 
       highlight.setup(config.values)
     end,

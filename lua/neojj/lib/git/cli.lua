@@ -1,13 +1,13 @@
-local git = require("neogit.lib.git")
-local process = require("neogit.process")
-local util = require("neogit.lib.util")
+local git = require("neojj.lib.git")
+local process = require("neojj.process")
+local util = require("neojj.lib.util")
 local Path = require("plenary.path")
-local runner = require("neogit.runner")
+local runner = require("neojj.runner")
 
 ---Get the configured git executable path
 ---@return string
 local function get_git_executable()
-  local config = require("neogit.config")
+  local config = require("neojj.config")
   return config.get_git_executable()
 end
 
@@ -1014,7 +1014,7 @@ local configurations = {
   ["bisect"] = config {},
 }
 
---- NOTE: Use require("neogit.lib.git").repo.worktree_root instead of calling this function.
+--- NOTE: Use require("neojj.lib.git").repo.worktree_root instead of calling this function.
 --- repository.worktree_root is used by all other library functions, so it's most likely the one you want to use.
 --- worktree_root_of_cwd() returns the git repo of the cwd, which can change anytime
 --- after worktree_root_of_cwd() has been called.

@@ -1,5 +1,5 @@
-local Buffer = require("neogit.lib.buffer")
-local config = require("neogit.config")
+local Buffer = require("neojj.lib.buffer")
+local config = require("neojj.config")
 
 ---@class ProcessBuffer
 ---@field content string[]

@@ -1,5 +1,5 @@
-local logger = require("neogit.logger")
-local config = require("neogit.config")
+local logger = require("neojj.logger")
+local config = require("neojj.config")
 local Path = require("plenary.path")
 
 ---@class NeogitState

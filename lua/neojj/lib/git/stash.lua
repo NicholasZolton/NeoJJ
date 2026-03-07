@@ -1,8 +1,8 @@
-local git = require("neogit.lib.git")
-local input = require("neogit.lib.input")
-local util = require("neogit.lib.util")
-local config = require("neogit.config")
-local event = require("neogit.lib.event")
+local git = require("neojj.lib.git")
+local input = require("neojj.lib.input")
+local util = require("neojj.lib.util")
+local config = require("neojj.config")
+local event = require("neojj.lib.event")
 
 ---@class NeogitGitStash
 local M = {}

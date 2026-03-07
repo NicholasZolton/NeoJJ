@@ -1,13 +1,13 @@
-local Buffer = require("neogit.lib.buffer")
-local config = require("neogit.config")
-local CommitViewBuffer = require("neogit.buffers.commit_view")
-local popups = require("neogit.popups")
-local status_maps = require("neogit.config").get_reversed_status_maps()
-local util = require("neogit.lib.util")
+local Buffer = require("neojj.lib.buffer")
+local config = require("neojj.config")
+local CommitViewBuffer = require("neojj.buffers.commit_view")
+local popups = require("neojj.popups")
+local status_maps = require("neojj.config").get_reversed_status_maps()
+local util = require("neojj.lib.util")
 
-local git = require("neogit.lib.git")
-local ui = require("neogit.buffers.stash_list_view.ui")
-local input = require("neogit.lib.input")
+local git = require("neojj.lib.git")
+local ui = require("neojj.buffers.stash_list_view.ui")
+local input = require("neojj.lib.input")
 
 ---@class StashListBuffer
 ---@field stashes StashItem[]
@@ -180,8 +180,8 @@ function M:open()
             vim.cmd("echo ''")
           end
         end,
-        ["<esc>"] = require("neogit.lib.ui.helpers").close_topmost(self),
-        [status_maps["Close"]] = require("neogit.lib.ui.helpers").close_topmost(self),
+        ["<esc>"] = require("neojj.lib.ui.helpers").close_topmost(self),
+        [status_maps["Close"]] = require("neojj.lib.ui.helpers").close_topmost(self),
         [status_maps["GoToFile"]] = function()
           local commit = self.buffer.ui:get_commit_under_cursor()
           if commit then

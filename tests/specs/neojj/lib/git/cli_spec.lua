@@ -1,5 +1,5 @@
 local eq = assert.are.same
-local git_cli = require("neogit.lib.git.cli")
+local git_cli = require("neojj.lib.git.cli")
 local git_harness = require("tests.util.git_harness")
 local in_prepared_repo = git_harness.in_prepared_repo
 

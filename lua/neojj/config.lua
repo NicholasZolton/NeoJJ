@@ -1,4 +1,4 @@
-local util = require("neogit.lib.util")
+local util = require("neojj.lib.util")
 local M = {}
 
 local mappings = {}
@@ -1321,7 +1321,7 @@ end
 ---@param name string
 ---@return boolean
 function M.check_integration(name)
-  local logger = require("neogit.logger")
+  local logger = require("neojj.logger")
   local enabled = M.values.integrations[name]
 
   if enabled == nil or enabled == "auto" then
@@ -1337,7 +1337,7 @@ end
 ---Returns the configured diff viewer, or auto-detects if not set
 ---@return string|nil The diff viewer to use ("diffview", "codediff"), or nil if none available
 function M.get_diff_viewer()
-  local logger = require("neogit.logger")
+  local logger = require("neojj.logger")
   local viewer = M.values.diff_viewer
 
   if viewer then
@@ -1396,7 +1396,7 @@ function M.setup(opts)
   local header_message = {
     "Neogit has NOT been setup!",
     "You have a misconfiguration in your Neogit setup!",
-    'Validate that your configuration passed to `require("neogit").setup()` is valid!',
+    'Validate that your configuration passed to `require("neojj").setup()` is valid!',
   }
   local header_sep = ""
   for _ = 0, string.len(header), 1 do

@@ -1,15 +1,15 @@
 local M = {}
 
-local git = require("neogit.lib.git")
-local config = require("neogit.config")
-local input = require("neogit.lib.input")
-local util = require("neogit.lib.util")
-local notification = require("neogit.lib.notification")
-local event = require("neogit.lib.event")
+local git = require("neojj.lib.git")
+local config = require("neojj.config")
+local input = require("neojj.lib.input")
+local util = require("neojj.lib.util")
+local notification = require("neojj.lib.notification")
+local event = require("neojj.lib.event")
 local a = require("plenary.async")
 
-local FuzzyFinderBuffer = require("neogit.buffers.fuzzy_finder")
-local BranchConfigPopup = require("neogit.popups.branch_config")
+local FuzzyFinderBuffer = require("neojj.buffers.fuzzy_finder")
+local BranchConfigPopup = require("neojj.popups.branch_config")
 
 local function fetch_remote_branch(target)
   local remote, branch = git.branch.parse_remote_branch(target)

@@ -630,7 +630,7 @@ end
 function M.try(fn, ...)
   local ok, result = pcall(fn, ...)
   if not ok then
-    require("neogit.logger").error(result)
+    require("neojj.logger").error(result)
     return false
   else
     return result or true

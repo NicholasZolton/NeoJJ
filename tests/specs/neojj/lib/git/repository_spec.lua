@@ -1,7 +1,7 @@
 local eq = assert.are.same
 local git_harness = require("tests.util.git_harness")
 local in_prepared_repo = git_harness.in_prepared_repo
-local git_repo = require("neogit.lib.git.repository")
+local git_repo = require("neojj.lib.git.repository")
 
 describe("lib.git.instance", function()
   describe("getting instance", function()

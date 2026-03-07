@@ -1,8 +1,8 @@
-local git = require("neogit.lib.git")
-local util = require("neogit.lib.util")
-local notification = require("neogit.lib.notification")
-local FuzzyFinderBuffer = require("neogit.buffers.fuzzy_finder")
-local event = require("neogit.lib.event")
+local git = require("neojj.lib.git")
+local util = require("neojj.lib.util")
+local notification = require("neojj.lib.notification")
+local FuzzyFinderBuffer = require("neojj.buffers.fuzzy_finder")
+local event = require("neojj.lib.event")
 
 local M = {}
 
@@ -103,7 +103,7 @@ function M.a_branch(popup)
     popup.state.env.commit = nil
   end
 
-  local branch_actions = require("neogit.popups.branch.actions")
+  local branch_actions = require("neojj.popups.branch.actions")
   branch_actions.reset_branch(popup)
 end
 

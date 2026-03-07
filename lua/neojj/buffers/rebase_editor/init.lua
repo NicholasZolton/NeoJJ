@@ -1,12 +1,12 @@
-local Buffer = require("neogit.lib.buffer")
-local config = require("neogit.config")
-local input = require("neogit.lib.input")
-local util = require("neogit.lib.util")
-local git = require("neogit.lib.git")
+local Buffer = require("neojj.lib.buffer")
+local config = require("neojj.config")
+local input = require("neojj.lib.input")
+local util = require("neojj.lib.util")
+local git = require("neojj.lib.git")
 
 local pad = util.pad_right
 
-local CommitViewBuffer = require("neogit.buffers.commit_view")
+local CommitViewBuffer = require("neojj.buffers.commit_view")
 
 local M = {}
 
@@ -82,7 +82,7 @@ function M:open(kind)
         self.on_unload(aborted and 1 or 0)
       end
 
-      require("neogit.process").defer_show_preview_buffers()
+      require("neojj.process").defer_show_preview_buffers()
     end,
     after = function(buffer)
       local padding = util.max_length(util.flatten(vim.tbl_values(mapping)))

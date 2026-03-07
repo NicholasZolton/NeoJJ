@@ -1,6 +1,6 @@
 local M = {}
 
-local state = require("neogit.lib.state")
+local state = require("neojj.lib.state")
 local a = require("plenary.async")
 
 function M.refresh_buffer(buffer)

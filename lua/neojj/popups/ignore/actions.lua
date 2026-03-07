@@ -1,11 +1,11 @@
 local M = {}
 
 local Path = require("plenary.path")
-local git = require("neogit.lib.git")
-local util = require("neogit.lib.util")
-local input = require("neogit.lib.input")
+local git = require("neojj.lib.git")
+local util = require("neojj.lib.util")
+local input = require("neojj.lib.input")
 
-local FuzzyFinderBuffer = require("neogit.buffers.fuzzy_finder")
+local FuzzyFinderBuffer = require("neojj.buffers.fuzzy_finder")
 
 local function make_rules(popup, relative)
   local files = util.merge(popup.state.env.paths, git.files.untracked())

@@ -1,6 +1,6 @@
 local M = {}
 
-local git = require("neogit.lib.git")
+local git = require("neojj.lib.git")
 
 local function notify_error(message)
   vim.schedule(function()

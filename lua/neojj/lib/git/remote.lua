@@ -1,5 +1,5 @@
-local git = require("neogit.lib.git")
-local util = require("neogit.lib.util")
+local git = require("neojj.lib.git")
+local util = require("neojj.lib.util")
 
 ---@class NeogitGitRemote
 local M = {}
@@ -145,7 +145,7 @@ function M.commit_url(oid)
   local template
   local url = M.get_url(upstream)[1]
 
-  for s, v in pairs(require("neogit.config").values.git_services) do
+  for s, v in pairs(require("neojj.config").values.git_services) do
     if url:match(util.pattern_escape(s)) then
       template = v.commit
       break
@@ -172,7 +172,7 @@ function M.tree_url(branch)
   local template
   local url = M.get_url(upstream)[1]
 
-  for s, v in pairs(require("neogit.config").values.git_services) do
+  for s, v in pairs(require("neojj.config").values.git_services) do
     if url:match(util.pattern_escape(s)) then
       template = v.tree
       break

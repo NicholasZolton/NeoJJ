@@ -1,6 +1,6 @@
-local popup = require("neogit.lib.popup")
-local config = require("neogit.config")
-local actions = require("neogit.popups.log.actions")
+local popup = require("neojj.lib.popup")
+local config = require("neojj.config")
+local actions = require("neojj.popups.log.actions")
 
 local M = {}
 
@@ -32,7 +32,7 @@ function M.create()
       separator = "",
       fn = actions.limit_to_files(),
       setup = function(popup)
-        local state = require("neogit.lib.state").get { "NeogitLogPopup", "" }
+        local state = require("neojj.lib.state").get { "NeogitLogPopup", "" }
         if state then
           -- State for this option is saved with quotes around each filepath, which cannot
           -- get passed into the CLI lib. So, to handle things internally, we need to strip

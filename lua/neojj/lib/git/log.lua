@@ -1,8 +1,8 @@
-local git = require("neogit.lib.git")
-local util = require("neogit.lib.util")
-local config = require("neogit.config")
-local record = require("neogit.lib.record")
-local state = require("neogit.lib.state")
+local git = require("neojj.lib.git")
+local util = require("neojj.lib.util")
+local config = require("neojj.config")
+local record = require("neojj.lib.record")
+local state = require("neojj.lib.state")
 
 ---@class NeogitGitLog
 local M = {}
@@ -316,7 +316,7 @@ M.graph = util.memoize(function(options, files, color)
     .call({ ignore_error = true, hidden = true, remove_ansi = false }).stdout
 
   return util.filter_map(result, function(line)
-    return require("neogit.lib.ansi").parse(util.trim(line), { recolor = not color })
+    return require("neojj.lib.ansi").parse(util.trim(line), { recolor = not color })
   end)
 end)
 
@@ -385,9 +385,9 @@ M.list = util.memoize(function(options, graph, files, hidden, graph_color)
   local graph_output
   if graph then
     if config.values.graph_style == "unicode" then
-      graph_output = require("neogit.lib.graph.unicode").build(commits)
+      graph_output = require("neojj.lib.graph.unicode").build(commits)
     elseif config.values.graph_style == "kitty" then
-      graph_output = require("neogit.lib.graph.kitty").build(commits, graph_color)
+      graph_output = require("neojj.lib.graph.kitty").build(commits, graph_color)
     elseif config.values.graph_style == "ascii" then
       util.remove_item_from_table(options, "--show-signature")
       graph_output = M.graph(options, files, graph_color)
@@ -498,7 +498,7 @@ end
 ---@param ref string comma separated list of branches, tags and remotes, e.g.:
 ---   * "origin/main, main, origin/HEAD, tag: 1.2.3, fork/develop"
 ---   * "HEAD -> main, origin/main, origin/HEAD, tag: 1.2.3, fork/develop"
----@param remotes string[] list of remote names, e.g. by calling `require("neogit.lib.git").remote.list()`
+---@param remotes string[] list of remote names, e.g. by calling `require("neojj.lib.git").remote.list()`
 ---@return CommitBranchInfo
 M.branch_info = util.memoize(function(ref, remotes)
   local parts = vim.split(ref, ", ")

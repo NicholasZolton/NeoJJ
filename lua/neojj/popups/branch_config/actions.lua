@@ -1,8 +1,8 @@
 local a = require("plenary.async")
-local git = require("neogit.lib.git")
-local client = require("neogit.client")
+local git = require("neojj.lib.git")
+local client = require("neojj.client")
 
-local FuzzyFinderBuffer = require("neogit.buffers.fuzzy_finder")
+local FuzzyFinderBuffer = require("neojj.buffers.fuzzy_finder")
 
 local M = {}
 

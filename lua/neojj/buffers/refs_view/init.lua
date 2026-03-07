@@ -1,15 +1,15 @@
-local Buffer = require("neogit.lib.buffer")
-local config = require("neogit.config")
-local ui = require("neogit.buffers.refs_view.ui")
-local popups = require("neogit.popups")
-local status_maps = require("neogit.config").get_reversed_status_maps()
+local Buffer = require("neojj.lib.buffer")
+local config = require("neojj.config")
+local ui = require("neojj.buffers.refs_view.ui")
+local popups = require("neojj.popups")
+local status_maps = require("neojj.config").get_reversed_status_maps()
 local mapping = config.get_reversed_refs_view_maps()
-local CommitViewBuffer = require("neogit.buffers.commit_view")
-local Watcher = require("neogit.watcher")
-local logger = require("neogit.logger")
+local CommitViewBuffer = require("neojj.buffers.commit_view")
+local Watcher = require("neojj.watcher")
+local logger = require("neojj.logger")
 local a = require("plenary.async")
-local git = require("neogit.lib.git")
-local event = require("neogit.lib.event")
+local git = require("neojj.lib.git")
+local event = require("neojj.lib.event")
 
 ---@class RefsViewBuffer
 ---@field buffer Buffer
@@ -61,7 +61,7 @@ end
 
 function M.delete_branch(ref)
   if ref then
-    local input = require("neogit.lib.input")
+    local input = require("neojj.lib.input")
     local message = ("Delete branch: '%s'?"):format(ref.unambiguous_name)
     if input.get_permission(message) then
       M._do_delete(ref)
@@ -71,7 +71,7 @@ end
 
 function M.delete_branches(refs)
   if #refs > 0 then
-    local input = require("neogit.lib.input")
+    local input = require("neojj.lib.input")
     local message = ("Delete %s branch(es)?"):format(#refs)
     if input.get_permission(message) then
       for _, ref in ipairs(refs) do
@@ -217,8 +217,8 @@ function M:open()
             vim.cmd("norm! k")
           end
         end,
-        ["<esc>"] = require("neogit.lib.ui.helpers").close_topmost(self),
-        [status_maps["Close"]] = require("neogit.lib.ui.helpers").close_topmost(self),
+        ["<esc>"] = require("neojj.lib.ui.helpers").close_topmost(self),
+        [status_maps["Close"]] = require("neojj.lib.ui.helpers").close_topmost(self),
         [status_maps["GoToFile"]] = function()
           local commit = self.buffer.ui:get_commit_under_cursor()
           if commit then

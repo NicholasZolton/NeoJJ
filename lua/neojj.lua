@@ -10,12 +10,12 @@ function M.setup(opts)
     return
   end
 
-  local config = require("neogit.config")
-  local signs = require("neogit.lib.signs")
-  local autocmds = require("neogit.autocmds")
-  local hl = require("neogit.lib.hl")
-  local state = require("neogit.lib.state")
-  local logger = require("neogit.logger")
+  local config = require("neojj.config")
+  local signs = require("neojj.lib.signs")
+  local autocmds = require("neojj.autocmds")
+  local hl = require("neojj.lib.hl")
+  local state = require("neojj.lib.state")
+  local logger = require("neojj.logger")
 
   if did_setup then
     logger.debug("Already did setup!")
@@ -25,7 +25,7 @@ function M.setup(opts)
 
   M.autocmd_group = vim.api.nvim_create_augroup("Neogit", { clear = false })
 
-  M.status = require("neogit.buffers.status")
+  M.status = require("neojj.buffers.status")
 
   M.dispatch_reset = function()
     local instance = M.status.instance()
@@ -62,11 +62,11 @@ function M.setup(opts)
     end
   end
 
-  M.lib = require("neogit.lib")
+  M.lib = require("neojj.lib")
   M.cli = M.lib.git.cli
-  M.popups = require("neogit.popups")
+  M.popups = require("neojj.popups")
   M.config = config
-  M.notification = require("neogit.lib.notification")
+  M.notification = require("neojj.lib.notification")
 
   config.setup(opts)
   hl.setup(config.values)
@@ -83,7 +83,7 @@ local function construct_opts(opts)
   end
 
   if not opts.cwd then
-    local git = require("neogit.lib.git")
+    local git = require("neojj.lib.git")
     opts.cwd = git.cli.worktree_root(".")
 
     if opts.cwd == "" then
@@ -104,13 +104,13 @@ local function open_popup(name)
 end
 
 local function open_status_buffer(opts)
-  local status = require("neogit.buffers.status")
-  local config = require("neogit.config")
+  local status = require("neojj.buffers.status")
+  local config = require("neojj.config")
 
   -- We need to construct the repo instance manually here since the actual CWD may not be the directory neogit is
   -- going to open into. We will use vim.fn.lcd() in the status buffer constructor, so this will eventually be
   -- correct.
-  local repo = require("neogit.lib.git.repository").instance(opts.cwd)
+  local repo = require("neojj.lib.git.repository").instance(opts.cwd)
   status.new(config.values, repo.worktree_root, opts.cwd):open(opts.kind):dispatch_refresh()
 end
 
@@ -151,9 +151,9 @@ function M.open(opts)
 
   opts = construct_opts(opts)
 
-  local git = require("neogit.lib.git")
+  local git = require("neojj.lib.git")
   if not git.cli.is_inside_worktree(opts.cwd) then
-    local input = require("neogit.lib.input")
+    local input = require("neojj.lib.input")
     if input.get_permission(("Initialize repository in %s?"):format(opts.cwd)) then
       git.init.create(opts.cwd)
     else
@@ -177,7 +177,7 @@ function M.open(opts)
 end
 
 -- This can be used to create bindable functions for custom keybindings:
---   local neogit = require("neogit")
+--   local neogit = require("neojj")
 --   vim.keymap.set('n', '<leader>gcc', neogit.action('commit', 'commit', { '--verbose', '--all' }))
 --
 ---@param popup  string Name of popup, as found in `lua/neogit/popups/*`
@@ -185,8 +185,8 @@ end
 ---@param args   table? CLI arguments to pass to git command
 ---@return function
 function M.action(popup, action, args)
-  local util = require("neogit.lib.util")
-  local git = require("neogit.lib.git")
+  local util = require("neojj.lib.util")
+  local git = require("neojj.lib.git")
   local a = require("plenary.async")
 
   args = args or {}

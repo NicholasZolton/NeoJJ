@@ -1,6 +1,6 @@
-local actions = require("neogit.popups.revert.actions")
-local git = require("neogit.lib.git")
-local popup = require("neogit.lib.popup")
+local actions = require("neojj.popups.revert.actions")
+local git = require("neojj.lib.git")
+local popup = require("neojj.lib.popup")
 
 local M = {}
 

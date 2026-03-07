@@ -1,13 +1,13 @@
 local M = {}
 
 local a = require("plenary.async")
-local git = require("neogit.lib.git")
-local logger = require("neogit.logger")
-local notification = require("neogit.lib.notification")
-local util = require("neogit.lib.util")
-local event = require("neogit.lib.event")
+local git = require("neojj.lib.git")
+local logger = require("neojj.logger")
+local notification = require("neojj.lib.notification")
+local util = require("neojj.lib.util")
+local event = require("neojj.lib.event")
 
-local FuzzyFinderBuffer = require("neogit.buffers.fuzzy_finder")
+local FuzzyFinderBuffer = require("neojj.buffers.fuzzy_finder")
 
 local function select_remote()
   return FuzzyFinderBuffer.new(git.remote.list()):open_async { prompt_prefix = "remote" }
@@ -122,7 +122,7 @@ function M.fetch_submodules(_)
 end
 
 function M.set_variables()
-  require("neogit.popups.branch_config").create {}
+  require("neojj.popups.branch_config").create {}
 end
 
 return M

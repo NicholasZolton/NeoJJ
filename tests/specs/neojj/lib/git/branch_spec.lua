@@ -1,7 +1,7 @@
-local gb = require("neogit.lib.git.branch")
-local neogit = require("neogit")
+local gb = require("neojj.lib.git.branch")
+local neogit = require("neojj")
 local git_harness = require("tests.util.git_harness")
-local neogit_util = require("neogit.lib.util")
+local neogit_util = require("neojj.lib.util")
 local util = require("tests.util.util")
 local input = require("tests.mocks.input")
 

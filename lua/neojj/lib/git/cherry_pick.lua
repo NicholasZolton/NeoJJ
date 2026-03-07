@@ -1,8 +1,8 @@
-local git = require("neogit.lib.git")
-local notification = require("neogit.lib.notification")
-local util = require("neogit.lib.util")
-local client = require("neogit.client")
-local event = require("neogit.lib.event")
+local git = require("neojj.lib.git")
+local notification = require("neojj.lib.notification")
+local util = require("neojj.lib.util")
+local client = require("neojj.client")
+local event = require("neojj.lib.event")
 
 ---@class NeogitGitCherryPick
 local M = {}

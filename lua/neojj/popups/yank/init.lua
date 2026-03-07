@@ -1,5 +1,5 @@
-local popup = require("neogit.lib.popup")
-local actions = require("neogit.popups.yank.actions")
+local popup = require("neojj.lib.popup")
+local actions = require("neojj.popups.yank.actions")
 
 local M = {}
 

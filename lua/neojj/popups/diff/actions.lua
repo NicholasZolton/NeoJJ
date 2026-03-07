@@ -1,18 +1,18 @@
 local M = {}
-local config = require("neogit.config")
-local FuzzyFinderBuffer = require("neogit.buffers.fuzzy_finder")
+local config = require("neojj.config")
+local FuzzyFinderBuffer = require("neojj.buffers.fuzzy_finder")
 
 local function get_diff_integration()
   local viewer = config.get_diff_viewer()
   if viewer == "codediff" then
-    return require("neogit.integrations.codediff")
+    return require("neojj.integrations.codediff")
   else
-    return require("neogit.integrations.diffview")
+    return require("neojj.integrations.diffview")
   end
 end
-local util = require("neogit.lib.util")
-local git = require("neogit.lib.git")
-local input = require("neogit.lib.input")
+local util = require("neojj.lib.util")
+local git = require("neojj.lib.git")
+local input = require("neojj.lib.input")
 
 -- aka "dwim" = do what I mean
 function M.this(popup)

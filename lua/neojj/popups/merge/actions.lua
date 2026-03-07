@@ -1,10 +1,10 @@
 local M = {}
-local util = require("neogit.lib.util")
+local util = require("neojj.lib.util")
 
-local git = require("neogit.lib.git")
-local input = require("neogit.lib.input")
+local git = require("neojj.lib.git")
+local input = require("neojj.lib.input")
 
-local FuzzyFinderBuffer = require("neogit.buffers.fuzzy_finder")
+local FuzzyFinderBuffer = require("neojj.buffers.fuzzy_finder")
 
 function M.commit()
   git.merge.continue()

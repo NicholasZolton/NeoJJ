@@ -1,12 +1,12 @@
-local config = require("neogit.config")
-local Buffer = require("neogit.lib.buffer")
-local ui = require("neogit.buffers.status.ui")
-local popups = require("neogit.popups")
-local git = require("neogit.lib.git")
-local Watcher = require("neogit.watcher")
+local config = require("neojj.config")
+local Buffer = require("neojj.lib.buffer")
+local ui = require("neojj.buffers.status.ui")
+local popups = require("neojj.popups")
+local git = require("neojj.lib.git")
+local Watcher = require("neojj.watcher")
 local a = require("plenary.async")
-local logger = require("neogit.logger") -- TODO: Add logging
-local event = require("neogit.lib.event")
+local logger = require("neojj.logger") -- TODO: Add logging
+local event = require("neojj.lib.event")
 
 ---@class Semaphore
 ---@field permits number
@@ -111,7 +111,7 @@ function M.is_open()
 end
 
 function M:_action(name)
-  local action = require("neogit.buffers.status.actions")[name]
+  local action = require("neojj.buffers.status.actions")[name]
   assert(action, ("Status Buffer action %q is undefined"):format(name))
 
   return action(self)
@@ -293,7 +293,7 @@ function M:chdir(dir)
   vim.schedule(function()
     logger.debug("[STATUS] Changing Dir: " .. dir)
     vim.api.nvim_set_current_dir(dir)
-    require("neogit.lib.git.repository").instance(dir)
+    require("neojj.lib.git.repository").instance(dir)
     self.new(config.values, git.repo.worktree_root, dir):open("replace"):dispatch_refresh()
   end)
 end

@@ -1,9 +1,9 @@
 local a = require("plenary.async")
-local Buffer = require("neogit.lib.buffer")
-local ui = require("neogit.buffers.commit_select_view.ui")
-local config = require("neogit.config")
-local util = require("neogit.lib.util")
-local status_maps = require("neogit.config").get_reversed_status_maps()
+local Buffer = require("neojj.lib.buffer")
+local ui = require("neojj.buffers.commit_select_view.ui")
+local config = require("neojj.config")
+local util = require("neojj.lib.util")
+local status_maps = require("neojj.config").get_reversed_status_maps()
 
 ---@class CommitSelectViewBuffer
 ---@field commits CommitLogEntry[]

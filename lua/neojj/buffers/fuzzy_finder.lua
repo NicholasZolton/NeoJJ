@@ -1,5 +1,5 @@
-local Finder = require("neogit.lib.finder")
-local git = require("neogit.lib.git")
+local Finder = require("neojj.lib.finder")
+local git = require("neojj.lib.git")
 
 local function buffer_height(count)
   if count < (vim.o.lines / 2) then

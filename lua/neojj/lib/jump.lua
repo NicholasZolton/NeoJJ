@@ -1,5 +1,5 @@
-local git = require("neogit.lib.git")
-local notification = require("neogit.lib.notification")
+local git = require("neojj.lib.git")
+local notification = require("neojj.lib.notification")
 
 local api = vim.api
 
@@ -50,7 +50,7 @@ end
 ---@param cursor? integer[] cursor location in the target buffer
 ---@param cmd_debug_prefix? string If given, executed commands will be logged prefixed with this tag
 function M.open(command, path, cursor, cmd_debug_prefix)
-  local logger = require("neogit.logger")
+  local logger = require("neojj.logger")
   local line = cursor and cursor[1] or "1"
   local cmd = ("silent! %s %s | %s"):format(command, vim.fn.fnameescape(path), line)
   if cmd_debug_prefix ~= nil then

@@ -1,8 +1,8 @@
-local logger = require("neogit.logger")
-local git = require("neogit.lib.git")
-local client = require("neogit.client")
-local notification = require("neogit.lib.notification")
-local event = require("neogit.lib.event")
+local logger = require("neojj.logger")
+local git = require("neojj.lib.git")
+local client = require("neojj.client")
+local notification = require("neojj.lib.notification")
+local event = require("neojj.lib.event")
 
 ---@class NeogitGitRebase
 local M = {}

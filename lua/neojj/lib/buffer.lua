@@ -1,11 +1,11 @@
 local api = vim.api
 local fn = vim.fn
-local logger = require("neogit.logger")
-local util = require("neogit.lib.util")
+local logger = require("neojj.logger")
+local util = require("neojj.lib.util")
 
-local signs = require("neogit.lib.signs")
-local Ui = require("neogit.lib.ui")
-local config = require("neogit.config")
+local signs = require("neojj.lib.signs")
+local Ui = require("neojj.lib.ui")
+local config = require("neojj.config")
 
 local Path = require("plenary.path")
 
@@ -901,7 +901,7 @@ function Buffer.create(config)
       on_win = function()
         buffer:clear_namespace("ActiveItem")
 
-        local active_oid = require("neogit.buffers.commit_view").current_oid()
+        local active_oid = require("neojj.buffers.commit_view").current_oid()
         local item = buffer.ui:find_component_by_oid(active_oid)
         if item and item.first and item.last then
           for line = item.first, item.last do

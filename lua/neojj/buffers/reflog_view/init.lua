@@ -1,11 +1,11 @@
-local Buffer = require("neogit.lib.buffer")
-local ui = require("neogit.buffers.reflog_view.ui")
-local config = require("neogit.config")
-local popups = require("neogit.popups")
-local status_maps = require("neogit.config").get_reversed_status_maps()
-local CommitViewBuffer = require("neogit.buffers.commit_view")
-local notification = require("neogit.lib.notification")
-local git = require("neogit.lib.git")
+local Buffer = require("neojj.lib.buffer")
+local ui = require("neojj.buffers.reflog_view.ui")
+local config = require("neojj.config")
+local popups = require("neojj.popups")
+local status_maps = require("neojj.config").get_reversed_status_maps()
+local CommitViewBuffer = require("neojj.buffers.commit_view")
+local notification = require("neojj.lib.notification")
+local git = require("neojj.lib.git")
 
 ---@class ReflogViewBuffer
 ---@field entries ReflogEntry[]
@@ -171,8 +171,8 @@ function M:open(_)
             vim.cmd("echo ''")
           end
         end,
-        ["<esc>"] = require("neogit.lib.ui.helpers").close_topmost(self),
-        [status_maps["Close"]] = require("neogit.lib.ui.helpers").close_topmost(self),
+        ["<esc>"] = require("neojj.lib.ui.helpers").close_topmost(self),
+        [status_maps["Close"]] = require("neojj.lib.ui.helpers").close_topmost(self),
         [status_maps["GoToFile"]] = function()
           local commit = self.buffer.ui:get_commit_under_cursor()
           if commit then

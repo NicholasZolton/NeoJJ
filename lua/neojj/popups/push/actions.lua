@@ -1,13 +1,13 @@
 local a = require("plenary.async")
-local git = require("neogit.lib.git")
-local logger = require("neogit.logger")
-local notification = require("neogit.lib.notification")
-local input = require("neogit.lib.input")
-local util = require("neogit.lib.util")
-local config = require("neogit.config")
-local event = require("neogit.lib.event")
+local git = require("neojj.lib.git")
+local logger = require("neojj.logger")
+local notification = require("neojj.lib.notification")
+local input = require("neojj.lib.input")
+local util = require("neojj.lib.util")
+local config = require("neojj.config")
+local event = require("neojj.lib.event")
 
-local FuzzyFinderBuffer = require("neogit.buffers.fuzzy_finder")
+local FuzzyFinderBuffer = require("neojj.buffers.fuzzy_finder")
 
 local M = {}
 
@@ -193,7 +193,7 @@ function M.explicit_refspec(popup)
 end
 
 function M.configure()
-  require("neogit.popups.branch_config").create {}
+  require("neojj.popups.branch_config").create {}
 end
 
 return M

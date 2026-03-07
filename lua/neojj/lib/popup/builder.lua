@@ -1,8 +1,8 @@
-local git = require("neogit.lib.git")
-local state = require("neogit.lib.state")
-local util = require("neogit.lib.util")
-local notification = require("neogit.lib.notification")
-local config = require("neogit.config")
+local git = require("neojj.lib.git")
+local state = require("neojj.lib.state")
+local util = require("neojj.lib.util")
+local notification = require("neojj.lib.notification")
+local config = require("neojj.config")
 
 ---@class PopupBuilder
 ---@field state PopupState

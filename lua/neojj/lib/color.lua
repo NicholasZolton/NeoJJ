@@ -1,4 +1,4 @@
-local util = require("neogit.lib.util")
+local util = require("neojj.lib.util")
 local M = {}
 
 --#region TYPES

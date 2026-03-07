@@ -1,5 +1,5 @@
 return {
-  git = require("neogit.lib.git"),
-  popup = require("neogit.lib.popup"),
-  notification = require("neogit.lib.notification"),
+  git = require("neojj.lib.git"),
+  popup = require("neojj.lib.popup"),
+  notification = require("neojj.lib.notification"),
 }

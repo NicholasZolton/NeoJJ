@@ -1,8 +1,8 @@
-local Component = require("neogit.lib.ui.component")
-local util = require("neogit.lib.util")
-local Renderer = require("neogit.lib.ui.renderer")
-local Collection = require("neogit.lib.collection")
-local logger = require("neogit.logger") -- TODO: Add logging
+local Component = require("neojj.lib.ui.component")
+local util = require("neojj.lib.util")
+local Renderer = require("neojj.lib.ui.renderer")
+local Collection = require("neojj.lib.collection")
+local logger = require("neojj.logger") -- TODO: Add logging
 
 ---@class Section
 ---@field items StatusItem[]
@@ -152,7 +152,7 @@ function Ui:item_hunks(item, first_line, last_line, partial)
   local hunks = {}
 
   -- TODO: Move this to lib.git.diff
-  -- local diff = require("neogit.lib.git").cli.diff.check.call { hidden = true, ignore_error = true }
+  -- local diff = require("neojj.lib.git").cli.diff.check.call { hidden = true, ignore_error = true }
   -- local conflict_markers = {}
   -- if diff.code == 2 then
   --   for _, out in ipairs(diff.stdout) do

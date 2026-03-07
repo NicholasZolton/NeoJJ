@@ -1,10 +1,10 @@
 local M = {}
 
-local popup = require("neogit.lib.popup")
-local git = require("neogit.lib.git")
-local actions = require("neogit.popups.branch.actions")
-local worktree_actions = require("neogit.popups.worktree.actions")
-local config_actions = require("neogit.popups.branch_config.actions")
+local popup = require("neojj.lib.popup")
+local git = require("neojj.lib.git")
+local actions = require("neojj.popups.branch.actions")
+local worktree_actions = require("neojj.popups.worktree.actions")
+local config_actions = require("neojj.popups.branch_config.actions")
 
 function M.create(env)
   local current_branch = git.branch.current() or ""

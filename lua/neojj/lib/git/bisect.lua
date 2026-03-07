@@ -1,5 +1,5 @@
-local git = require("neogit.lib.git")
-local event = require("neogit.lib.event")
+local git = require("neojj.lib.git")
+local event = require("neojj.lib.event")
 
 ---@class NeogitGitBisect
 local M = {}

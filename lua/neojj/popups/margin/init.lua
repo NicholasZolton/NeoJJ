@@ -1,6 +1,6 @@
-local popup = require("neogit.lib.popup")
-local config = require("neogit.config")
-local actions = require("neogit.popups.margin.actions")
+local popup = require("neojj.lib.popup")
+local config = require("neojj.config")
+local actions = require("neojj.popups.margin.actions")
 
 local M = {}
 

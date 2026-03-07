@@ -1,5 +1,5 @@
-local CommitSelectViewBuffer = require("neogit.buffers.commit_select_view")
-local git = require("neogit.lib.git")
+local CommitSelectViewBuffer = require("neojj.buffers.commit_select_view")
+local git = require("neojj.lib.git")
 
 local M = {
   values = {},

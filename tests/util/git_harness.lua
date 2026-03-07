@@ -1,4 +1,4 @@
-local neogit = require("neogit")
+local neogit = require("neojj")
 local a = require("plenary.async")
 local M = {}
 local util = require("tests.util.util")
@@ -54,7 +54,7 @@ end
 function M.in_prepared_repo(cb)
   return function()
     M.prepare_repository()
-    require("neogit").setup {}
+    require("neojj").setup {}
     vim.cmd("Neogit")
   end
 end

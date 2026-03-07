@@ -1,9 +1,9 @@
 local M = {}
-local git = require("neogit.lib.git")
-local notification = require("neogit.lib.notification")
-local input = require("neogit.lib.input")
-local FuzzyFinderBuffer = require("neogit.buffers.fuzzy_finder")
-local util = require("neogit.lib.util")
+local git = require("neojj.lib.git")
+local notification = require("neojj.lib.notification")
+local input = require("neojj.lib.input")
+local FuzzyFinderBuffer = require("neojj.buffers.fuzzy_finder")
+local util = require("neojj.lib.util")
 
 ---@return table<string, string>|nil
 local function use_popup_revisions(popup)

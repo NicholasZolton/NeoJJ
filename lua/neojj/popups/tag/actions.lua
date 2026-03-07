@@ -1,12 +1,12 @@
 local M = {}
 
-local git = require("neogit.lib.git")
-local client = require("neogit.client")
-local utils = require("neogit.lib.util")
-local FuzzyFinderBuffer = require("neogit.buffers.fuzzy_finder")
-local input = require("neogit.lib.input")
-local notification = require("neogit.lib.notification")
-local event = require("neogit.lib.event")
+local git = require("neojj.lib.git")
+local client = require("neojj.client")
+local utils = require("neojj.lib.util")
+local FuzzyFinderBuffer = require("neojj.buffers.fuzzy_finder")
+local input = require("neojj.lib.input")
+local notification = require("neojj.lib.notification")
+local event = require("neojj.lib.event")
 
 ---@param popup PopupData
 function M.create_tag(popup)

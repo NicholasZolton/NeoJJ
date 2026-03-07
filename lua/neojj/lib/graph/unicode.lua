@@ -69,7 +69,7 @@ end
 -- stylua: ignore end
 
 function M.build(commits)
-  commits = require("neogit.lib.util").filter_map(commits, function(item)
+  commits = require("neojj.lib.util").filter_map(commits, function(item)
     if item.oid then
       return item
     end

@@ -1,8 +1,8 @@
 local M = {}
 
-local common = require("neogit.buffers.common")
-local Ui = require("neogit.lib.ui")
-local util = require("neogit.lib.util")
+local common = require("neojj.buffers.common")
+local Ui = require("neojj.lib.ui")
+local util = require("neojj.lib.util")
 
 local EmptyLine = common.EmptyLine
 local List = common.List

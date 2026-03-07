@@ -1,11 +1,11 @@
 local M = {}
 
-local git = require("neogit.lib.git")
-local util = require("neogit.lib.util")
+local git = require("neojj.lib.git")
+local util = require("neojj.lib.util")
 
-local LogViewBuffer = require("neogit.buffers.log_view")
-local ReflogViewBuffer = require("neogit.buffers.reflog_view")
-local FuzzyFinderBuffer = require("neogit.buffers.fuzzy_finder")
+local LogViewBuffer = require("neojj.buffers.log_view")
+local ReflogViewBuffer = require("neojj.buffers.reflog_view")
+local FuzzyFinderBuffer = require("neojj.buffers.fuzzy_finder")
 
 local a = require("plenary.async")
 

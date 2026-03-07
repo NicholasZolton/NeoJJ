@@ -1,8 +1,8 @@
 local M = {}
 
-local Ui = require("neogit.lib.ui")
-local util = require("neogit.lib.util")
-local common_ui = require("neogit.buffers.common")
+local Ui = require("neojj.lib.ui")
+local util = require("neojj.lib.util")
+local common_ui = require("neojj.buffers.common")
 
 local Diff = common_ui.Diff
 local text = Ui.text

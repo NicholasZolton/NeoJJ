@@ -1,5 +1,5 @@
 ---@class Ui
-local Ui = require("neogit.lib.ui")
+local Ui = require("neojj.lib.ui")
 
 function Ui:debug(...)
   Ui.visualize_tree { ... }

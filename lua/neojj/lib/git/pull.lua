@@ -1,11 +1,11 @@
-local git = require("neogit.lib.git")
-local util = require("neogit.lib.util")
+local git = require("neojj.lib.git")
+local util = require("neojj.lib.util")
 
 ---@class NeogitGitPull
 local M = {}
 
 function M.pull_interactive(remote, branch, args)
-  local client = require("neogit.client")
+  local client = require("neojj.client")
   local envs = client.get_envs_git_editor()
   return git.cli.pull.env(envs).args(remote or "", branch or "").arg_list(args).call { pty = true }
 end

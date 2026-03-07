@@ -1,16 +1,16 @@
 -- NOTE: `v_` prefix stands for visual mode actions, `n_` for normal mode.
 --
 local a = require("plenary.async")
-local git = require("neogit.lib.git")
-local popups = require("neogit.popups")
-local logger = require("neogit.logger")
-local input = require("neogit.lib.input")
-local notification = require("neogit.lib.notification")
-local util = require("neogit.lib.util")
-local config = require("neogit.config")
-local jump = require("neogit.lib.jump")
+local git = require("neojj.lib.git")
+local popups = require("neojj.popups")
+local logger = require("neojj.logger")
+local input = require("neojj.lib.input")
+local notification = require("neojj.lib.notification")
+local util = require("neojj.lib.util")
+local config = require("neojj.config")
+local jump = require("neojj.lib.jump")
 
-local FuzzyFinderBuffer = require("neogit.buffers.fuzzy_finder")
+local FuzzyFinderBuffer = require("neojj.buffers.fuzzy_finder")
 
 local fn = vim.fn
 local api = vim.api
@@ -563,7 +563,7 @@ end
 ---@param self StatusBuffer
 ---@return fun(): nil
 M.n_close = function(self)
-  return require("neogit.lib.ui.helpers").close_topmost(self)
+  return require("neojj.lib.ui.helpers").close_topmost(self)
 end
 
 ---@param self StatusBuffer
@@ -572,7 +572,7 @@ M.n_open_or_scroll_down = function(self)
   return function()
     local commit = self.buffer.ui:get_commit_under_cursor()
     if commit then
-      require("neogit.buffers.commit_view").open_or_scroll_down(commit)
+      require("neojj.buffers.commit_view").open_or_scroll_down(commit)
     end
   end
 end
@@ -583,7 +583,7 @@ M.n_open_or_scroll_up = function(self)
   return function()
     local commit = self.buffer.ui:get_commit_under_cursor()
     if commit then
-      require("neogit.buffers.commit_view").open_or_scroll_up(commit)
+      require("neojj.buffers.commit_view").open_or_scroll_up(commit)
     end
   end
 end
@@ -704,7 +704,7 @@ end
 ---@return fun(): nil
 M.n_command_history = function(_self)
   return a.void(function()
-    require("neogit.buffers.git_command_history"):new():show()
+    require("neojj.buffers.git_command_history"):new():show()
   end)
 end
 
@@ -712,7 +712,7 @@ end
 ---@return fun(): nil
 M.n_show_refs = function(_self)
   return a.void(function()
-    require("neogit.buffers.refs_view").new(git.refs.list_parsed(), git.repo.worktree_root):open()
+    require("neojj.buffers.refs_view").new(git.refs.list_parsed(), git.repo.worktree_root):open()
   end)
 end
 
@@ -1147,8 +1147,8 @@ M.n_stage = function(self)
       if selection.item and selection.item.mode == "UU" then
         local diff_viewer = config.get_diff_viewer()
         if diff_viewer and git.merge.is_conflicted(selection.item.escaped_path) then
-          local integration = diff_viewer == "codediff" and require("neogit.integrations.codediff")
-            or require("neogit.integrations.diffview")
+          local integration = diff_viewer == "codediff" and require("neojj.integrations.codediff")
+            or require("neojj.integrations.diffview")
           integration.open("conflict", selection.item.name, {
             on_close = {
               handle = self.buffer.handle,
@@ -1191,8 +1191,8 @@ M.n_stage = function(self)
         if git.status.any_unmerged() then
           local diff_viewer = config.get_diff_viewer()
           if diff_viewer then
-            local integration = diff_viewer == "codediff" and require("neogit.integrations.codediff")
-              or require("neogit.integrations.diffview")
+            local integration = diff_viewer == "codediff" and require("neojj.integrations.codediff")
+              or require("neojj.integrations.diffview")
             integration.open("conflict", nil, {
               on_close = {
                 handle = self.buffer.handle,
@@ -1289,7 +1289,7 @@ M.n_goto_parent_repo = function(self)
     local parent = self:parent_repo()
     if parent then
       self:close()
-      require("neogit").open { cwd = parent }
+      require("neojj").open { cwd = parent }
     end
   end
 end
@@ -1304,7 +1304,7 @@ M.n_goto_file = function(self)
     if item and item.absolute_path then
       if self:has_submodule(item.absolute_path) then
         self:close()
-        require("neogit").open { cwd = item.absolute_path }
+        require("neojj").open { cwd = item.absolute_path }
         return
       end
 
@@ -1317,7 +1317,7 @@ M.n_goto_file = function(self)
     -- Goto COMMIT
     local ref = self.buffer.ui:get_yankable_under_cursor()
     if ref then
-      require("neogit.buffers.commit_view").new(ref):open()
+      require("neojj.buffers.commit_view").new(ref):open()
     end
   end
 end
@@ -1589,8 +1589,8 @@ end
 ---@param self StatusBuffer|nil
 ---@return fun(): nil
 M.n_command = function(self)
-  local process = require("neogit.process")
-  local runner = require("neogit.runner")
+  local process = require("neojj.process")
+  local runner = require("neojj.runner")
 
   return a.void(function()
     local cmd =

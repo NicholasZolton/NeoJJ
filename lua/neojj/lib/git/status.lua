@@ -1,8 +1,8 @@
 local Path = require("plenary.path")
-local git = require("neogit.lib.git")
-local util = require("neogit.lib.util")
-local Collection = require("neogit.lib.collection")
-local logger = require("neogit.logger")
+local git = require("neojj.lib.git")
+local util = require("neojj.lib.util")
+local Collection = require("neojj.lib.collection")
+local logger = require("neojj.logger")
 
 ---@class StatusItem
 ---@field mode string

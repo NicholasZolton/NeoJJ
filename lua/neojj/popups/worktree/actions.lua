@@ -1,13 +1,13 @@
 local M = {}
 
-local git = require("neogit.lib.git")
-local input = require("neogit.lib.input")
-local util = require("neogit.lib.util")
-local status = require("neogit.buffers.status")
-local notification = require("neogit.lib.notification")
-local event = require("neogit.lib.event")
+local git = require("neojj.lib.git")
+local input = require("neojj.lib.input")
+local util = require("neojj.lib.util")
+local status = require("neojj.buffers.status")
+local notification = require("neojj.lib.notification")
+local event = require("neojj.lib.event")
 
-local FuzzyFinderBuffer = require("neogit.buffers.fuzzy_finder")
+local FuzzyFinderBuffer = require("neojj.buffers.fuzzy_finder")
 
 ---@param prompt string
 ---@param branch string?

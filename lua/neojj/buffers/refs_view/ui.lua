@@ -1,9 +1,9 @@
 local M = {}
 
 local a = require("plenary.async")
-local Ui = require("neogit.lib.ui")
-local util = require("neogit.lib.util")
-local git = require("neogit.lib.git")
+local Ui = require("neojj.lib.ui")
+local util = require("neojj.lib.util")
+local git = require("neojj.lib.git")
 
 local text = Ui.text
 local col = Ui.col

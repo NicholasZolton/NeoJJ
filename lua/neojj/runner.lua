@@ -1,6 +1,6 @@
-local logger = require("neogit.logger")
-local input = require("neogit.lib.input")
-local util = require("neogit.lib.util")
+local logger = require("neojj.logger")
+local input = require("neojj.lib.input")
+local util = require("neojj.lib.util")
 
 local M = {
   history = {},
@@ -66,7 +66,7 @@ end
 ---@return string
 local function handle_fatal_error(line)
   logger.debug("[RUNNER]: Fatal error encountered")
-  local notification = require("neogit.lib.notification")
+  local notification = require("neojj.lib.notification")
 
   notification.error(line)
   return "__CANCEL__"

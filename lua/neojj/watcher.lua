@@ -1,9 +1,9 @@
 -- Adapted from https://github.com/lewis6991/gitsigns.nvim/blob/main/lua/gitsigns/watcher.lua#L103
 
-local logger = require("neogit.logger")
-local util = require("neogit.lib.util")
-local git = require("neogit.lib.git")
-local config = require("neogit.config")
+local logger = require("neojj.logger")
+local util = require("neojj.lib.util")
+local git = require("neojj.lib.git")
+local config = require("neojj.config")
 local a = require("plenary.async")
 
 ---@class Watcher

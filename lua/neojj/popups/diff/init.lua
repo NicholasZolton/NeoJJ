@@ -1,8 +1,8 @@
 local M = {}
 
-local config = require("neogit.config")
-local popup = require("neogit.lib.popup")
-local actions = require("neogit.popups.diff.actions")
+local config = require("neojj.config")
+local popup = require("neojj.lib.popup")
+local actions = require("neojj.popups.diff.actions")
 
 function M.create(env)
   local diff_viewer = config.get_diff_viewer()

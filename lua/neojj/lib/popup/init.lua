@@ -1,22 +1,22 @@
-local PopupBuilder = require("neogit.lib.popup.builder")
-local Buffer = require("neogit.lib.buffer")
-local logger = require("neogit.logger")
-local util = require("neogit.lib.util")
-local state = require("neogit.lib.state")
-local input = require("neogit.lib.input")
-local notification = require("neogit.lib.notification")
-local Watcher = require("neogit.watcher")
+local PopupBuilder = require("neojj.lib.popup.builder")
+local Buffer = require("neojj.lib.buffer")
+local logger = require("neojj.logger")
+local util = require("neojj.lib.util")
+local state = require("neojj.lib.state")
+local input = require("neojj.lib.input")
+local notification = require("neojj.lib.notification")
+local Watcher = require("neojj.watcher")
 
-local FuzzyFinderBuffer = require("neogit.buffers.fuzzy_finder")
+local FuzzyFinderBuffer = require("neojj.buffers.fuzzy_finder")
 
-local git = require("neogit.lib.git")
+local git = require("neojj.lib.git")
 
 local a = require("plenary.async")
 
 local filter_map = util.filter_map
 local build_reverse_lookup = util.build_reverse_lookup
 
-local ui = require("neogit.lib.popup.ui")
+local ui = require("neojj.lib.popup.ui")
 
 ---@class PopupState
 

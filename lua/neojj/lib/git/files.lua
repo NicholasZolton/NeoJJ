@@ -1,5 +1,5 @@
-local git = require("neogit.lib.git")
-local util = require("neogit.lib.util")
+local git = require("neojj.lib.git")
+local util = require("neojj.lib.util")
 local Path = require("plenary.path")
 
 ---@class NeogitGitFiles

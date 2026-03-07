@@ -1,10 +1,10 @@
 local a = require("plenary.async")
-local git = require("neogit.lib.git")
-local logger = require("neogit.logger")
-local notification = require("neogit.lib.notification")
-local event = require("neogit.lib.event")
+local git = require("neojj.lib.git")
+local logger = require("neojj.logger")
+local notification = require("neojj.lib.notification")
+local event = require("neojj.lib.event")
 
-local FuzzyFinderBuffer = require("neogit.buffers.fuzzy_finder")
+local FuzzyFinderBuffer = require("neojj.buffers.fuzzy_finder")
 
 local M = {}
 
@@ -90,7 +90,7 @@ function M.from_elsewhere(popup)
 end
 
 function M.configure()
-  require("neogit.popups.branch_config").create {}
+  require("neojj.popups.branch_config").create {}
 end
 
 return M

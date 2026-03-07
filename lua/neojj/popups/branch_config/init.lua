@@ -1,9 +1,9 @@
 local M = {}
 
-local popup = require("neogit.lib.popup")
-local git = require("neogit.lib.git")
-local actions = require("neogit.popups.branch_config.actions")
-local notification = require("neogit.lib.notification")
+local popup = require("neojj.lib.popup")
+local git = require("neojj.lib.git")
+local actions = require("neojj.popups.branch_config.actions")
+local notification = require("neojj.lib.notification")
 
 ---@param env table
 function M.create(env)

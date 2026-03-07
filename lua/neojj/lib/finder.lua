@@ -1,8 +1,8 @@
-local config = require("neogit.config")
+local config = require("neojj.config")
 local a = require("plenary.async")
 
 local function refocus_status_buffer()
-  local status = require("neogit.buffers.status")
+  local status = require("neojj.buffers.status")
   if status.instance() then
     status.instance():focus()
     status.instance():dispatch_refresh(nil, "finder.refocus")

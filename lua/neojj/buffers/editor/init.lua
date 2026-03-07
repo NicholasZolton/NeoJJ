@@ -1,12 +1,12 @@
-local Buffer = require("neogit.lib.buffer")
-local config = require("neogit.config")
-local input = require("neogit.lib.input")
-local util = require("neogit.lib.util")
-local git = require("neogit.lib.git")
-local logger = require("neogit.logger")
-local process = require("neogit.process")
+local Buffer = require("neojj.lib.buffer")
+local config = require("neojj.config")
+local input = require("neojj.lib.input")
+local util = require("neojj.lib.util")
+local git = require("neojj.lib.git")
+local logger = require("neojj.logger")
+local process = require("neojj.process")
 
-local DiffViewBuffer = require("neogit.buffers.diff")
+local DiffViewBuffer = require("neojj.buffers.diff")
 
 local pad = util.pad_right
 

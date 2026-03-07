@@ -1,6 +1,6 @@
-local git = require("neogit.lib.git")
-local notification = require("neogit.lib.notification")
-local input = require("neogit.lib.input")
+local git = require("neojj.lib.git")
+local notification = require("neojj.lib.notification")
+local input = require("neojj.lib.input")
 
 ---@class NeogitGitInit
 local M = {}
@@ -23,7 +23,7 @@ M.init_repo = function()
     notification.error("Invalid Directory")
     return
   end
-  local status = require("neogit.buffers.status")
+  local status = require("neojj.buffers.status")
   if status.is_open() then
     status.instance():chdir(directory)
   end

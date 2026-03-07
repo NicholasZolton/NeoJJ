@@ -1,8 +1,8 @@
-local git = require("neogit.lib.git")
-local input = require("neogit.lib.input")
+local git = require("neojj.lib.git")
+local input = require("neojj.lib.input")
 
-local FuzzyFinderBuffer = require("neogit.buffers.fuzzy_finder")
-local StashListBuffer = require("neogit.buffers.stash_list_view")
+local FuzzyFinderBuffer = require("neojj.buffers.fuzzy_finder")
+local StashListBuffer = require("neojj.buffers.stash_list_view")
 
 local M = {}
 
