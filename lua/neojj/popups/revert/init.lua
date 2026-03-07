@@ -11,7 +11,7 @@ function M.create(env)
 
   local p = popup
     .builder()
-    :name("NeogitRevertPopup")
+    :name("NeoJJRevertPopup")
     :option_if(not in_progress, "m", "mainline", "", "Replay merge relative to parent")
     :switch_if(
       not in_progress,

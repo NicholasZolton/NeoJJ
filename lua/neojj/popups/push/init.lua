@@ -10,7 +10,7 @@ function M.create(env)
 
   local p = popup
     .builder()
-    :name("NeogitPushPopup")
+    :name("NeoJJPushPopup")
     :switch("f", "force-with-lease", "Force with lease", { persisted = false })
     :switch("F", "force", "Force", { persisted = false })
     :switch("h", "no-verify", "Disable hooks")

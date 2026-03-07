@@ -51,8 +51,8 @@ function M:open(_)
   M.instance = self
 
   self.buffer = Buffer.create {
-    name = "NeogitReflogView",
-    filetype = "NeogitReflogView",
+    name = "NeoJJReflogView",
+    filetype = "NeoJJReflogView",
     kind = config.values.reflog_view.kind,
     header = self.header,
     scroll_header = true,

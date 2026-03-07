@@ -6,7 +6,7 @@ local M = {}
 function M.create(env)
   local p = popup
     .builder()
-    :name("NeogitYankPopup")
+    :name("NeoJJYankPopup")
     :group_heading("Yank Commit info")
     :action("Y", "Hash", actions.hash)
     :action("s", "Subject", actions.subject)

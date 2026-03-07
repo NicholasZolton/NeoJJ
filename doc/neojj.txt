@@ -3,7 +3,7 @@
 
 Original Author: TimUntersberger
 Current Author: Cameron Kolkey <cameron.kolkey@gmail.com>
-Homepage: <https://github.com/NeogitOrg/neogit>
+Homepage: <https://github.com/NeoJJOrg/neogit>
 License: MIT license
 
 ==============================================================================
@@ -514,13 +514,13 @@ The following mappings can all be customized via the setup function.
 3. Commands                                                    *neogit_commands*
 
                                                                        *:Neogit*
-:Neogit                 In a Git repository, opens a new NeogitStatus tab.
+:Neogit                 In a Git repository, opens a new NeoJJStatus tab.
 
                                                              *:NeoJJResetState*
 :NeoJJResetState       Performs a full reset of saved flags for all popups.
 
-                                                                    *:NeogitLog*
-:NeogitLog              Opens log buffer for any changes to the current file,
+                                                                    *:NeoJJLog*
+:NeoJJLog              Opens log buffer for any changes to the current file,
                         or a path the user has specified. Optionally, a range
                         can be specified to further filter the log entries.
 
@@ -533,7 +533,7 @@ The following mappings can all be customized via the setup function.
 
 The following events are emitted by Neogit:
 
-• `NeogitStatusRefreshed`
+• `NeoJJStatusRefreshed`
   When: Status has been reloaded
   Data: `{}`
 
@@ -541,19 +541,19 @@ The following events are emitted by Neogit:
   When: Commit has been created
   Data: `{}`
 
-• `NeogitPushComplete`
+• `NeoJJPushComplete`
   When: Push has finished
   Data: `{}`
 
-• `NeogitPullComplete`
+• `NeoJJPullComplete`
   When: Push has finished
   Data: `{}`
 
-• `NeogitFetchComplete`
+• `NeoJJFetchComplete`
   When: Fetch has finished
   Data: `{}`
 
-• `NeogitBranchCreate`
+• `NeoJJBranchCreate`
   When: Branch was created, starting from `<base>`
   Data: >
     {
@@ -561,21 +561,21 @@ The following events are emitted by Neogit:
       base: string?
     }
 <
-• `NeogitBranchDelete`
+• `NeoJJBranchDelete`
   When: Branch was deleted
   Data: >
     {
       branch_name: string,
     }
 <
-• `NeogitBranchCheckout`
+• `NeoJJBranchCheckout`
   When: Branch was checked out
   Data: >
     {
       branch_name: string,
     }
 <
-• `NeogitBranchReset`
+• `NeoJJBranchReset`
   When: Branch was reset to commit/branch
   Data: >
     {
@@ -583,7 +583,7 @@ The following events are emitted by Neogit:
       resetting_to: string
     }
 <
-• `NeogitBranchRename`
+• `NeoJJBranchRename`
   When: Branch was renamed
   Data: >
     {
@@ -591,7 +591,7 @@ The following events are emitted by Neogit:
       new_name: string
     }
 <
-• `NeogitRebase`
+• `NeoJJRebase`
   When: A rebase has finished
   Data: >
     {
@@ -599,7 +599,7 @@ The following events are emitted by Neogit:
       status: "ok" | "conflict"
     }
 <
-• `NeogitReset`
+• `NeoJJReset`
   When: A reset has been performed
   Data: >
     {
@@ -607,7 +607,7 @@ The following events are emitted by Neogit:
       mode: "soft" | "mixed" | "hard" | "keep" | "index"
     }
 <
-• `NeogitTagCreate`
+• `NeoJJTagCreate`
   When: A tag is placed on a commit
   Data: >
     {
@@ -615,7 +615,7 @@ The following events are emitted by Neogit:
       name: string
     }
 <
-• `NeogitTagCreate`
+• `NeoJJTagCreate`
   When: A tag is placed on a commit
   Data: >
     {
@@ -623,21 +623,21 @@ The following events are emitted by Neogit:
       name: string
     }
 <
-• `NeogitTagDelete`
+• `NeoJJTagDelete`
   When: A tag is removed
   Data: >
     {
       name: string
     }
 <
-• `NeogitCherryPick`
+• `NeoJJCherryPick`
   When: One or more commits were cherry picked
   Data: >
     {
       commits: string[]
     }
 <
-• `NeogitMerge`
+• `NeoJJMerge`
   When: A merge has finished
   Data: >
     {
@@ -646,14 +646,14 @@ The following events are emitted by Neogit:
       status: "ok" | "conflict"
     }
 <
-• `NeogitStash`
+• `NeoJJStash`
   When: A stash was performed
   Data: >
     {
       success: boolean
     }
 <
-• `NeogitWorktreeCreate`
+• `NeoJJWorktreeCreate`
   When: A worktree was created
   Data: >
     {
@@ -662,7 +662,7 @@ The following events are emitted by Neogit:
       copy_if_present: function(filename: string, callback: function|nil)
     }
 <
-• `NeogitDiffLoaded`
+• `NeoJJDiffLoaded`
   When: A hunk is lazy loaded in the status buffer
   Data: >
     {
@@ -730,59 +730,59 @@ these yourself before the plugin loads, that will be respected. If they do not
 exist, they will be created with sensible defaults based on your colorscheme.
 
 STATUS BUFFER
-NeogitNormal                Normal text
-NeogitFloat                 Normal text when using a floating window
-NeogitFloatBorder           Border wen using a floating window
-NeogitBranch                Local branches
-NeogitBranchHead            Accent highlight for current HEAD in LogBuffer
-NeogitRemote                Remote branches
-NeogitObjectId              Object's SHA hash
-NeogitStash                 Stash name
-NeogitFold                  Folded text highlight
-NeogitFoldColumn            Column where folds are displayed
-NeogitSignColumn            Column where signs are displayed
-NeogitRebaseDone            Current position within rebase
-NeogitTagName               Closest Tag name
-NeogitTagDistance           Number of commits between the tag and HEAD
-NeogitStatusHEAD            The left text in the HEAD section
+NeoJJNormal                Normal text
+NeoJJFloat                 Normal text when using a floating window
+NeoJJFloatBorder           Border wen using a floating window
+NeoJJBranch                Local branches
+NeoJJBranchHead            Accent highlight for current HEAD in LogBuffer
+NeoJJRemote                Remote branches
+NeoJJObjectId              Object's SHA hash
+NeoJJStash                 Stash name
+NeoJJFold                  Folded text highlight
+NeoJJFoldColumn            Column where folds are displayed
+NeoJJSignColumn            Column where signs are displayed
+NeoJJRebaseDone            Current position within rebase
+NeoJJTagName               Closest Tag name
+NeoJJTagDistance           Number of commits between the tag and HEAD
+NeoJJStatusHEAD            The left text in the HEAD section
 
 STATUS BUFFER SECTION HEADERS
-NeogitSectionHeader
-NeogitUnpushedTo            Linked to NeogitSectionHeader
-NeogitUnmergedInto          ^
-NeogitUnpulledFrom          ^
-NeogitUntrackedfiles        ^
-NeogitUnstagedchanges       ^
-NeogitUnmergedchanges       ^
-NeogitUnpushedchanges       ^
-NeogitUnpulledchanges       ^
-NeogitRecentcommits         ^
-NeogitStagedchanges         ^
-NeogitStashes               ^
-NeogitRebasing              ^
-NeogitReverting             ^
-NeogitPicking               ^
-NeogitMerging               ^
-NeogitBisecting             ^
-NeogitSectionHeaderCount    The number, for sections with a number.
+NeoJJSectionHeader
+NeoJJUnpushedTo            Linked to NeoJJSectionHeader
+NeoJJUnmergedInto          ^
+NeoJJUnpulledFrom          ^
+NeoJJUntrackedfiles        ^
+NeoJJUnstagedchanges       ^
+NeoJJUnmergedchanges       ^
+NeoJJUnpushedchanges       ^
+NeoJJUnpulledchanges       ^
+NeoJJRecentcommits         ^
+NeoJJStagedchanges         ^
+NeoJJStashes               ^
+NeoJJRebasing              ^
+NeoJJReverting             ^
+NeoJJPicking               ^
+NeoJJMerging               ^
+NeoJJBisecting             ^
+NeoJJSectionHeaderCount    The number, for sections with a number.
 
 STATUS BUFFER FILE
 Applied to the label on the left of filenames. These highlight groups are not
 used directly, but linked to by other groups:
 
-NeogitChangeModified
-NeogitChangeAdded
-NeogitChangeDeleted
-NeogitChangeRenamed
-NeogitChangeUpdated
-NeogitChangeCopied
-NeogitChangeNewFile
-NeogitChangeUnmerged
+NeoJJChangeModified
+NeoJJChangeAdded
+NeoJJChangeDeleted
+NeoJJChangeRenamed
+NeoJJChangeUpdated
+NeoJJChangeCopied
+NeoJJChangeNewFile
+NeoJJChangeUnmerged
 
 Styling one of the above groups will apply to all sections, and is generally
 whats recommended. However, if you want to control the style on a per-section
 basis, the _actual_ highlight groups on the labels follow this pattern:
-    `NeogitChange<mode><section>`
+    `NeoJJChange<mode><section>`
 
 Where `<mode>` is one of: (corresponding to the git mode)
   M
@@ -805,18 +805,18 @@ And `<section>` is one of:
   unstaged
   staged
 
-So, a modified and staged change would use the `NeogitChangeMstaged` highlight
-group, which is linked to `NeogitChangeModified` by default.
+So, a modified and staged change would use the `NeoJJChangeMstaged` highlight
+group, which is linked to `NeoJJChangeModified` by default.
 
 SIGNS FOR LINE HIGHLIGHTING
 Used to highlight different sections of the status buffer or commit buffer.
 
-NeogitHunkHeader
-NeogitDiffContext
-NeogitDiffAdd
-NeogitDiffDelete
-NeogitDiffHeader
-NeogitActiveItem            Highlight of current commit-ish open
+NeoJJHunkHeader
+NeoJJDiffContext
+NeoJJDiffAdd
+NeoJJDiffDelete
+NeoJJDiffHeader
+NeoJJActiveItem            Highlight of current commit-ish open
 
 SIGNS FOR LINE HIGHLIGHTING CURRENT CONTEXT
 These are essentially an accented version of the above highlight groups. Only
@@ -824,82 +824,82 @@ applies to the current context the cursor is within.
 
 The "Cursor" suffix applies only to the Cursor line
 
-NeogitHunkHeaderHighlight
-NeogitDiffContextHighlight
-NeogitDiffAddHighlight
-NeogitDiffDeleteHighlight
-NeogitDiffHeaderHighlight
-NeogitHunkHeaderCursor
-NeogitDiffContextCursor
-NeogitDiffAddCursor
-NeogitDiffDeleteCursor
-NeogitDiffHeaderCursor
+NeoJJHunkHeaderHighlight
+NeoJJDiffContextHighlight
+NeoJJDiffAddHighlight
+NeoJJDiffDeleteHighlight
+NeoJJDiffHeaderHighlight
+NeoJJHunkHeaderCursor
+NeoJJDiffContextCursor
+NeoJJDiffAddCursor
+NeoJJDiffDeleteCursor
+NeoJJDiffHeaderCursor
 
 COMMIT BUFFER
-NeogitFilePath              Applied to filepath
+NeoJJFilePath              Applied to filepath
 NeoJJCommitViewHeader      Applied to header of Commit View
 
 LOG VIEW BUFFER
-NeogitGraphAuthor           Applied to the commit's author in graph view
-NeogitGraphBlack            Used when --colors is enabled for graph
-NeogitGraphBoldBlack
-NeogitGraphRed
-NeogitGraphBoldRed
-NeogitGraphGreen
-NeogitGraphBoldGreen
-NeogitGraphYellow
-NeogitGraphBoldYellow
-NeogitGraphBlue
-NeogitGraphBoldBlue
-NeogitGraphPurple
-NeogitGraphBoldPurple
-NeogitGraphCyan
-NeogitGraphBoldCyan
-NeogitGraphWhite
-NeogitGraphBoldWhite
-NeogitGraphGray
-NeogitGraphBoldGray
-NeogitGraphOrange
+NeoJJGraphAuthor           Applied to the commit's author in graph view
+NeoJJGraphBlack            Used when --colors is enabled for graph
+NeoJJGraphBoldBlack
+NeoJJGraphRed
+NeoJJGraphBoldRed
+NeoJJGraphGreen
+NeoJJGraphBoldGreen
+NeoJJGraphYellow
+NeoJJGraphBoldYellow
+NeoJJGraphBlue
+NeoJJGraphBoldBlue
+NeoJJGraphPurple
+NeoJJGraphBoldPurple
+NeoJJGraphCyan
+NeoJJGraphBoldCyan
+NeoJJGraphWhite
+NeoJJGraphBoldWhite
+NeoJJGraphGray
+NeoJJGraphBoldGray
+NeoJJGraphOrange
 
-NeogitSignatureGood        For highlighting the commit hash when
-NeogitSignatureBad         --show-signature is passed
-NeogitSignatureMissing
-NeogitSignatureNone
-NeogitSignatureGoodUnknown
-NeogitSignatureGoodExpired
-NeogitSignatureGoodExpiredKey
-NeogitSignatureGoodRevokedKey
+NeoJJSignatureGood        For highlighting the commit hash when
+NeoJJSignatureBad         --show-signature is passed
+NeoJJSignatureMissing
+NeoJJSignatureNone
+NeoJJSignatureGoodUnknown
+NeoJJSignatureGoodExpired
+NeoJJSignatureGoodExpiredKey
+NeoJJSignatureGoodRevokedKey
 
 POPUPS
-NeogitPopupSectionTitle    Applied to all section headers
-NeogitPopupBranchName      Applied to the current branch name for emphasis
-NeogitPopupBold            Applied on "@{upstream}" and "pushRemote" for
+NeoJJPopupSectionTitle    Applied to all section headers
+NeoJJPopupBranchName      Applied to the current branch name for emphasis
+NeoJJPopupBold            Applied on "@{upstream}" and "pushRemote" for
                            emphasis (but less emphasis than BranchName)
 
-NeogitPopupSwitchKey       Applied to the key that will toggle switch
-NeogitPopupSwitchEnabled   Applied to the flag if enabled
-NeogitPopupSwitchDisabled  Applied to the flag if disabled
+NeoJJPopupSwitchKey       Applied to the key that will toggle switch
+NeoJJPopupSwitchEnabled   Applied to the flag if enabled
+NeoJJPopupSwitchDisabled  Applied to the flag if disabled
 
-NeogitPopupOptionKey       Applied to the key that will trigger option
-NeogitPopupOptionEnabled   Applied if option is set
-NeogitPopupOptionDisabled  Applied if option has no value
+NeoJJPopupOptionKey       Applied to the key that will trigger option
+NeoJJPopupOptionEnabled   Applied if option is set
+NeoJJPopupOptionDisabled  Applied if option has no value
 
-NeogitPopupConfigKey       Applied to the key that triggers config
-NeogitPopupConfigEnabled   Applied to enabled config value
-NeogitPopupConfigDisabled  Applied to config without value
+NeoJJPopupConfigKey       Applied to the key that triggers config
+NeoJJPopupConfigEnabled   Applied to enabled config value
+NeoJJPopupConfigDisabled  Applied to config without value
 
-NeogitPopupActionKey       Applied to key that triggers function
-NeogitPopupActionDisabled  Applied to key when function is unimplemented
+NeoJJPopupActionKey       Applied to key that triggers function
+NeoJJPopupActionDisabled  Applied to key when function is unimplemented
 
 COMMAND HISTORY BUFFER
-NeogitCommandText          Git command that was run
-NeogitCommandTime          Execution time
-NeogitCommandCodeNormal    Applied to a successful command's exit status (0)
-NeogitCommandCodeError     When command exits with non-zero status
+NeoJJCommandText          Git command that was run
+NeoJJCommandTime          Execution time
+NeoJJCommandCodeNormal    Applied to a successful command's exit status (0)
+NeoJJCommandCodeError     When command exits with non-zero status
 
 COMMIT SELECT BUFFER
-NeogitFloatHeader          Foreground/Background for header text at top of win
-NeogitFloatHeaderHighlight Emphasized text in header
+NeoJJFloatHeader          Foreground/Background for header text at top of win
+NeoJJFloatHeaderHighlight Emphasized text in header
 ==============================================================================
 6. Lua API                                               *neogit_api* *neogit-lua*
 
@@ -2307,7 +2307,7 @@ popup instance as its argument:
       local popup = require("neogit.lib.popup")
       local p = popup
         .builder()
-        :name("NeogitMyCustomPopup")
+        :name("NeoJJMyCustomPopup")
         -- A switch is a boolean CLI flag, like `--no-verify`
         :switch("s", "my-switch", "My switch")
         -- An "_if" variant exists for builder methods, that takes a boolean
@@ -2356,7 +2356,7 @@ from the builder API.
 >lua
     require("neogit").setup({
       builders = {
-        NeogitPushPopup = function(builder)
+        NeoJJPushPopup = function(builder)
           builder:switch('m', 'merge_request.create', 'Create merge request', { cli_prefix = '-o ', persisted = false })
         end,
       },

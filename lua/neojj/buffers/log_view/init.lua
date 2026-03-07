@@ -77,8 +77,8 @@ function M:open()
   M.instance = self
 
   self.buffer = Buffer.create {
-    name = "NeogitLogView",
-    filetype = "NeogitLogView",
+    name = "NeoJJLogView",
+    filetype = "NeoJJLogView",
     kind = config.values.log_view.kind,
     context_highlight = false,
     header = self.header,

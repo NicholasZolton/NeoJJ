@@ -12,7 +12,7 @@ function M.create(env)
 
   local p = popup
     .builder()
-    :name("NeogitRebasePopup")
+    :name("NeoJJRebasePopup")
     :group_heading_if(in_rebase, "Actions")
     :action_if(in_rebase, "r", "Continue", actions.continue)
     :action_if(in_rebase, "s", "Skip", actions.skip)

@@ -606,7 +606,7 @@ function Buffer:set_header(text, scroll)
   -- Create a blank line at the top of the buffer so our floating window doesn't
   -- hide any content
   self:set_extmark(self:get_namespace_id("default"), 0, 0, {
-    virt_lines = { { { "", "NeogitObjectId" } } },
+    virt_lines = { { { "", "NeoJJObjectId" } } },
     virt_lines_above = true,
   })
 
@@ -631,9 +631,9 @@ function Buffer:set_header(text, scroll)
     border = "none",
   })
   vim.wo[winid].wrap = false
-  vim.wo[winid].winhl = "NormalFloat:NeogitFloatHeader"
+  vim.wo[winid].winhl = "NormalFloat:NeoJJFloatHeader"
 
-  fn.matchadd("NeogitFloatHeaderHighlight", [[\v\<cr\>|\<esc\>]], 100, -1, { window = winid })
+  fn.matchadd("NeoJJFloatHeaderHighlight", [[\v\<cr\>|\<esc\>]], 100, -1, { window = winid })
   self.header_win_handle = winid
 
   if scroll then
@@ -774,14 +774,14 @@ function Buffer.create(config)
     buffer:set_window_option("listchars", "")
     buffer:set_window_option("list", false)
     buffer:call(function()
-      vim.opt_local.winhl:append("Folded:NeogitFold")
-      vim.opt_local.winhl:append("FoldColumn:NeogitFoldColumn")
-      vim.opt_local.winhl:append("SignColumn:NeogitSignColumn")
-      vim.opt_local.winhl:append("Normal:NeogitNormal")
-      vim.opt_local.winhl:append("NormalFloat:NeogitNormalFloat")
-      vim.opt_local.winhl:append("FloatBorder:NeogitFloatBorder")
-      vim.opt_local.winhl:append("WinSeparator:NeogitWinSeparator")
-      vim.opt_local.winhl:append("CursorLineNr:NeogitCursorLineNr")
+      vim.opt_local.winhl:append("Folded:NeoJJFold")
+      vim.opt_local.winhl:append("FoldColumn:NeoJJFoldColumn")
+      vim.opt_local.winhl:append("SignColumn:NeoJJSignColumn")
+      vim.opt_local.winhl:append("Normal:NeoJJNormal")
+      vim.opt_local.winhl:append("NormalFloat:NeoJJNormalFloat")
+      vim.opt_local.winhl:append("FloatBorder:NeoJJFloatBorder")
+      vim.opt_local.winhl:append("WinSeparator:NeoJJWinSeparator")
+      vim.opt_local.winhl:append("CursorLineNr:NeoJJCursorLineNr")
       vim.opt_local.fillchars:append("fold: ")
     end)
 
@@ -877,7 +877,7 @@ function Buffer.create(config)
           local is_cursor = line == cursor
           if is_cursor or not disable_hl then
             local line_hl = ("%s%s"):format(
-              buffer.ui:get_line_highlight(line) or "NeogitDiffContext",
+              buffer.ui:get_line_highlight(line) or "NeoJJDiffContext",
               is_cursor and "Cursor" or "Highlight"
             )
 
@@ -905,7 +905,7 @@ function Buffer.create(config)
         local item = buffer.ui:find_component_by_oid(active_oid)
         if item and item.first and item.last then
           for line = item.first, item.last do
-            buffer:add_line_highlight(line - 1, "NeogitActiveItem", {
+            buffer:add_line_highlight(line - 1, "NeoJJActiveItem", {
               priority = 200,
               namespace = "ActiveItem",
             })
@@ -941,20 +941,20 @@ function Buffer.create(config)
             local fold
 
             if fn.foldclosed(line) == -1 then
-              fold = "NeogitOpen"
+              fold = "NeoJJOpen"
             else
-              fold = "NeogitClosed"
+              fold = "NeoJJClosed"
             end
 
             buffer:place_sign(line, fold .. string.lower(foldmarkers[line]), {
               namespace = "FoldSigns",
-              highlight = "NeogitSubtleText",
-              cursor_hl = "NeogitCursorLine",
+              highlight = "NeoJJSubtleText",
+              cursor_hl = "NeoJJCursorLine",
             })
           else
-            buffer:place_sign(line, "NeogitBlank", {
+            buffer:place_sign(line, "NeoJJBlank", {
               namespace = "FoldSigns",
-              cursor_hl = "NeogitCursorLine",
+              cursor_hl = "NeoJJCursorLine",
             })
           end
         end

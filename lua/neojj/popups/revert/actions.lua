@@ -43,7 +43,7 @@ function M.commits(popup)
   end
 
   client.wrap(commit_cmd, {
-    autocmd = "NeogitRevertComplete",
+    autocmd = "NeoJJRevertComplete",
     interactive = true,
     msg = {
       success = "Reverted",

@@ -3,7 +3,7 @@ local git = require("neojj.lib.git")
 local notification = require("neojj.lib.notification")
 local event = require("neojj.lib.event")
 
----@class NeogitGitMerge
+---@class NeoJJGitMerge
 local M = {}
 
 local function merge_command(cmd)

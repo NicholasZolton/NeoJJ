@@ -8,7 +8,7 @@ function M.create(env)
   local in_merge = git.merge.in_progress()
   local p = popup
     .builder()
-    :name("NeogitMergePopup")
+    :name("NeoJJMergePopup")
     :group_heading_if(in_merge, "Actions")
     :action_if(in_merge, "m", "Commit merge", actions.commit)
     :action_if(in_merge, "a", "Abort merge", actions.abort)

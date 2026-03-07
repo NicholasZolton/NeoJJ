@@ -2,7 +2,7 @@ local git = require("neojj.lib.git")
 local util = require("neojj.lib.util")
 local config = require("neojj.config")
 
----@class NeogitGitReflog
+---@class NeoJJGitReflog
 local M = {}
 
 ---@class ReflogEntry

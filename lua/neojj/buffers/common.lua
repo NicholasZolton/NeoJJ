@@ -20,7 +20,7 @@ end)
 
 M.Diff = Component.new(function(diff)
   return col.tag("Diff")({
-    text(string.format("%s %s", diff.kind, diff.file), { line_hl = "NeogitDiffHeader" }),
+    text(string.format("%s %s", diff.kind, diff.file), { line_hl = "NeoJJDiffHeader" }),
     M.DiffHunks(diff),
   }, { foldable = true, folded = false, context = true })
 end)
@@ -70,21 +70,21 @@ local HunkLine = Component.new(function(line)
       or line:match("..=======")
       or line:match("..>>>>>>>")
     then
-      line_hl = "NeogitHunkMergeHeader"
+      line_hl = "NeoJJHunkMergeHeader"
     elseif first_char == diff_add_start or first_chars == diff_add_start_2 then
-      line_hl = "NeogitDiffAdd"
+      line_hl = "NeoJJDiffAdd"
     elseif first_char == diff_delete_start or first_chars == diff_delete_start_2 then
-      line_hl = "NeogitDiffDelete"
+      line_hl = "NeoJJDiffDelete"
     else
-      line_hl = "NeogitDiffContext"
+      line_hl = "NeoJJDiffContext"
     end
   else
     if first_char == diff_add_start then
-      line_hl = "NeogitDiffAdd"
+      line_hl = "NeoJJDiffAdd"
     elseif first_char == diff_delete_start then
-      line_hl = "NeogitDiffDelete"
+      line_hl = "NeoJJDiffDelete"
     else
-      line_hl = "NeogitDiffContext"
+      line_hl = "NeoJJDiffContext"
     end
   end
 
@@ -93,7 +93,7 @@ end)
 
 M.Hunk = Component.new(function(props)
   return col.tag("Hunk")({
-    text.line_hl("NeogitHunkHeader")(props.header),
+    text.line_hl("NeoJJHunkHeader")(props.header),
     col.tag("HunkContent")(map(props.content, HunkLine)),
   }, { foldable = true, folded = props.folded or false, context = true, hunk = props.hunk })
 end)
@@ -127,7 +127,7 @@ local function build_graph(graph, opts)
         char = ""
       end
 
-      return text(char, { highlight = string.format("NeogitGraph%s", g.color) })
+      return text(char, { highlight = string.format("NeoJJGraph%s", g.color) })
     end)
   else
     return { text(graph, { highlight = "Include" }) }
@@ -143,14 +143,14 @@ end
 --   "E" if the signature cannot be checked (e.g. missing key)
 --   and "N" for no signature
 local highlight_for_signature = {
-  G = "NeogitSignatureGood",
-  B = "NeogitSignatureBad",
-  U = "NeogitSignatureGoodUnknown",
-  X = "NeogitSignatureGoodExpired",
-  Y = "NeogitSignatureGoodExpiredKey",
-  R = "NeogitSignatureGoodRevokedKey",
-  E = "NeogitSignatureMissing",
-  N = "NeogitSignatureNone",
+  G = "NeoJJSignatureGood",
+  B = "NeoJJSignatureBad",
+  U = "NeoJJSignatureGoodUnknown",
+  X = "NeoJJSignatureGoodExpired",
+  Y = "NeoJJSignatureGoodExpiredKey",
+  R = "NeoJJSignatureGoodRevokedKey",
+  E = "NeoJJSignatureMissing",
+  N = "NeoJJSignatureNone",
 }
 
 ---@param commit CommitLogEntry
@@ -168,10 +168,10 @@ M.CommitEntry = Component.new(function(commit, remotes, args)
     -- Render local only branches first
     for name, _ in pairs(info.locals) do
       if name:match("^refs/") then
-        table.insert(ref_last, text(name, { highlight = "NeogitGraphGray" }))
+        table.insert(ref_last, text(name, { highlight = "NeoJJGraphGray" }))
         table.insert(ref_last, text(" "))
       elseif info.remotes[name] == nil then
-        local branch_highlight = info.head == name and "NeogitBranchHead" or "NeogitBranch"
+        local branch_highlight = info.head == name and "NeoJJBranchHead" or "NeoJJBranch"
         table.insert(ref, text(name, { highlight = branch_highlight }))
         table.insert(ref, text(" "))
       end
@@ -180,20 +180,20 @@ M.CommitEntry = Component.new(function(commit, remotes, args)
     -- Render tracked (local+remote) branches next
     for name, remotes in pairs(info.remotes) do
       if #remotes == 1 then
-        table.insert(ref, text(remotes[1] .. "/", { highlight = "NeogitRemote" }))
+        table.insert(ref, text(remotes[1] .. "/", { highlight = "NeoJJRemote" }))
       end
       if #remotes > 1 then
-        table.insert(ref, text("{" .. table.concat(remotes, ",") .. "}/", { highlight = "NeogitRemote" }))
+        table.insert(ref, text("{" .. table.concat(remotes, ",") .. "}/", { highlight = "NeoJJRemote" }))
       end
-      local branch_highlight = info.head == name and "NeogitBranchHead" or "NeogitBranch"
+      local branch_highlight = info.head == name and "NeoJJBranchHead" or "NeoJJBranch"
       local locally = info.locals[name] ~= nil
-      table.insert(ref, text(name, { highlight = locally and branch_highlight or "NeogitRemote" }))
+      table.insert(ref, text(name, { highlight = locally and branch_highlight or "NeoJJRemote" }))
       table.insert(ref, text(" "))
     end
 
     -- Render tags
     for _, tag in pairs(info.tags) do
-      table.insert(ref, text(tag, { highlight = "NeogitTagName" }))
+      table.insert(ref, text(tag, { highlight = "NeoJJTagName" }))
       table.insert(ref, text(" "))
     end
   end
@@ -211,20 +211,20 @@ M.CommitEntry = Component.new(function(commit, remotes, args)
     details = col.padding_left(#commit.abbreviated_commit + 1) {
       row(util.merge(graph, {
         text(" "),
-        text("Author:     ", { highlight = "NeogitSubtleText" }),
-        text(commit.author_name, { highlight = "NeogitGraphAuthor" }),
+        text("Author:     ", { highlight = "NeoJJSubtleText" }),
+        text(commit.author_name, { highlight = "NeoJJGraphAuthor" }),
         text(" <"),
         text(commit.author_email),
         text(">"),
       })),
       row(util.merge(graph, {
         text(" "),
-        text("AuthorDate: ", { highlight = "NeogitSubtleText" }),
+        text("AuthorDate: ", { highlight = "NeoJJSubtleText" }),
         text(commit.author_date),
       })),
       row(util.merge(graph, {
         text(" "),
-        text("Commit:     ", { highlight = "NeogitSubtleText" }),
+        text("Commit:     ", { highlight = "NeoJJSubtleText" }),
         text(commit.committer_name),
         text(" <"),
         text(commit.committer_email),
@@ -232,7 +232,7 @@ M.CommitEntry = Component.new(function(commit, remotes, args)
       })),
       row(util.merge(graph, {
         text(" "),
-        text("CommitDate: ", { highlight = "NeogitSubtleText" }),
+        text("CommitDate: ", { highlight = "NeoJJSubtleText" }),
         text(commit.committer_date),
       })),
       row(graph),
@@ -270,7 +270,7 @@ M.CommitEntry = Component.new(function(commit, remotes, args)
       util.merge({
         text(commit.abbreviated_commit, {
           highlight = commit.verification_flag and highlight_for_signature[commit.verification_flag]
-            or "NeogitObjectId",
+            or "NeoJJObjectId",
         }),
         text(" "),
       }, graph, { text(" ") }, ref, ref_last, { text(commit.subject) }),
@@ -279,7 +279,7 @@ M.CommitEntry = Component.new(function(commit, remotes, args)
           { " ", "Constant" },
           {
             util.str_clamp(commit.author_name, 30 - (#date > 10 and #date or 10)),
-            "NeogitGraphAuthor",
+            "NeoJJGraphAuthor",
           },
           { util.str_min_width(date, 10), "Special" },
         },

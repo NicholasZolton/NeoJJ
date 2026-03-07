@@ -12,18 +12,18 @@ local map = util.map
 
 function M.OverviewFile(file)
   return row.tag("OverviewFile") {
-    text.highlight("NeogitFilePath")(file.path),
+    text.highlight("NeoJJFilePath")(file.path),
     text("  | "),
     text.highlight("Number")(util.pad_left(file.changes, 5)),
     text("  "),
-    text.highlight("NeogitDiffAdditions")(file.insertions),
-    text.highlight("NeogitDiffDeletions")(file.deletions),
+    text.highlight("NeoJJDiffAdditions")(file.insertions),
+    text.highlight("NeoJJDiffDeletions")(file.deletions),
   }
 end
 
 local function commit_header_arg(info)
   if info.oid ~= info.commit_arg then
-    return row { text(info.commit_arg .. " "), text.highlight("NeogitObjectId")(info.oid) }
+    return row { text(info.commit_arg .. " "), text.highlight("NeoJJObjectId")(info.oid) }
   else
     return row {}
   end
@@ -34,15 +34,15 @@ function M.CommitHeader(info)
     text.line_hl("NeoJJCommitViewHeader")("Commit " .. info.commit_arg),
     commit_header_arg(info),
     row {
-      text.highlight("NeogitSubtleText")("Author:     "),
+      text.highlight("NeoJJSubtleText")("Author:     "),
       text((info.author_name or "") .. " <" .. (info.author_email or "") .. ">"),
     },
-    row { text.highlight("NeogitSubtleText")("AuthorDate: "), text(info.author_date) },
+    row { text.highlight("NeoJJSubtleText")("AuthorDate: "), text(info.author_date) },
     row {
-      text.highlight("NeogitSubtleText")("Committer:  "),
+      text.highlight("NeoJJSubtleText")("Committer:  "),
       text((info.committer_name or "") .. " <" .. (info.committer_email or "") .. ">"),
     },
-    row { text.highlight("NeogitSubtleText")("CommitDate: "), text(info.committer_date) },
+    row { text.highlight("NeoJJSubtleText")("CommitDate: "), text(info.committer_date) },
   }
 end
 

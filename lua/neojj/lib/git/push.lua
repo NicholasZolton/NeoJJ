@@ -1,7 +1,7 @@
 local git = require("neojj.lib.git")
 local util = require("neojj.lib.util")
 
----@class NeogitGitPush
+---@class NeoJJGitPush
 local M = {}
 
 ---Pushes to the remote and handles password questions

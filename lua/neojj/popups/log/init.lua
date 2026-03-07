@@ -12,7 +12,7 @@ function M.create()
 
   local p = popup
     .builder()
-    :name("NeogitLogPopup")
+    :name("NeoJJLogPopup")
     :arg_heading("Commit Limiting")
     :option("n", "max-count", "256", "Limit number of commits", { default = "256", key_prefix = "-" })
     :option("A", "author", "", "Limit to author", { key_prefix = "-" })
@@ -32,7 +32,7 @@ function M.create()
       separator = "",
       fn = actions.limit_to_files(),
       setup = function(popup)
-        local state = require("neojj.lib.state").get { "NeogitLogPopup", "" }
+        local state = require("neojj.lib.state").get { "NeoJJLogPopup", "" }
         if state then
           -- State for this option is saved with quotes around each filepath, which cannot
           -- get passed into the CLI lib. So, to handle things internally, we need to strip

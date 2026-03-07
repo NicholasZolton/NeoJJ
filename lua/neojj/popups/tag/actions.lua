@@ -30,7 +30,7 @@ function M.create_tag(popup)
 
   local code =
     client.wrap(git.cli.tag.arg_list(utils.merge(popup:get_arguments(), { tag_input, selected })), {
-      autocmd = "NeogitTagComplete",
+      autocmd = "NeoJJTagComplete",
       msg = {
         success = "Added tag " .. tag_input .. " on " .. selected,
         fail = "Failed to add tag " .. tag_input .. " on " .. selected,

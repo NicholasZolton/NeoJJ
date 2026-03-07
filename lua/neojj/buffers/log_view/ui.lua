@@ -31,9 +31,9 @@ function M.View(commits, remotes, args)
     graph,
     col {
       row {
-        text.highlight("NeogitGraphBoldBlue")("Type"),
-        text.highlight("NeogitGraphBoldCyan")(" + "),
-        text.highlight("NeogitGraphBoldBlue")("to show more history"),
+        text.highlight("NeoJJGraphBoldBlue")("Type"),
+        text.highlight("NeoJJGraphBoldCyan")(" + "),
+        text.highlight("NeoJJGraphBoldBlue")("to show more history"),
       },
     }
   )

@@ -211,7 +211,7 @@ local function update_status(state, filter)
   end
 end
 
----@class NeogitGitStatus
+---@class NeoJJGitStatus
 local M = {}
 
 ---@param files string[]

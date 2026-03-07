@@ -51,24 +51,24 @@ local HINT = Component.new(function(props)
     end
 
     return row {
-      text.highlight("NeogitPopupActionKey")(key_hint),
+      text.highlight("NeoJJPopupActionKey")(key_hint),
       text(" "),
       text(hint),
     }
   end
 
   return row {
-    text.highlight("NeogitSubtleText")("Hint: "),
+    text.highlight("NeoJJSubtleText")("Hint: "),
     entry("Toggle", "toggle"),
-    text.highlight("NeogitSubtleText")(" | "),
+    text.highlight("NeoJJSubtleText")(" | "),
     entry("Stage", "stage"),
-    text.highlight("NeogitSubtleText")(" | "),
+    text.highlight("NeoJJSubtleText")(" | "),
     entry("Unstage", "unstage"),
-    text.highlight("NeogitSubtleText")(" | "),
+    text.highlight("NeoJJSubtleText")(" | "),
     entry("Discard", "discard"),
-    text.highlight("NeogitSubtleText")(" | "),
+    text.highlight("NeoJJSubtleText")(" | "),
     entry("CommitPopup", "commit"),
-    text.highlight("NeogitSubtleText")(" | "),
+    text.highlight("NeoJJSubtleText")(" | "),
     entry("HelpPopup", "help"),
   }
 end)
@@ -77,14 +77,14 @@ local HEAD = Component.new(function(props)
   local show_oid = props.show_oid
   local highlight, ref
   if props.branch == "(detached)" then
-    highlight = "NeogitBranch"
+    highlight = "NeoJJBranch"
     ref = props.branch
     show_oid = true
   elseif props.remote then
-    highlight = "NeogitRemote"
+    highlight = "NeoJJRemote"
     ref = ("%s/%s"):format(props.remote, props.branch)
   else
-    highlight = "NeogitBranch"
+    highlight = "NeoJJBranch"
     ref = props.branch
   end
 
@@ -96,8 +96,8 @@ local HEAD = Component.new(function(props)
   end
 
   return row({
-    text.highlight("NeogitStatusHEAD")(util.pad_right(props.name .. ": ", props.HEAD_padding)),
-    text.highlight("NeogitObjectId")(show_oid and oid or ""),
+    text.highlight("NeoJJStatusHEAD")(util.pad_right(props.name .. ": ", props.HEAD_padding)),
+    text.highlight("NeoJJObjectId")(show_oid and oid or ""),
     text(show_oid and " " or ""),
     text.highlight(highlight)(ref),
     text(" "),
@@ -108,62 +108,62 @@ end)
 local Tag = Component.new(function(props)
   if props.distance then
     return row({
-      text.highlight("NeogitStatusHEAD")(util.pad_right("Tag: ", props.HEAD_padding)),
-      text.highlight("NeogitTagName")(props.name),
+      text.highlight("NeoJJStatusHEAD")(util.pad_right("Tag: ", props.HEAD_padding)),
+      text.highlight("NeoJJTagName")(props.name),
       text(" ("),
-      text.highlight("NeogitTagDistance")(props.distance),
+      text.highlight("NeoJJTagDistance")(props.distance),
       text(")"),
     }, { yankable = props.yankable })
   else
     return row({
       text(util.pad_right("Tag: ", props.HEAD_padding)),
-      text.highlight("NeogitTagName")(props.name),
+      text.highlight("NeoJJTagName")(props.name),
     }, { yankable = props.yankable })
   end
 end)
 
 local SectionTitle = Component.new(function(props)
-  return { text.highlight(props.highlight or "NeogitSectionHeader")(props.title) }
+  return { text.highlight(props.highlight or "NeoJJSectionHeader")(props.title) }
 end)
 
 local SectionTitleRemote = Component.new(function(props)
   return {
-    text.highlight(props.highlight or "NeogitSectionHeader")(props.title),
+    text.highlight(props.highlight or "NeoJJSectionHeader")(props.title),
     text(" "),
-    text.highlight("NeogitRemote")(props.ref),
+    text.highlight("NeoJJRemote")(props.ref),
   }
 end)
 
 local SectionTitleRebase = Component.new(function(props)
   if props.onto then
     return {
-      text.highlight(props.highlight or "NeogitSectionHeader")(props.title),
+      text.highlight(props.highlight or "NeoJJSectionHeader")(props.title),
       text(" "),
-      text.highlight("NeogitBranch")(props.head),
-      text.highlight("NeogitSectionHeader")(" onto "),
-      text.highlight(props.is_remote_ref and "NeogitRemote" or "NeogitBranch")(props.onto),
+      text.highlight("NeoJJBranch")(props.head),
+      text.highlight("NeoJJSectionHeader")(" onto "),
+      text.highlight(props.is_remote_ref and "NeoJJRemote" or "NeoJJBranch")(props.onto),
     }
   else
     return {
-      text.highlight(props.highlight or "NeogitSectionHeader")(props.title),
+      text.highlight(props.highlight or "NeoJJSectionHeader")(props.title),
       text(" "),
-      text.highlight("NeogitBranch")(props.head),
+      text.highlight("NeoJJBranch")(props.head),
     }
   end
 end)
 
 local SectionTitleMerge = Component.new(function(props)
   return {
-    text.highlight(props.highlight or "NeogitSectionHeader")(props.title),
+    text.highlight(props.highlight or "NeoJJSectionHeader")(props.title),
     text(" "),
-    text.highlight("NeogitBranch")(props.branch),
+    text.highlight("NeoJJBranch")(props.branch),
   }
 end)
 
 local Section = Component.new(function(props)
   local count
   if props.count then
-    count = { text(" ("), text.highlight("NeogitSectionHeaderCount")(#props.items), text(")") }
+    count = { text(" ("), text.highlight("NeoJJSectionHeaderCount")(#props.items), text(")") }
   end
 
   return col.tag("Section")({
@@ -300,7 +300,7 @@ local SectionItemFile = function(section, config)
     }
 
     local name = item.original_name and ("%s -> %s"):format(item.original_name, item.name) or item.name
-    local highlight = ("NeogitChange%s%s"):format(item.mode:gsub("%?", "Untracked"), section)
+    local highlight = ("NeoJJChange%s%s"):format(item.mode:gsub("%?", "Untracked"), section)
 
     local file_mode_change = text("")
     if
@@ -309,7 +309,7 @@ local SectionItemFile = function(section, config)
       and tonumber(item.file_mode.head) > 0
     then
       file_mode_change =
-        text.highlight("NeogitSubtleText")((" %s -> %s"):format(item.file_mode.head, item.file_mode.worktree))
+        text.highlight("NeoJJSubtleText")((" %s -> %s"):format(item.file_mode.head, item.file_mode.worktree))
     end
 
     local submodule = text("")
@@ -323,14 +323,14 @@ local SectionItemFile = function(section, config)
         submodule_text = " (untracked content)"
       end
 
-      submodule = text.highlight("NeogitTagName")(submodule_text)
+      submodule = text.highlight("NeoJJTagName")(submodule_text)
     end
 
     return col.tag("Item")({
       row {
         text.highlight(highlight)(mode_text),
         text(name),
-        text.highlight("NeogitSubtleText")(unmerged_types[item.mode] or ""),
+        text.highlight("NeoJJSubtleText")(unmerged_types[item.mode] or ""),
         file_mode_change,
         submodule,
       },
@@ -350,8 +350,8 @@ end
 local SectionItemStash = Component.new(function(item)
   local name = ("stash@{%s}"):format(item.idx)
   return row({
-    text.highlight("NeogitSubtleText")(name),
-    text.highlight("NeogitSubtleText")(": "),
+    text.highlight("NeoJJSubtleText")(name),
+    text.highlight("NeoJJSubtleText")(": "),
     text(item.message),
   }, { yankable = item.oid, item = item })
 end)
@@ -360,14 +360,14 @@ local SectionItemCommit = Component.new(function(item)
   local ref = {}
   local ref_last = {}
 
-  if item.commit.ref_name ~= "" and state.get({ "NeogitMarginPopup", "decorate" }, true) then
+  if item.commit.ref_name ~= "" and state.get({ "NeoJJMarginPopup", "decorate" }, true) then
     -- Render local only branches first
     for name, _ in pairs(item.decoration.locals) do
       if name:match("^refs/") then
-        table.insert(ref_last, text(name, { highlight = "NeogitGraphGray" }))
+        table.insert(ref_last, text(name, { highlight = "NeoJJGraphGray" }))
         table.insert(ref_last, text(" "))
       elseif item.decoration.remotes[name] == nil then
-        local branch_highlight = item.decoration.head == name and "NeogitBranchHead" or "NeogitBranch"
+        local branch_highlight = item.decoration.head == name and "NeoJJBranchHead" or "NeoJJBranch"
         table.insert(ref, text(name, { highlight = branch_highlight }))
         table.insert(ref, text(" "))
       end
@@ -376,22 +376,22 @@ local SectionItemCommit = Component.new(function(item)
     -- Render tracked (local+remote) branches next
     for name, remotes in pairs(item.decoration.remotes) do
       if #remotes == 1 then
-        table.insert(ref, text(remotes[1] .. "/", { highlight = "NeogitRemote" }))
+        table.insert(ref, text(remotes[1] .. "/", { highlight = "NeoJJRemote" }))
       end
 
       if #remotes > 1 then
-        table.insert(ref, text("{" .. table.concat(remotes, ",") .. "}/", { highlight = "NeogitRemote" }))
+        table.insert(ref, text("{" .. table.concat(remotes, ",") .. "}/", { highlight = "NeoJJRemote" }))
       end
 
-      local branch_highlight = item.decoration.head == name and "NeogitBranchHead" or "NeogitBranch"
+      local branch_highlight = item.decoration.head == name and "NeoJJBranchHead" or "NeoJJBranch"
       local locally = item.decoration.locals[name] ~= nil
-      table.insert(ref, text(name, { highlight = locally and branch_highlight or "NeogitRemote" }))
+      table.insert(ref, text(name, { highlight = locally and branch_highlight or "NeoJJRemote" }))
       table.insert(ref, text(" "))
     end
 
     -- Render tags
     for _, tag in pairs(item.decoration.tags) do
-      table.insert(ref, text(tag, { highlight = "NeogitTagName" }))
+      table.insert(ref, text(tag, { highlight = "NeoJJTagName" }))
       table.insert(ref, text(" "))
     end
   end
@@ -417,11 +417,11 @@ local SectionItemCommit = Component.new(function(item)
 
       virtual_text = {
         { " ", "Constant" },
-        { insertions, "NeogitDiffAdditions" },
+        { insertions, "NeoJJDiffAdditions" },
         { " ", "Constant" },
-        { deletions, "NeogitDiffDeletions" },
+        { deletions, "NeoJJDiffDeletions" },
         { " ", "Constant" },
-        { files_changed, "NeogitSubtleText" },
+        { files_changed, "NeoJJSubtleText" },
       }
     else -- Author & date margin
       local margin_date_style = state.get({ "margin", "date_style" }, 1)
@@ -482,7 +482,7 @@ local SectionItemCommit = Component.new(function(item)
       if details then
         author_table = {
           util.str_clamp(item.commit.author_name, clamp_width - (#date > date_width and #date or date_width)),
-          "NeogitGraphAuthor",
+          "NeoJJGraphAuthor",
         }
       end
 
@@ -496,7 +496,7 @@ local SectionItemCommit = Component.new(function(item)
 
   return row(
     util.merge(
-      { text.highlight("NeogitObjectId")(item.commit.abbreviated_commit) },
+      { text.highlight("NeoJJObjectId")(item.commit.abbreviated_commit) },
       { text(" ") },
       ref,
       ref_last,
@@ -513,21 +513,21 @@ end)
 
 local SectionItemRebase = Component.new(function(item)
   if item.oid then
-    local action_hl = (item.done and "NeogitRebaseDone")
-      or (item.action == "onto" and "NeogitGraphBlue")
-      or "NeogitGraphOrange"
+    local action_hl = (item.done and "NeoJJRebaseDone")
+      or (item.action == "onto" and "NeoJJGraphBlue")
+      or "NeoJJGraphOrange"
 
     return row({
       text(item.stopped and "> " or "  "),
       text.highlight(action_hl)(util.pad_right(item.action, 6)),
       text(" "),
-      text.highlight("NeogitRebaseDone")(item.abbreviated_commit),
+      text.highlight("NeoJJRebaseDone")(item.abbreviated_commit),
       text(" "),
-      text.highlight(item.done and "NeogitRebaseDone")(item.subject),
+      text.highlight(item.done and "NeoJJRebaseDone")(item.subject),
     }, { yankable = item.oid, oid = item.oid })
   else
     return row {
-      text.highlight("NeogitGraphOrange")(item.action),
+      text.highlight("NeoJJGraphOrange")(item.action),
       text(" "),
       text(item.subject),
     }
@@ -535,9 +535,9 @@ local SectionItemRebase = Component.new(function(item)
 end)
 
 local SectionItemSequencer = Component.new(function(item)
-  local action_hl = (item.action == "join" and "NeogitGraphRed")
-    or (item.action == "onto" and "NeogitGraphBlue")
-    or "NeogitGraphOrange"
+  local action_hl = (item.action == "join" and "NeoJJGraphRed")
+    or (item.action == "onto" and "NeoJJGraphBlue")
+    or "NeoJJGraphOrange"
 
   local show_action = #item.action > 0
   local action = show_action and util.pad_right(item.action, 6) or ""
@@ -545,7 +545,7 @@ local SectionItemSequencer = Component.new(function(item)
   return row({
     text.highlight(action_hl)(action),
     text(show_action and " " or ""),
-    text.highlight("NeogitObjectId")(item.abbreviated_commit),
+    text.highlight("NeoJJObjectId")(item.abbreviated_commit),
     text(" "),
     text(item.subject),
   }, { yankable = item.oid, oid = item.oid })
@@ -554,18 +554,18 @@ end)
 local SectionItemBisect = Component.new(function(item)
   local highlight
   if item.action == "good" then
-    highlight = "NeogitGraphGreen"
+    highlight = "NeoJJGraphGreen"
   elseif item.action == "bad" then
-    highlight = "NeogitGraphRed"
+    highlight = "NeoJJGraphRed"
   elseif item.finished then
-    highlight = "NeogitGraphBoldOrange"
+    highlight = "NeoJJGraphBoldOrange"
   end
 
   return row({
     text(item.finished and "> " or "  "),
     text.highlight(highlight)(util.pad_right(item.action, 5)),
     text(" "),
-    text.highlight("NeogitObjectId")(item.abbreviated_commit),
+    text.highlight("NeoJJObjectId")(item.abbreviated_commit),
     text(" "),
     text(item.subject),
   }, { yankable = item.oid, oid = item.oid })
@@ -573,17 +573,17 @@ end)
 
 local BisectDetailsSection = Component.new(function(props)
   return col.tag("Section")({
-    row(util.merge(props.title, { text(" "), text.highlight("NeogitObjectId")(props.commit.oid) })),
+    row(util.merge(props.title, { text(" "), text.highlight("NeoJJObjectId")(props.commit.oid) })),
     row {
-      text.highlight("NeogitSubtleText")("Author:     "),
+      text.highlight("NeoJJSubtleText")("Author:     "),
       text((props.commit.author_name or "") .. " <" .. (props.commit.author_email or "") .. ">"),
     },
-    row { text.highlight("NeogitSubtleText")("AuthorDate: "), text(props.commit.author_date) },
+    row { text.highlight("NeoJJSubtleText")("AuthorDate: "), text(props.commit.author_date) },
     row {
-      text.highlight("NeogitSubtleText")("Committer:  "),
+      text.highlight("NeoJJSubtleText")("Committer:  "),
       text((props.commit.committer_name or "") .. " <" .. (props.commit.committer_email or "") .. ">"),
     },
-    row { text.highlight("NeogitSubtleText")("CommitDate: "), text(props.commit.committer_date) },
+    row { text.highlight("NeoJJSubtleText")("CommitDate: "), text(props.commit.committer_date) },
     EmptyLine(),
     col(
       map(props.commit.description, text),
@@ -703,7 +703,7 @@ function M.Status(state, config)
           title = SectionTitleMerge {
             title = "Merging",
             branch = state.merge.branch,
-            highlight = "NeogitMerging",
+            highlight = "NeoJJMerging",
           },
           render = SectionItemSequencer,
           items = { { action = "", oid = state.merge.head, subject = state.merge.subject } },
@@ -717,7 +717,7 @@ function M.Status(state, config)
             onto = state.rebase.onto.ref,
             oid = state.rebase.onto.oid,
             is_remote_ref = state.rebase.onto.is_remote,
-            highlight = "NeogitRebasing",
+            highlight = "NeoJJRebasing",
           },
           render = SectionItemRebase,
           current = state.rebase.current,
@@ -726,34 +726,34 @@ function M.Status(state, config)
           name = "rebase",
         },
         show_cherry_pick and SequencerSection {
-          title = SectionTitle { title = "Cherry Picking", highlight = "NeogitPicking" },
+          title = SectionTitle { title = "Cherry Picking", highlight = "NeoJJPicking" },
           render = SectionItemSequencer,
           items = util.reverse(state.sequencer.items),
           folded = config.sections.sequencer.folded,
           name = "cherry_pick",
         },
         show_revert and SequencerSection {
-          title = SectionTitle { title = "Reverting", highlight = "NeogitReverting" },
+          title = SectionTitle { title = "Reverting", highlight = "NeoJJReverting" },
           render = SectionItemSequencer,
           items = util.reverse(state.sequencer.items),
           folded = config.sections.sequencer.folded,
           name = "revert",
         },
         show_bisect and BisectDetailsSection {
-          title = SectionTitle { title = "Bisecting at", highlight = "NeogitBisecting" },
+          title = SectionTitle { title = "Bisecting at", highlight = "NeoJJBisecting" },
           commit = state.bisect.current,
           folded = config.sections.bisect.folded,
           name = "bisect_details",
         },
         show_bisect and SequencerSection {
-          title = SectionTitle { title = "Bisecting Log", highlight = "NeogitBisecting" },
+          title = SectionTitle { title = "Bisecting Log", highlight = "NeoJJBisecting" },
           render = SectionItemBisect,
           items = state.bisect.items,
           folded = config.sections.bisect.folded,
           name = "bisect",
         },
         show_untracked and Section {
-          title = SectionTitle { title = "Untracked files", highlight = "NeogitUntrackedfiles" },
+          title = SectionTitle { title = "Untracked files", highlight = "NeoJJUntrackedfiles" },
           count = true,
           render = SectionItemFile("untracked", config),
           items = state.untracked.items,
@@ -761,7 +761,7 @@ function M.Status(state, config)
           name = "untracked",
         },
         show_unstaged and Section {
-          title = SectionTitle { title = "Unstaged changes", highlight = "NeogitUnstagedchanges" },
+          title = SectionTitle { title = "Unstaged changes", highlight = "NeoJJUnstagedchanges" },
           count = true,
           render = SectionItemFile("unstaged", config),
           items = state.unstaged.items,
@@ -769,7 +769,7 @@ function M.Status(state, config)
           name = "unstaged",
         },
         show_staged and Section {
-          title = SectionTitle { title = "Staged changes", highlight = "NeogitStagedchanges" },
+          title = SectionTitle { title = "Staged changes", highlight = "NeoJJStagedchanges" },
           count = true,
           render = SectionItemFile("staged", config),
           items = state.staged.items,
@@ -777,7 +777,7 @@ function M.Status(state, config)
           name = "staged",
         },
         show_stashes and Section {
-          title = SectionTitle { title = "Stashes", highlight = "NeogitStashes" },
+          title = SectionTitle { title = "Stashes", highlight = "NeoJJStashes" },
           count = true,
           render = SectionItemStash,
           items = state.stashes.items,
@@ -788,7 +788,7 @@ function M.Status(state, config)
           title = SectionTitleRemote {
             title = "Unmerged into",
             ref = state.upstream.ref,
-            highlight = "NeogitUnmergedchanges",
+            highlight = "NeoJJUnmergedchanges",
           },
           count = true,
           render = SectionItemCommit,
@@ -800,7 +800,7 @@ function M.Status(state, config)
           title = SectionTitleRemote {
             title = "Unpushed to",
             ref = state.pushRemote.ref,
-            highlight = "NeogitUnpushedchanges",
+            highlight = "NeoJJUnpushedchanges",
           },
           count = true,
           render = SectionItemCommit,
@@ -809,7 +809,7 @@ function M.Status(state, config)
           name = "pushRemote_unmerged",
         },
         not show_upstream_unmerged and show_recent and Section {
-          title = SectionTitle { title = "Recent Commits", highlight = "NeogitRecentcommits" },
+          title = SectionTitle { title = "Recent Commits", highlight = "NeoJJRecentcommits" },
           count = false,
           render = SectionItemCommit,
           items = state.recent.items,
@@ -820,7 +820,7 @@ function M.Status(state, config)
           title = SectionTitleRemote {
             title = "Unpulled from",
             ref = state.upstream.ref,
-            highlight = "NeogitUnpulledchanges",
+            highlight = "NeoJJUnpulledchanges",
           },
           count = true,
           render = SectionItemCommit,
@@ -832,7 +832,7 @@ function M.Status(state, config)
           title = SectionTitleRemote {
             title = "Unpulled from",
             ref = state.pushRemote.ref,
-            highlight = "NeogitUnpulledchanges",
+            highlight = "NeoJJUnpulledchanges",
           },
           count = true,
           render = SectionItemCommit,

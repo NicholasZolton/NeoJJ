@@ -91,8 +91,8 @@ function M:open()
   M.instance = self
 
   self.buffer = Buffer.create {
-    name = "NeogitRefsView",
-    filetype = "NeogitRefsView",
+    name = "NeoJJRefsView",
+    filetype = "NeoJJRefsView",
     kind = config.values.refs_view.kind,
     context_highlight = false,
     on_detach = function()

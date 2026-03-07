@@ -12,7 +12,7 @@ function M.create(env)
 
   local p = popup
     .builder()
-    :name("NeogitIgnorePopup")
+    :name("NeoJJIgnorePopup")
     :group_heading("Gitignore")
     :action("t", "shared at top-level            (.gitignore)", actions.shared_toplevel)
     :action("s", "shared in sub-directory        (path/to/.gitignore)", actions.shared_subdirectory)

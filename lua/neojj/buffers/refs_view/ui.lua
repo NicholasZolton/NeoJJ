@@ -10,16 +10,16 @@ local col = Ui.col
 local row = Ui.row
 
 local highlights = {
-  local_branch = "NeogitBranch",
-  remote_branch = "NeogitRemote",
-  tag = "NeogitTagName",
-  ["+"] = "NeogitGraphCyan",
-  ["-"] = "NeogitGraphPurple",
-  ["<>"] = "NeogitGraphYellow",
-  ["="] = "NeogitGraphGreen",
-  ["<"] = "NeogitGraphPurple",
-  [">"] = "NeogitGraphCyan",
-  [""] = "NeogitGraphRed",
+  local_branch = "NeoJJBranch",
+  remote_branch = "NeoJJRemote",
+  tag = "NeoJJTagName",
+  ["+"] = "NeoJJGraphCyan",
+  ["-"] = "NeoJJGraphPurple",
+  ["<>"] = "NeoJJGraphYellow",
+  ["="] = "NeoJJGraphGreen",
+  ["<"] = "NeoJJGraphPurple",
+  [">"] = "NeoJJGraphCyan",
+  [""] = "NeoJJGraphRed",
 }
 
 local function Cherries(ref, head)
@@ -27,9 +27,9 @@ local function Cherries(ref, head)
     return row({
       text.highlight(highlights[cherry.status])(cherry.status),
       text(" "),
-      text.highlight("NeogitObjectId")(cherry.oid:sub(1, git.log.abbreviated_size())),
+      text.highlight("NeoJJObjectId")(cherry.oid:sub(1, git.log.abbreviated_size())),
       text(" "),
-      text.highlight("NeogitGraphWhite")(cherry.subject),
+      text.highlight("NeoJJGraphWhite")(cherry.subject),
     }, { oid = cherry.oid })
   end)
 
@@ -42,7 +42,7 @@ end
 
 local function Ref(ref)
   local ref_content = {
-    text.highlight("NeogitGraphBoldPurple")(ref.head and "@ " or "  "),
+    text.highlight("NeoJJGraphBoldPurple")(ref.head and "@ " or "  "),
     text.highlight(highlights[ref.type])(util.str_truncate(ref.name, 34), { align_right = 35 }),
     text(ref.subject),
   }
@@ -106,14 +106,14 @@ local function section(refs, heading, head)
 
   return col.tag("Section")({
     row.tag("SectionHeading")(
-      util.merge(heading, { text.highlight("NeogitGraphWhite")(string.format(" (%d)", #refs)) })
+      util.merge(heading, { text.highlight("NeoJJGraphWhite")(string.format(" (%d)", #refs)) })
     ),
     col.tag("SectionBody")(rows),
   }, { foldable = true, folded = false })
 end
 
 function M.Branches(branches, head)
-  return { section(branches, { text.highlight("NeogitBranch")("Branches") }, head) }
+  return { section(branches, { text.highlight("NeoJJBranch")("Branches") }, head) }
 end
 
 local function sorted_names(remotes)
@@ -135,9 +135,9 @@ function M.Remotes(remotes, head)
     table.insert(
       out,
       section(branches, {
-        text.highlight("NeogitBranch")("Remote "),
-        text.highlight("NeogitRemote")(name, { align_right = max_len }),
-        text.highlight("NeogitBranch")(
+        text.highlight("NeoJJBranch")("Remote "),
+        text.highlight("NeoJJRemote")(name, { align_right = max_len }),
+        text.highlight("NeoJJBranch")(
           string.format(" (%s)", git.config.get_local(string.format("remote.%s.url", name)):read())
         ),
       }, head)
@@ -148,7 +148,7 @@ function M.Remotes(remotes, head)
 end
 
 function M.Tags(tags, head)
-  return { section(tags, { text.highlight("NeogitBranch")("Tags") }, head) }
+  return { section(tags, { text.highlight("NeoJJBranch")("Tags") }, head) }
 end
 
 function M.RefsView(refs, head)

@@ -157,11 +157,11 @@ function M:open(kind)
       end
 
       if git.branch.current() then
-        vim.fn.matchadd("NeogitBranch", git.branch.current(), 100)
+        vim.fn.matchadd("NeoJJBranch", git.branch.current(), 100)
       end
 
       if git.branch.upstream() then
-        vim.fn.matchadd("NeogitRemote", git.branch.upstream(), 100)
+        vim.fn.matchadd("NeoJJRemote", git.branch.upstream(), 100)
       end
 
       if self.show_diff and kind ~= "floating" then

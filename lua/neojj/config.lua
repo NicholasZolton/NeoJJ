@@ -105,10 +105,10 @@ end
 ---@field kind WindowKind The type of window that should be opened
 ---@field verify_commit boolean Show commit signature information in the buffer
 
----@class NeogitConfigPopup Popup window options
+---@class NeoJJConfigPopup Popup window options
 ---@field kind WindowKind The type of window that should be opened
 
----@class NeogitConfigFloating
+---@class NeoJJConfigFloating
 ---@field relative? string
 ---@field width? number
 ---@field height? number
@@ -129,30 +129,30 @@ end
 ---@field staged_diff_split_kind? StagedDiffSplitKind Whether to show staged changes in a vertical or horizontal split
 ---@field spell_check? boolean Enable/Disable spell checking
 
----@alias NeogitConfigSignsIcon { [1]: string, [2]: string }
+---@alias NeoJJConfigSignsIcon { [1]: string, [2]: string }
 
----@class NeogitConfigSigns
----@field hunk NeogitConfigSignsIcon The icons to use for open and closed hunks
----@field item NeogitConfigSignsIcon The icons to use for open and closed items
----@field section NeogitConfigSignsIcon The icons to use for open and closed sections
+---@class NeoJJConfigSigns
+---@field hunk NeoJJConfigSignsIcon The icons to use for open and closed hunks
+---@field item NeoJJConfigSignsIcon The icons to use for open and closed items
+---@field section NeoJJConfigSignsIcon The icons to use for open and closed sections
 
----@class NeogitConfigSection A section to show in the Neogit Status buffer, e.g. Staged/Unstaged/Untracked
+---@class NeoJJConfigSection A section to show in the Neogit Status buffer, e.g. Staged/Unstaged/Untracked
 ---@field folded boolean Whether or not this section should be open or closed by default
 ---@field hidden boolean Whether or not this section should be shown
 
----@class NeogitConfigSections
----@field untracked NeogitConfigSection|nil
----@field unstaged NeogitConfigSection|nil
----@field staged NeogitConfigSection|nil
----@field stashes NeogitConfigSection|nil
----@field unpulled_upstream NeogitConfigSection|nil
----@field unmerged_upstream NeogitConfigSection|nil
----@field unpulled_pushRemote NeogitConfigSection|nil
----@field unmerged_pushRemote NeogitConfigSection|nil
----@field recent NeogitConfigSection|nil
----@field rebase NeogitConfigSection|nil
----@field sequencer NeogitConfigSection|nil
----@field bisect NeogitConfigSection|nil
+---@class NeoJJConfigSections
+---@field untracked NeoJJConfigSection|nil
+---@field unstaged NeoJJConfigSection|nil
+---@field staged NeoJJConfigSection|nil
+---@field stashes NeoJJConfigSection|nil
+---@field unpulled_upstream NeoJJConfigSection|nil
+---@field unmerged_upstream NeoJJConfigSection|nil
+---@field unpulled_pushRemote NeoJJConfigSection|nil
+---@field unmerged_pushRemote NeoJJConfigSection|nil
+---@field recent NeoJJConfigSection|nil
+---@field rebase NeoJJConfigSection|nil
+---@field sequencer NeoJJConfigSection|nil
+---@field bisect NeoJJConfigSection|nil
 
 ---@class HighlightOptions
 ---@field italic?     boolean
@@ -182,11 +182,11 @@ end
 ---@field bg_purple?  string  Background purple
 ---@field md_purple?  string  Background _medium_ purple. Lighter than bg_purple. Used for hunk headers.
 
----@class NeogitFilewatcherConfig
+---@class NeoJJFilewatcherConfig
 ---@field enabled boolean
----@field filewatcher NeogitFilewatcherConfig|nil
+---@field filewatcher NeoJJFilewatcherConfig|nil
 
----@alias NeogitConfigMappingsFinder
+---@alias NeoJJConfigMappingsFinder
 ---| "Select"
 ---| "Close"
 ---| "Next"
@@ -201,7 +201,7 @@ end
 ---| "MouseClick"
 ---| false
 
----@alias NeogitConfigMappingsStatus
+---@alias NeoJJConfigMappingsStatus
 ---| "Close"
 ---| "MoveDown"
 ---| "MoveUp"
@@ -242,7 +242,7 @@ end
 ---| false
 ---| fun()
 
----@alias NeogitConfigMappingsPopup
+---@alias NeoJJConfigMappingsPopup
 ---| "HelpPopup"
 ---| "DiffPopup"
 ---| "PullPopup"
@@ -265,7 +265,7 @@ end
 ---| "WorktreePopup"
 ---| false
 
----@alias NeogitConfigMappingsRebaseEditor
+---@alias NeoJJConfigMappingsRebaseEditor
 ---| "Pick"
 ---| "Reword"
 ---| "Edit"
@@ -285,7 +285,7 @@ end
 ---| false
 ---| fun()
 
----@alias NeogitConfigMappingsCommitEditor
+---@alias NeoJJConfigMappingsCommitEditor
 ---| "Close"
 ---| "Submit"
 ---| "Abort"
@@ -295,24 +295,24 @@ end
 ---| false
 ---| fun()
 
----@alias NeogitConfigMappingsCommitEditor_I
+---@alias NeoJJConfigMappingsCommitEditor_I
 ---| "Submit"
 ---| "Abort"
 ---| false
 ---| fun()
 
----@alias NeogitConfigMappingsRebaseEditor_I
+---@alias NeoJJConfigMappingsRebaseEditor_I
 ---| "Submit"
 ---| "Abort"
 ---| false
 ---| fun()
 ---
----@alias NeogitConfigMappingsRefsView
+---@alias NeoJJConfigMappingsRefsView
 ---| "DeleteBranch"
 ---| false
 ---| fun()
 
----@alias NeogitGraphStyle
+---@alias NeoJJGraphStyle
 ---| "ascii"
 ---| "unicode"
 ---| "kitty"
@@ -323,7 +323,7 @@ end
 ---| "author-date"
 ---| "date"
 
----@class NeogitConfigStatusOptions
+---@class NeoJJConfigStatusOptions
 ---@field recent_commit_count? integer The number of recent commits to display
 ---@field mode_padding? integer The amount of padding to add to the right of the mode column
 ---@field HEAD_padding? integer The amount of padding to add to the right of the HEAD label
@@ -331,24 +331,24 @@ end
 ---@field mode_text? { [string]: string } The text to display for each mode
 ---@field show_head_commit_hash? boolean Show the commit hash for HEADs in the status buffer
 
----@class NeogitConfigMappings Consult the config file or documentation for values
----@field finder? { [string]: NeogitConfigMappingsFinder } A dictionary that uses finder commands to set multiple keybinds
----@field status? { [string]: NeogitConfigMappingsStatus } A dictionary that uses status commands to set a single keybind
----@field popup? { [string]: NeogitConfigMappingsPopup } A dictionary that uses popup commands to set a single keybind
----@field rebase_editor? { [string]: NeogitConfigMappingsRebaseEditor } A dictionary that uses Rebase editor commands to set a single keybind
----@field rebase_editor_I? { [string]: NeogitConfigMappingsRebaseEditor_I } A dictionary that uses Rebase editor commands to set a single keybind
----@field commit_editor? { [string]: NeogitConfigMappingsCommitEditor } A dictionary that uses Commit editor commands to set a single keybind
----@field commit_editor_I? { [string]: NeogitConfigMappingsCommitEditor_I } A dictionary that uses Commit editor commands to set a single keybind
----@field refs_view? { [string]: NeogitConfigMappingsRefsView } A dictionary that uses Refs view editor commands to set a single keybind
+---@class NeoJJConfigMappings Consult the config file or documentation for values
+---@field finder? { [string]: NeoJJConfigMappingsFinder } A dictionary that uses finder commands to set multiple keybinds
+---@field status? { [string]: NeoJJConfigMappingsStatus } A dictionary that uses status commands to set a single keybind
+---@field popup? { [string]: NeoJJConfigMappingsPopup } A dictionary that uses popup commands to set a single keybind
+---@field rebase_editor? { [string]: NeoJJConfigMappingsRebaseEditor } A dictionary that uses Rebase editor commands to set a single keybind
+---@field rebase_editor_I? { [string]: NeoJJConfigMappingsRebaseEditor_I } A dictionary that uses Rebase editor commands to set a single keybind
+---@field commit_editor? { [string]: NeoJJConfigMappingsCommitEditor } A dictionary that uses Commit editor commands to set a single keybind
+---@field commit_editor_I? { [string]: NeoJJConfigMappingsCommitEditor_I } A dictionary that uses Commit editor commands to set a single keybind
+---@field refs_view? { [string]: NeoJJConfigMappingsRefsView } A dictionary that uses Refs view editor commands to set a single keybind
 
----@class NeogitConfigGitService
+---@class NeoJJConfigGitService
 ---@field pull_request? string
 ---@field commit? string
 ---@field tree? string
 
----@class NeogitConfig Neogit configuration settings
----@field filewatcher? NeogitFilewatcherConfig Values for filewatcher
----@field graph_style? NeogitGraphStyle Style for graph
+---@class NeoJJConfig Neogit configuration settings
+---@field filewatcher? NeoJJFilewatcherConfig Values for filewatcher
+---@field graph_style? NeoJJGraphStyle Style for graph
 ---@field git_executable? string Path to git executable (defaults to "git")
 ---@field commit_date_format? string Commit date format
 ---@field log_date_format? string Log date format
@@ -357,7 +357,7 @@ end
 ---@field disable_signs? boolean Special signs to draw for sections etc. in Neogit
 ---@field prompt_force_push? boolean Offer to force push when branches diverge
 ---@field prompt_amend_commit? boolean Request confirmation when amending already published commits
----@field git_services? NeogitConfigGitService[] Templates to use when opening a pull request for a branch, or commit
+---@field git_services? NeoJJConfigGitService[] Templates to use when opening a pull request for a branch, or commit
 ---@field fetch_after_checkout? boolean Perform a fetch if the newly checked out branch has an upstream or pushRemote set
 ---@field telescope_sorter? function The sorter telescope will use
 ---@field process_spinner? boolean Hide/Show the process spinner
@@ -369,38 +369,38 @@ end
 ---@field initial_branch_name? string Default for new branch name prompts
 ---@field initial_branch_rename? string Default for rename branch prompt. If not set, the current branch name is used
 ---@field kind? WindowKind The default type of window neogit should open in
----@field floating? NeogitConfigFloating The floating window style
+---@field floating? NeoJJConfigFloating The floating window style
 ---@field disable_line_numbers? boolean Whether to disable line numbers
 ---@field disable_relative_line_numbers? boolean Whether to disable line numbers
 ---@field console_timeout? integer Time in milliseconds after a console is created for long running commands
 ---@field auto_show_console? boolean Automatically show the console if a command takes longer than console_timeout
 ---@field auto_show_console_on? string Specify "output" (show always; default) or "error" if `auto_show_console` enabled
 ---@field auto_close_console? boolean Automatically hide the console if the process exits with a 0 status
----@field status? NeogitConfigStatusOptions Status buffer options
+---@field status? NeoJJConfigStatusOptions Status buffer options
 ---@field commit_editor? NeoJJCommitEditorConfigPopup Commit editor options
----@field commit_select_view? NeogitConfigPopup Commit select view options
----@field stash? NeogitConfigPopup Commit select view options
+---@field commit_select_view? NeoJJConfigPopup Commit select view options
+---@field stash? NeoJJConfigPopup Commit select view options
 ---@field commit_view? NeoJJCommitBufferConfig Commit buffer options
----@field log_view? NeogitConfigPopup Log view options
----@field rebase_editor? NeogitConfigPopup Rebase editor options
----@field reflog_view? NeogitConfigPopup Reflog view options
----@field refs_view? NeogitConfigPopup Refs view options
----@field merge_editor? NeogitConfigPopup Merge editor options
----@field preview_buffer? NeogitConfigPopup Preview options
----@field popup? NeogitConfigPopup Set the default way of opening popups
----@field signs? NeogitConfigSigns Signs used for toggled regions
+---@field log_view? NeoJJConfigPopup Log view options
+---@field rebase_editor? NeoJJConfigPopup Rebase editor options
+---@field reflog_view? NeoJJConfigPopup Reflog view options
+---@field refs_view? NeoJJConfigPopup Refs view options
+---@field merge_editor? NeoJJConfigPopup Merge editor options
+---@field preview_buffer? NeoJJConfigPopup Preview options
+---@field popup? NeoJJConfigPopup Set the default way of opening popups
+---@field signs? NeoJJConfigSigns Signs used for toggled regions
 ---@field integrations? { diffview: boolean, codediff: boolean, telescope: boolean, fzf_lua: boolean, mini_pick: boolean, snacks: boolean } Which integrations to enable
 ---@field diff_viewer? "diffview"|"codediff"|nil Which diff viewer to use (nil = auto-detect)
----@field sections? NeogitConfigSections
+---@field sections? NeoJJConfigSections
 ---@field ignored_settings? string[] Settings to never persist, format: "Filetype--cli-value", i.e. "NeoJJCommitPopup--author"
----@field mappings? NeogitConfigMappings
+---@field mappings? NeoJJConfigMappings
 ---@field notification_icon? string
 ---@field use_default_keymaps? boolean
 ---@field highlight? HighlightOptions
 ---@field builders? { [string]: fun(builder: PopupBuilder) }
 
 ---Returns the default Neogit configuration
----@return NeogitConfig
+---@return NeoJJConfig
 function M.get_default_values()
   return {
     use_default_keymaps = true,

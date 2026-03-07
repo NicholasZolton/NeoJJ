@@ -7,7 +7,7 @@ local M = {}
 function M.create()
   local p = popup
     .builder()
-    :name("NeogitFetchPopup")
+    :name("NeoJJFetchPopup")
     :switch("p", "prune", "Prune deleted branches")
     :switch("t", "tags", "Fetch all tags")
     :switch("F", "force", "force", { persisted = false })

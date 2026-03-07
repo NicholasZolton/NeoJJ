@@ -3,7 +3,7 @@ local M = {}
 local did_setup = false
 
 ---Setup neogit
----@param opts NeogitConfig
+---@param opts NeoJJConfig
 function M.setup(opts)
   if vim.fn.has("nvim-0.10") ~= 1 then
     vim.notify("Neogit HEAD requires at least NVIM 0.10 - Pin to tag 'v0.0.1' for NVIM 0.9.x")

@@ -49,7 +49,7 @@ function M.setup()
 
   -- Ensure vim buffers are updated
   api.nvim_create_autocmd("User", {
-    pattern = "NeogitStatusRefreshed",
+    pattern = "NeoJJStatusRefreshed",
     callback = function()
       vim.cmd("set autoread | checktime")
     end,

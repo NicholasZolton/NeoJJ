@@ -101,8 +101,8 @@ function M:open()
   local status_maps = config.get_reversed_status_maps()
 
   self.buffer = Buffer.create {
-    name = "NeogitConsole",
-    filetype = "NeogitConsole",
+    name = "NeoJJConsole",
+    filetype = "NeoJJConsole",
     bufhidden = "hide",
     open = false,
     buftype = false,

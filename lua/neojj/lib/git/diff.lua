@@ -6,7 +6,7 @@ local logger = require("neojj.logger")
 local insert = table.insert
 local sha256 = vim.fn.sha256
 
----@class NeogitGitDiff
+---@class NeoJJGitDiff
 ---@field parse fun(raw_diff: string[], raw_stats: string[]): Diff
 ---@field build fun(section: string, file: StatusItem)
 ---@field staged_stats fun(): DiffStagedStats
@@ -380,7 +380,7 @@ local function staged_stats()
   }
 end
 
-return { ---@type NeogitGitDiff
+return { ---@type NeoJJGitDiff
   parse = parse_diff,
   staged_stats = staged_stats,
   build = build,

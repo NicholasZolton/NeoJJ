@@ -33,8 +33,8 @@ end
 --- and supports related operations.
 function M:open()
   self.buffer = Buffer.create {
-    name = "NeogitStashView",
-    filetype = "NeogitStashView",
+    name = "NeoJJStashView",
+    filetype = "NeoJJStashView",
     header = "Stashes (" .. #self.stashes .. ")",
     scroll_header = true,
     kind = config.values.stash.kind,

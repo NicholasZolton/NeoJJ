@@ -1,7 +1,7 @@
 local git = require("neojj.lib.git")
 local event = require("neojj.lib.event")
 
----@class NeogitGitBisect
+---@class NeoJJGitBisect
 local M = {}
 
 ---@param cmd string

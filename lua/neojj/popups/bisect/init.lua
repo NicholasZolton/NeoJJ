@@ -10,7 +10,7 @@ function M.create(env)
 
   local p = popup
     .builder()
-    :name("NeogitBisectPopup")
+    :name("NeoJJBisectPopup")
     :switch_if(not in_progress, "r", "no-checkout", "Don't checkout commits")
     :switch_if(not in_progress, "p", "first-parent", "Follow only first parent of a merge")
     :group_heading_if(not in_progress, "Bisect")

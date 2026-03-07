@@ -16,7 +16,7 @@ local function eol_character(path)
   end
 end
 
----@class NeogitGitIndex
+---@class NeoJJGitIndex
 local M = {}
 
 ---Generates a patch that can be applied to index

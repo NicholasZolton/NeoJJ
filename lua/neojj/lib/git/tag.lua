@@ -1,6 +1,6 @@
 local git = require("neojj.lib.git")
 
----@class NeogitGitTag
+---@class NeoJJGitTag
 local M = {}
 
 --- Outputs a list of tags locally

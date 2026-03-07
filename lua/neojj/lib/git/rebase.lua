@@ -4,7 +4,7 @@ local client = require("neojj.client")
 local notification = require("neojj.lib.notification")
 local event = require("neojj.lib.event")
 
----@class NeogitGitRebase
+---@class NeoJJGitRebase
 local M = {}
 
 local function rebase_command(cmd)

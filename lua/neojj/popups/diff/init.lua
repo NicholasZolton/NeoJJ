@@ -16,7 +16,7 @@ function M.create(env)
 
   local p = popup
     .builder()
-    :name("NeogitDiffPopup")
+    :name("NeoJJDiffPopup")
     :group_heading("Diff")
     :action_if(has_diff_viewer and has_item, "d", "this", actions.this)
     :action_if(has_diff_viewer and commit_selected, "h", "this..HEAD", actions.this_to_HEAD)

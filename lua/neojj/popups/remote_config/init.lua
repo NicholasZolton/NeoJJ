@@ -26,7 +26,7 @@ function M.create(env)
 
   local p = popup
     .builder()
-    :name("NeogitRemoteConfigPopup")
+    :name("NeoJJRemoteConfigPopup")
     :config_heading("Configure remote")
     :config("u", "remote." .. remote .. ".url")
     :config("U", "remote." .. remote .. ".fetch")

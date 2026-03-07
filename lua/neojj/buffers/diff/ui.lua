@@ -14,12 +14,12 @@ local map = util.map
 function M.OverviewFile(file_padding)
   return function(file)
     return row.tag("OverviewFile") {
-      text.highlight("NeogitFilePath")(util.pad_right(file.path, file_padding)),
+      text.highlight("NeoJJFilePath")(util.pad_right(file.path, file_padding)),
       text("  | "),
       text.highlight("Number")(util.pad_left(file.changes or "0", 5)),
       text("  "),
-      text.highlight("NeogitDiffAdditions")(file.insertions),
-      text.highlight("NeogitDiffDeletions")(file.deletions),
+      text.highlight("NeoJJDiffAdditions")(file.insertions),
+      text.highlight("NeoJJDiffDeletions")(file.deletions),
     }
   end
 end
@@ -30,7 +30,7 @@ function M.DiffView(header, stats, diffs)
   end))
 
   return {
-    text.highlight("NeogitFloatHeaderHighlight")(header),
+    text.highlight("NeoJJFloatHeaderHighlight")(header),
     text(stats.summary),
     col(map(stats.files, M.OverviewFile(file_padding)), { tag = "OverviewFileList" }),
     EmptyLine(),

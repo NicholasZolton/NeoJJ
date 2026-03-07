@@ -1,7 +1,7 @@
 local git = require("neojj.lib.git")
 local util = require("neojj.lib.util")
 
----@class NeogitGitPull
+---@class NeoJJGitPull
 local M = {}
 
 function M.pull_interactive(remote, branch, args)

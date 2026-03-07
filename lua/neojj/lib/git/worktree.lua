@@ -2,7 +2,7 @@ local git = require("neojj.lib.git")
 local util = require("neojj.lib.util")
 local Path = require("plenary.path")
 
----@class NeogitGitWorktree
+---@class NeoJJGitWorktree
 local M = {}
 
 ---Creates new worktree at path for ref

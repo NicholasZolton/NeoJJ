@@ -1,6 +1,6 @@
 local git = require("neojj.lib.git")
 
----@class NeogitGitReset
+---@class NeoJJGitReset
 local M = {}
 
 ---@param target string

@@ -15,7 +15,7 @@ function M.create(env)
 
   local p = popup
     .builder()
-    :name("NeogitBranchPopup")
+    :name("NeoJJBranchPopup")
     :config_heading_if(show_config, "Configure branch")
     :config_if(show_config, "d", "branch." .. current_branch .. ".description", {
       fn = config_actions.description_config(current_branch),

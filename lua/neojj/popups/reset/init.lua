@@ -6,7 +6,7 @@ local M = {}
 function M.create(env)
   local p = popup
     .builder()
-    :name("NeogitResetPopup")
+    :name("NeoJJResetPopup")
     :group_heading("Reset")
     :action("f", "file", actions.a_file)
     :action("b", "branch", actions.a_branch)

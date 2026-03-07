@@ -67,7 +67,7 @@ function M.description_config(branch)
   local fn = function()
     vim.o.eventignore = "WinLeave"
     client.wrap(git.cli.branch.edit_description, {
-      autocmd = "NeogitDescriptionComplete",
+      autocmd = "NeoJJDescriptionComplete",
       msg = {
         success = "Description Updated",
       },

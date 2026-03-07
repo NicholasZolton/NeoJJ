@@ -6,7 +6,7 @@ local M = {}
 function M.create()
   local p = popup
     .builder()
-    :name("NeogitWorktreePopup")
+    :name("NeoJJWorktreePopup")
     :group_heading("Worktree")
     :action("w", "Checkout", actions.checkout_worktree)
     :action("W", "Create", actions.create_worktree)

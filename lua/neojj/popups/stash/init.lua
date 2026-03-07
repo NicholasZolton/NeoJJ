@@ -6,7 +6,7 @@ local M = {}
 function M.create(stash)
   local p = popup
     .builder()
-    :name("NeogitStashPopup")
+    :name("NeoJJStashPopup")
     :switch("u", "include-untracked", "Also save untracked files", {
       incompatible = { "all" },
     })

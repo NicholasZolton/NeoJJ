@@ -12,7 +12,7 @@ function M.create()
 
   local p = popup
     .builder()
-    :name("NeogitPullPopup")
+    :name("NeoJJPullPopup")
     :config_if(not is_detached, "r", "branch." .. current .. ".rebase", {
       options = {
         { display = "true", value = "true" },

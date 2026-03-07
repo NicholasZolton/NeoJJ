@@ -4,7 +4,7 @@ local util = require("neojj.lib.util")
 local config = require("neojj.config")
 local event = require("neojj.lib.event")
 
----@class NeogitGitStash
+---@class NeoJJGitStash
 local M = {}
 
 function M.list_refs()

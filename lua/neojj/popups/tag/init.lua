@@ -6,7 +6,7 @@ local M = {}
 function M.create(env)
   local p = popup
     .builder()
-    :name("NeogitTagPopup")
+    :name("NeoJJTagPopup")
     :arg_heading("Arguments")
     :switch("f", "force", "Force", { persisted = false })
     :switch("a", "annotate", "Annotate")

@@ -4,7 +4,7 @@ local util = require("neojj.lib.util")
 local client = require("neojj.client")
 local event = require("neojj.lib.event")
 
----@class NeogitGitCherryPick
+---@class NeoJJGitCherryPick
 local M = {}
 
 ---@param commits string[]
