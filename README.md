@@ -5,7 +5,7 @@
     <table>
         <tr>
             <td>
-                <strong>A <a href="https://github.com/jj-vcs/jj">jj (Jujutsu)</a> interface for <a href="https://neovim.io">Neovim</a>, inspired by <a href="https://magit.vc">Magit</a> and <a href="https://github.com/NeogitOrg/neogit">Neogit</a>.</strong>
+                <strong>A <a href="https://github.com/jj-vcs/jj">jj (Jujutsu)</a> interface for <a href="https://neovim.io">Neovim</a>, inspired by <a href="https://magit.vc">Magit</a>, forked from <a href="https://github.com/NeogitOrg/neogit">Neogit</a>.</strong>
             </td>
         </tr>
     </table>
