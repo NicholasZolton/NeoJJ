@@ -27,7 +27,7 @@ api.nvim_create_user_command("NeojjLogCurrent", function(args)
   end
 end, {
   nargs = "?",
-  desc = "Open git log (current) for specified file, or current file if unspecified. Optionally accepts a range.",
+  desc = "Open jj log for specified file, or current file if unspecified. Optionally accepts a range.",
   range = "%",
   complete = "file",
 })
@@ -38,5 +38,5 @@ api.nvim_create_user_command("NeojjCommit", function(args)
   CommitViewBuffer.new(commit):open()
 end, {
   nargs = "?",
-  desc = "Open git commit view for specified commit, or HEAD",
+  desc = "Open jj change view for specified change, or current working copy",
 })

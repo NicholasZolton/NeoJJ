@@ -104,8 +104,8 @@ end
 
 ---@class NeojjCommitEditorConfigPopup Popup window options
 ---@field kind WindowKind The type of window that should be opened
----@field show_staged_diff? boolean Display current changes diff when editing description
----@field staged_diff_split_kind? string Split direction for diff view ("split" or "vsplit")
+---@field show_diff? boolean Display current changes diff when editing description
+---@field diff_split_kind? string Split direction for diff view ("split" or "vsplit")
 ---@field spell_check? boolean Enable/Disable spell checking
 
 ---@alias NeojjConfigSignsIcon { [1]: string, [2]: string }
@@ -115,7 +115,7 @@ end
 ---@field item NeojjConfigSignsIcon The icons to use for open and closed items
 ---@field section NeojjConfigSignsIcon The icons to use for open and closed sections
 
----@class NeojjConfigSection A section to show in the Neojj Status buffer, e.g. Staged/Unstaged/Untracked
+---@class NeojjConfigSection A section to show in the Neojj Status buffer, e.g. Modified/Recent/Bookmarks
 ---@field folded boolean Whether or not this section should be open or closed by default
 ---@field hidden boolean Whether or not this section should be shown
 
@@ -394,8 +394,8 @@ function M.get_default_values()
     },
     commit_editor = {
       kind = "tab",
-      show_staged_diff = true,
-      staged_diff_split_kind = "split",
+      show_diff = true,
+      diff_split_kind = "split",
       spell_check = true,
     },
     commit_select_view = {

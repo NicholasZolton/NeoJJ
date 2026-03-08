@@ -113,7 +113,7 @@ function M:open()
     name = "NeojjDiffView",
     filetype = "NeojjDiffView",
     status_column = not config.values.disable_signs and "" or nil,
-    kind = config.values.commit_editor.staged_diff_split_kind,
+    kind = config.values.commit_editor.diff_split_kind,
     context_highlight = not config.values.disable_context_highlighting,
     mappings = {
       n = {

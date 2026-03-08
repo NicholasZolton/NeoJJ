@@ -225,8 +225,8 @@ neojj.setup {
   },
   commit_editor = {
     kind = "tab",
-    show_staged_diff = true,
-    staged_diff_split_kind = "split",
+    show_diff = true,
+    diff_split_kind = "split",
     spell_check = true,
   },
   commit_select_view = {

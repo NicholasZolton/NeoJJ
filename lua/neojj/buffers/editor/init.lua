@@ -202,7 +202,7 @@ function M:open(kind)
       end
 
       local show_diff = self.show_diff
-        and config.values.commit_editor.show_staged_diff ~= false
+        and config.values.commit_editor.show_diff ~= false
         and kind ~= "floating"
       if show_diff then
         logger.debug("[EDITOR] Opening Diffview for current changes")

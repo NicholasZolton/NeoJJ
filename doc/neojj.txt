@@ -280,7 +280,7 @@ POPUP TRIGGERS (from status buffer) ~
   `?`       Help popup (keybinding reference)
   `b`       Bookmark popup
   `c`       Commit popup
-  `W`       Change popup
+  `W`       Workspace popup
   `Q`       Squash popup
   `d`       Diff popup
   `f`       Fetch popup
