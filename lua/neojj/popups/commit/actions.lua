@@ -88,8 +88,8 @@ local function advance_bookmarks()
     end
   end
 
-  -- Bookmarks from old @- (now on @~2) → move to new @-
-  local parent_bookmarks = get_local_bookmarks_at("@~2")
+  -- Bookmarks from old @- (now on @--) → move to new @-
+  local parent_bookmarks = get_local_bookmarks_at("@--")
   for _, name in ipairs(parent_bookmarks) do
     local r = jj.cli.bookmark_set.args(name).revision("@-").call()
     if r and r.code == 0 then
