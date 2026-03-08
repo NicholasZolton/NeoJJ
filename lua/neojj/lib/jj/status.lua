@@ -94,7 +94,16 @@ function M.parse_status_lines(lines)
       if change_id then
         head.change_id = change_id
         head.commit_id = commit_id
-        head.description = rest or ""
+        -- Parse bookmarks before the | separator (same format as parent)
+        local bookmark_part, desc = rest:match("^(.-)%s*|%s*(.*)$")
+        if bookmark_part and #bookmark_part > 0 then
+          for bm in bookmark_part:gmatch("%S+") do
+            table.insert(head.bookmarks, bm)
+          end
+          head.description = desc or ""
+        else
+          head.description = rest or ""
+        end
         head.empty = rest ~= nil and rest:match("%(empty%)") ~= nil
         head.conflict = rest ~= nil and rest:match("%(conflict%)") ~= nil
       end
@@ -175,6 +184,7 @@ function meta.update(state)
     state.head.commit_id = parsed.head.commit_id
     state.head.empty = parsed.head.empty
     state.head.conflict = parsed.head.conflict
+    state.head.bookmarks = parsed.head.bookmarks
     if parsed.head.description ~= "" then
       state.head.description = parsed.head.description
     end

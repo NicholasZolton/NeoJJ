@@ -278,6 +278,9 @@ end)
 
 local SectionItemBookmark = Component.new(function(item)
   local label = item.name
+  if item.unpushed then
+    label = label .. "*"
+  end
   local highlight = "NeoJJBranch"
   if item.deleted then
     highlight = "NeoJJSubtleText"

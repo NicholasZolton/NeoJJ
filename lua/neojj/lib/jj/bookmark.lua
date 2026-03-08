@@ -238,6 +238,28 @@ function meta.update(state)
       end
     end
 
+    -- Mark local bookmarks that are ahead of their remote tracking ref
+    local remote_commits = {}
+    for _, item in ipairs(filtered) do
+      if item.remote and item.remote ~= "" and item.commit_id ~= "" then
+        remote_commits[item.name] = remote_commits[item.name] or {}
+        remote_commits[item.name][item.remote] = item.commit_id
+      end
+    end
+    for _, item in ipairs(filtered) do
+      if not item.remote or item.remote == "" then
+        local remotes = remote_commits[item.name]
+        if remotes then
+          for _, remote_commit in pairs(remotes) do
+            if remote_commit ~= item.commit_id then
+              item.unpushed = true
+              break
+            end
+          end
+        end
+      end
+    end
+
     -- Sort: local bookmarks first (by timestamp desc), then remote (by timestamp desc)
     table.sort(filtered, function(a, b)
       local a_remote = a.remote and a.remote ~= ""
