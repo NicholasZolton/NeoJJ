@@ -852,8 +852,14 @@ M.n_open_in_browser = function(self)
     if item and item.change_id then
       change_id = item.change_id
     else
-      -- For file lines, use the current working copy change
-      change_id = jj.repo.state.head.change_id
+      -- Head/Parent sections set yankable=change_id but no item.
+      -- Check if we're in the head/parent section by matching yankable against known IDs.
+      local yank = self.buffer.ui:get_yankable_under_cursor()
+      if yank and (yank == jj.repo.state.head.change_id or yank == jj.repo.state.parent.change_id) then
+        change_id = yank
+      else
+        change_id = jj.repo.state.head.change_id
+      end
     end
     if not change_id or change_id == "" then
       notification.warn("No change under cursor", { dismiss = true })
