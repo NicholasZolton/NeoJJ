@@ -306,6 +306,8 @@ local SectionItemBookmark = Component.new(function(item)
   local highlight = "NeojjBranch"
   if item.deleted then
     highlight = "NeojjSubtleText"
+  elseif item.conflict then
+    highlight = "NeojjConflict"
   elseif item.remote and item.remote ~= "" then
     label = item.name .. "@" .. item.remote
     highlight = "NeojjRemote"
@@ -315,13 +317,15 @@ local SectionItemBookmark = Component.new(function(item)
     text.highlight(highlight)(label),
   }
 
-  if not item.deleted then
+  if item.deleted then
+    table.insert(parts, text.highlight("NeojjSubtleText")(" (deleted)"))
+  elseif item.conflict then
+    table.insert(parts, text.highlight("NeojjConflict")(" (conflicted)"))
+  else
     table.insert(parts, text(" "))
     table.insert(parts, text.highlight("NeojjChangeId")((item.change_id or ""):sub(1, 8)))
     table.insert(parts, text(" "))
     table.insert(parts, text(item.description and vim.split(item.description, "\n")[1] or "(no description)"))
-  else
-    table.insert(parts, text.highlight("NeojjSubtleText")(" (deleted)"))
   end
 
   return row(parts, {

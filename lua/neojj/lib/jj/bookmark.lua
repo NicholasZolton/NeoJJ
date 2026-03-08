@@ -180,7 +180,7 @@ function M.parse_template_list(lines)
       goto continue
     end
     local parts = vim.split(line, "\t", { plain = true })
-    if #parts >= 7 then
+    if #parts >= 8 then
       local name = parts[1]
       local remote = parts[2] ~= "" and parts[2] or nil
       local change_id = parts[3]
@@ -188,15 +188,24 @@ function M.parse_template_list(lines)
       local timestamp = parts[5]
       local description = parts[6]
       local present = parts[7] == "1"
+      local conflict = parts[8] == "1"
       local deleted = not present
+
+      if conflict then
+        description = "(conflicted)"
+      elseif deleted then
+        description = "(deleted)"
+      end
+
       table.insert(items, {
         name = name,
         change_id = change_id,
         commit_id = commit_id,
-        description = deleted and "(deleted)" or description,
+        description = description,
         remote = remote,
         timestamp = timestamp,
         deleted = deleted,
+        conflict = conflict,
       })
     end
     ::continue::
@@ -205,7 +214,7 @@ function M.parse_template_list(lines)
 end
 
 -- Template for structured bookmark output with timestamps
-local BOOKMARK_TEMPLATE = 'self.name() ++ "\\t" ++ if(self.remote(), self.remote(), "") ++ "\\t" ++ if(self.normal_target(), self.normal_target().change_id() ++ "\\t" ++ self.normal_target().commit_id() ++ "\\t" ++ self.normal_target().committer().timestamp() ++ "\\t" ++ self.normal_target().description().first_line(), "\\t\\t\\t\\t") ++ "\\t" ++ if(self.present(), "1", "0") ++ "\\n"'
+local BOOKMARK_TEMPLATE = 'self.name() ++ "\\t" ++ if(self.remote(), self.remote(), "") ++ "\\t" ++ if(self.normal_target(), self.normal_target().change_id() ++ "\\t" ++ self.normal_target().commit_id() ++ "\\t" ++ self.normal_target().committer().timestamp() ++ "\\t" ++ self.normal_target().description().first_line(), "\\t\\t\\t") ++ "\\t" ++ if(self.present(), "1", "0") ++ "\\t" ++ if(self.conflict(), "1", "0") ++ "\\n"'
 
 ---Update repository state with bookmark data
 ---@param state NeojjRepoState
