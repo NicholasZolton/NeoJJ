@@ -39,6 +39,91 @@ function M.new_change(popup)
   end
 end
 
+--- Get local bookmark names pointing at a given revision
+---@param rev string revision specifier (e.g. "@")
+---@return string[]
+local function get_local_bookmarks_at(rev)
+  local result = jj.cli.bookmark_list
+    .template('if(!self.remote(), self.name() ++ "\\n")')
+    .revisions(rev)
+    .call()
+  if not result or result.code ~= 0 or not result.stdout then
+    return {}
+  end
+  local names = {}
+  for _, line in ipairs(result.stdout) do
+    local name = vim.trim(line)
+    if name ~= "" then
+      table.insert(names, name)
+    end
+  end
+  return names
+end
+
+--- Move local bookmarks from @- to @ after creating a new change
+---@param bookmarks string[]
+---@return string[] moved bookmark names
+local function move_bookmarks_forward(bookmarks)
+  local moved = {}
+  for _, name in ipairs(bookmarks) do
+    local set_result = jj.cli.bookmark_set.args(name).revision("@").call()
+    if set_result and set_result.code == 0 then
+      table.insert(moved, name)
+    end
+  end
+  return moved
+end
+
+function M.new_change_with_bookmark(popup)
+  local bookmarks = get_local_bookmarks_at("@")
+
+  local args = popup:get_arguments()
+  local builder = jj.cli.new
+  if #args > 0 then
+    builder = builder.args(unpack(args))
+  end
+  local result = builder.call()
+  if not result or result.code ~= 0 then
+    notification.warn("Failed to create new change", { dismiss = true })
+    return
+  end
+
+  local moved = move_bookmarks_forward(bookmarks)
+  picker_cache.invalidate_revisions()
+  if #moved > 0 then
+    notification.info("Created new change, moved: " .. table.concat(moved, ", "), { dismiss = true })
+  else
+    notification.info("Created new change (no bookmarks to move)", { dismiss = true })
+  end
+end
+
+function M.commit_with_bookmark(popup)
+  local bookmarks = get_local_bookmarks_at("@")
+
+  local args = popup:get_arguments()
+  local builder = jj.cli.commit
+  if #args > 0 then
+    builder = builder.args(unpack(args))
+  end
+  local code = client.wrap(builder, {
+    autocmd = "NeoJJCommitComplete",
+    msg = {
+      success = "Committed",
+      fail = "Commit aborted",
+    },
+    show_diff = true,
+    interactive = true,
+  })
+
+  if code == 0 then
+    local moved = move_bookmarks_forward(bookmarks)
+    picker_cache.invalidate_revisions()
+    if #moved > 0 then
+      notification.info("Moved bookmarks: " .. table.concat(moved, ", "), { dismiss = true })
+    end
+  end
+end
+
 function M.describe(popup)
   local args = popup:get_arguments()
   local builder = jj.cli.describe
