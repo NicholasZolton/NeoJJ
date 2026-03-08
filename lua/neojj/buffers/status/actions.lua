@@ -506,7 +506,18 @@ M.n_context_delete = function(self)
         return
       end
       if item.deleted then
-        notification.warn("Bookmark " .. item.name .. " is already deleted (push to sync)", { dismiss = true })
+        if not input.get_permission("Restore bookmark " .. item.name .. "?") then
+          return
+        end
+        local result = jj.cli.bookmark_set.args(item.name, "-r", item.name .. "@origin").call()
+        if result and result.code == 0 then
+          local picker_cache = require("neojj.lib.picker_cache")
+          picker_cache.invalidate_bookmarks()
+          notification.info("Restored bookmark " .. item.name, { dismiss = true })
+          self:dispatch_refresh(nil, "n_context_delete")
+        else
+          notification.warn("Failed to restore bookmark " .. item.name, { dismiss = true })
+        end
         return
       end
       if not input.get_permission("Delete bookmark " .. item.name .. "?") then
@@ -784,6 +795,51 @@ M.n_undo = function(self)
       jj.cli.undo.call()
       notification.info("Undone")
       self:dispatch_refresh(nil, "n_undo")
+    end
+  end)
+end
+
+---@param self StatusBuffer
+---@return fun(): nil
+M.n_forget_bookmark = function(self)
+  return a.void(function()
+    local ctx = cursor_context(self)
+    if ctx.section ~= "bookmarks" or not ctx.item or not ctx.item.name then
+      notification.warn("No bookmark under cursor", { dismiss = true })
+      return
+    end
+
+    local item = ctx.item
+    if item.remote and item.remote ~= "" then
+      -- Track remote bookmark
+      local ref = item.name .. "@" .. item.remote
+      if not input.get_permission("Track bookmark " .. ref .. "?") then
+        return
+      end
+      local result = jj.cli.bookmark_track.args(ref).call()
+      if result and result.code == 0 then
+        local picker_cache = require("neojj.lib.picker_cache")
+        picker_cache.invalidate_bookmarks()
+        notification.info("Tracking " .. ref, { dismiss = true })
+        self:dispatch_refresh(nil, "n_forget_bookmark")
+      else
+        notification.warn("Failed to track " .. ref, { dismiss = true })
+      end
+      return
+    end
+
+    if not input.get_permission("Forget bookmark " .. item.name .. "?") then
+      return
+    end
+
+    local result = jj.cli.bookmark_forget.args(item.name).call()
+    if result and result.code == 0 then
+      local picker_cache = require("neojj.lib.picker_cache")
+      picker_cache.invalidate_bookmarks()
+      notification.info("Forgot bookmark " .. item.name, { dismiss = true })
+      self:dispatch_refresh(nil, "n_forget_bookmark")
+    else
+      notification.warn("Failed to forget bookmark " .. item.name, { dismiss = true })
     end
   end)
 end
