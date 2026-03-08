@@ -5,6 +5,16 @@ local notification = require("neojj.lib.notification")
 local FuzzyFinderBuffer = require("neojj.buffers.fuzzy_finder")
 local picker_cache = require("neojj.lib.picker_cache")
 
+---@param result table?
+---@return string
+local function push_error_msg(result)
+  local stderr = picker_cache.error_msg(result)
+  if stderr:match("not a descendant") or stderr:match("unexpectedly moved") or stderr:match("was updated") then
+    return "Remote has changed — fetch first, then retry"
+  end
+  return stderr
+end
+
 function M.push_bookmark(popup)
   local bookmarks = picker_cache.get_local_bookmark_names()
   local name = FuzzyFinderBuffer.new(bookmarks):open_async { prompt_prefix = "Push bookmark" }
@@ -22,7 +32,7 @@ function M.push_bookmark(popup)
   if result and result.code == 0 then
     notification.info("Pushed " .. name, { dismiss = true })
   else
-    notification.warn("Push failed: " .. picker_cache.error_msg(result), { dismiss = true })
+    notification.warn("Push failed: " .. push_error_msg(result), { dismiss = true })
   end
 end
 
@@ -44,7 +54,7 @@ function M.push_change(popup)
   if result and result.code == 0 then
     notification.info("Pushed change " .. rev, { dismiss = true })
   else
-    notification.warn("Push failed: " .. picker_cache.error_msg(result), { dismiss = true })
+    notification.warn("Push failed: " .. push_error_msg(result), { dismiss = true })
   end
 end
 
@@ -59,7 +69,7 @@ function M.push_all(popup)
   if result and result.code == 0 then
     notification.info("Pushed all bookmarks", { dismiss = true })
   else
-    notification.warn("Push failed: " .. picker_cache.error_msg(result), { dismiss = true })
+    notification.warn("Push failed: " .. push_error_msg(result), { dismiss = true })
   end
 end
 
