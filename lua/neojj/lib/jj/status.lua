@@ -179,19 +179,20 @@ function meta.update(state)
     end
 
     -- Parse head/parent info
+    local picker_cache = require("neojj.lib.picker_cache")
     local parsed = M.parse_status_lines(status_lines)
     state.head.change_id = parsed.head.change_id
     state.head.commit_id = parsed.head.commit_id
     state.head.empty = parsed.head.empty
     state.head.conflict = parsed.head.conflict
-    state.head.bookmarks = parsed.head.bookmarks
+    state.head.bookmarks = picker_cache.filter_bookmarks(parsed.head.bookmarks)
     if parsed.head.description ~= "" then
       state.head.description = parsed.head.description
     end
     state.parent.change_id = parsed.parent.change_id
     state.parent.commit_id = parsed.parent.commit_id
     state.parent.description = parsed.parent.description
-    state.parent.bookmarks = parsed.parent.bookmarks
+    state.parent.bookmarks = picker_cache.filter_bookmarks(parsed.parent.bookmarks)
 
     -- Parse conflicts
     state.conflicts.items = M.parse_conflicts(status_lines, cwd)

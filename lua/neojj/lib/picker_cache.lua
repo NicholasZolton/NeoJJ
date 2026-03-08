@@ -148,4 +148,17 @@ function M.error_msg(result)
   return type(err) == "table" and table.concat(err, "\n") or tostring(err)
 end
 
+--- Filter out internal jj bookmark names (e.g. @git tracking refs) from a list
+---@param bookmarks string[]
+---@return string[]
+function M.filter_bookmarks(bookmarks)
+  local filtered = {}
+  for _, bm in ipairs(bookmarks) do
+    if not bm:match("@git$") then
+      table.insert(filtered, bm)
+    end
+  end
+  return filtered
+end
+
 return M
