@@ -783,9 +783,21 @@ M.n_edit_change = function(self)
     end
 
     local short = change_id:sub(1, 8)
-    jj.cli.edit.args(change_id).call()
-    notification.info("Now editing " .. short, { dismiss = true })
-    self:dispatch_refresh(nil, "n_edit_change")
+    local result = jj.cli.edit.args(change_id).call()
+    if result and result.code == 0 then
+      notification.info("Now editing " .. short, { dismiss = true })
+      self:dispatch_refresh(nil, "n_edit_change")
+    else
+      local stderr = result and result.stderr
+      if type(stderr) == "table" then
+        stderr = table.concat(stderr, "\n")
+      end
+      local msg = "Failed to edit " .. short
+      if stderr and stderr ~= "" then
+        msg = msg .. ": " .. stderr
+      end
+      notification.warn(msg, { dismiss = true })
+    end
   end)
 end
 

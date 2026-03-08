@@ -131,6 +131,36 @@ end
 ---@param revset? string Revset expression (default: ancestors(@, N))
 ---@param limit? number Max entries
 ---@return NeojjChangeLogEntry[]
+-- Template that appends immutable/empty/conflict/bookmarks as tab-separated fields after json
+local LIST_TEMPLATE = 'json(self) ++ if(immutable, "\\t1", "\\t0") ++ if(empty, "\\t1", "\\t0") ++ if(conflict, "\\t1", "\\t0") ++ "\\t" ++ bookmarks.map(|b| b.name()).join(",") ++ "\\n"'
+
+--- Parse lines produced by LIST_TEMPLATE into entries
+---@param lines string[]
+---@return table[]
+local function parse_enriched_lines(lines)
+  local entries = {}
+  for _, line in ipairs(lines) do
+    if line ~= "" then
+      local json_str, flags = line:match("^(.+})\t(.*)$")
+      if json_str then
+        local ok, obj = pcall(vim.json.decode, json_str)
+        if ok and obj then
+          local entry = M.json_to_entry(obj)
+          local parts = vim.split(flags, "\t")
+          entry.immutable = parts[1] == "1"
+          entry.empty = parts[2] == "1"
+          entry.conflict = parts[3] == "1"
+          if parts[4] and parts[4] ~= "" then
+            entry.bookmarks = vim.split(parts[4], ",")
+          end
+          table.insert(entries, entry)
+        end
+      end
+    end
+  end
+  return entries
+end
+
 function M.list(revset, limit)
   local jj = require("neojj.lib.jj")
   local config = require("neojj.config")
@@ -138,7 +168,7 @@ function M.list(revset, limit)
   revset = revset or ("ancestors(@, " .. limit .. ")")
 
   local result = jj.cli.log.no_graph
-    .template("json(self)")
+    .template(LIST_TEMPLATE)
     .revisions(revset)
     .call { hidden = true, trim = true }
 
@@ -146,15 +176,7 @@ function M.list(revset, limit)
     return {}
   end
 
-  local text = table.concat(result.stdout, "")
-  local objects = M.parse_json_objects(text)
-
-  local entries = {}
-  for _, obj in ipairs(objects) do
-    table.insert(entries, M.json_to_entry(obj))
-  end
-
-  return entries
+  return parse_enriched_lines(result.stdout)
 end
 
 ---Fetch changes with graph characters from `jj log -T 'json(self)'` (with graph).
@@ -212,17 +234,10 @@ function meta.update(state)
   local revset = "ancestors(@, " .. limit .. ")"
   local lines, code = shell.exec({
     "jj", "--no-pager", "--color=never", "--ignore-working-copy",
-    "log", "--no-graph", "-T", "json(self)", "-r", revset,
+    "log", "--no-graph", "-T", LIST_TEMPLATE, "-r", revset,
   }, state.worktree_root)
 
-  local entries = {}
-  if code == 0 and lines then
-    local text = table.concat(lines, "")
-    local objects = M.parse_json_objects(text)
-    for _, obj in ipairs(objects) do
-      table.insert(entries, M.json_to_entry(obj))
-    end
-  end
+  local entries = (code == 0 and lines) and parse_enriched_lines(lines) or {}
   state.recent.items = entries
 
   -- Enrich head description from log if status didn't provide it

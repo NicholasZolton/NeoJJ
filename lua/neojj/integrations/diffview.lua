@@ -137,9 +137,6 @@ function M.open(section_name, item_name, opts)
     })
   end
 
-  local notification = require("neojj.lib.notification")
-  notification.info("diffview.open: section=" .. tostring(section_name) .. " item=" .. tostring(item_name), { dismiss = true })
-
   local view
   -- selene: allow(if_same_then_else)
   if

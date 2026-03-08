@@ -260,11 +260,19 @@ local SectionItemChange = Component.new(function(item)
   end
 
   local status_parts = {}
+  if item.immutable then
+    table.insert(status_parts, "immutable")
+  end
   if item.empty then
     table.insert(status_parts, "empty")
   end
   if item.conflict then
     table.insert(status_parts, "conflict")
+  end
+
+  local status_highlight = "NeojjSubtleText"
+  if item.conflict then
+    status_highlight = "NeojjConflict"
   end
   local status_suffix = #status_parts > 0 and " (" .. table.concat(status_parts, ", ") .. ")" or ""
 
@@ -276,7 +284,7 @@ local SectionItemChange = Component.new(function(item)
   vim.list_extend(parts, bookmark_parts)
   table.insert(parts, text(" "))
   table.insert(parts, text(item.description and vim.split(item.description, "\n")[1] or "(no description)"))
-  table.insert(parts, text.highlight(item.conflict and "NeojjConflict" or "NeojjSubtleText")(status_suffix))
+  table.insert(parts, text.highlight(status_highlight)(status_suffix))
 
   return row(parts, {
     yankable = item.change_id,
