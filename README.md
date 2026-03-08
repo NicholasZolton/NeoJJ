@@ -27,7 +27,7 @@ Here's an example spec for [Lazy](https://github.com/folke/lazy.nvim), but you'r
 
 ```lua
 {
-  "Neojj/neojj",
+  "NicholasZolton/neojj",
   lazy = true,
   dependencies = {
     "nvim-lua/plenary.nvim",         -- required
