@@ -17,6 +17,8 @@
 
 NeoJJ is a hard fork of [Neogit](https://github.com/NeogitOrg/neogit), adapted to work with [jj (Jujutsu VCS)](https://github.com/jj-vcs/jj) instead of git.
 
+**Maintainer:** [Nicholas Zolton](https://github.com/nicholaszolton)
+
 ## Installation
 
 Requires [jj (Jujutsu VCS)](https://github.com/jj-vcs/jj) to be installed and available on your `PATH`.
@@ -58,7 +60,7 @@ You can either open NeoJJ by using the `NeoJJ` command:
 :NeoJJ kind=<kind> " Open specified popup directly
 :NeoJJ commit      " Open commit popup
 :NeoJJ bookmark    " Open bookmark popup
-:NeoJJ change      " Open change popup
+:NeoJJ workspace   " Open workspace popup
 
 " Map it to a key
 nnoremap <leader>gg <cmd>NeoJJ<cr>
@@ -131,6 +133,8 @@ You can configure NeoJJ by running the `require('neojj').setup {}` function, pas
 local neojj = require("neojj")
 
 neojj.setup {
+  -- Path to jj binary. "auto" = auto-detect (resolves shims for performance).
+  jj_binary = "auto",
   -- Hides the hints at the top of the status buffer
   disable_hint = false,
   -- Disables changing the buffer highlights based on where the cursor is.
@@ -144,7 +148,6 @@ neojj.setup {
   -- When enabled, will watch the `.jj/` directory for changes and refresh the status buffer in response to filesystem
   -- events.
   filewatcher = {
-    interval = 1000,
     enabled = true,
   },
   -- "ascii"   is the graph the jj CLI generates
@@ -174,9 +177,6 @@ neojj.setup {
   },
   -- Set to false if you want to be responsible for creating _ALL_ keymappings
   use_default_keymaps = true,
-  -- NeoJJ refreshes its internal state after specific events, which can be expensive depending on the repository size.
-  -- Disabling `auto_refresh` will make it so you have to manually refresh the status after you open it.
-  auto_refresh = true,
   -- Change the default way of opening NeoJJ
   kind = "tab",
   -- Floating window style
@@ -195,11 +195,23 @@ neojj.setup {
   console_timeout = 2000,
   -- Automatically show console if a command takes more than console_timeout milliseconds
   auto_show_console = true,
+  -- If `auto_show_console` is enabled, specify "output" (default) to show
+  -- the console always, or "error" to auto-show the console only on error
+  auto_show_console_on = "output",
   -- Automatically close the console if the process exits with a 0 (success) status
   auto_close_console = true,
   notification_icon = "󰊢",
+  -- Shell command to run in new workspace directory after creation. {path} is replaced with the workspace path.
+  workspace_open_command = nil,
+  -- Shell command to initialize a new workspace before opening. {path} is replaced with the workspace path.
+  workspace_initialize_command = nil,
+  -- Base directory for quick-add worktrees (used by workspace popup's quick add action)
+  workspace_worktrees_directory = "~/.worktrees",
   status = {
+    show_head_commit_hash = true,
     recent_commit_count = 10,
+    HEAD_padding = 10,
+    HEAD_folded = false,
     mode_padding = 3,
     mode_text = {
       M = "modified",
@@ -213,6 +225,8 @@ neojj.setup {
   },
   commit_editor = {
     kind = "tab",
+    show_staged_diff = true,
+    staged_diff_split_kind = "split",
     spell_check = true,
   },
   commit_select_view = {
@@ -223,6 +237,9 @@ neojj.setup {
     verify_commit = vim.fn.executable("gpg") == 1,
   },
   log_view = {
+    kind = "tab",
+  },
+  reflog_view = {
     kind = "tab",
   },
   preview_buffer = {
@@ -286,6 +303,8 @@ neojj.setup {
     bookmarks = {
       folded = true,
       hidden = false,
+      show_deleted = true,
+      show_remote = true,
     },
     recent = {
       folded = true,
@@ -330,17 +349,18 @@ neojj.setup {
       ["?"] = "HelpPopup",
       ["b"] = "BookmarkPopup",
       ["c"] = "CommitPopup",
-      ["C"] = "ChangePopup",
       ["d"] = "DiffPopup",
       ["f"] = "FetchPopup",
       ["l"] = "LogPopup",
-      ["m"] = "MarginPopup",
       ["M"] = "RemotePopup",
+      ["O"] = "OperationsPopup",
       ["P"] = "PushPopup",
       ["r"] = "RebasePopup",
       ["R"] = "ResolvePopup",
-      ["s"] = "SquashPopup",
-      ["S"] = "SplitPopup",
+      ["s"] = "SplitPopup",
+      ["S"] = "SquashPopup",
+      ["u"] = "UndoPopup",
+      ["W"] = "WorkspacePopup",
       ["y"] = "YankPopup",
     },
     status = {
@@ -348,6 +368,7 @@ neojj.setup {
       ["k"] = "MoveUp",
       ["o"] = "OpenTree",
       ["q"] = "Close",
+      ["I"] = "InitRepo",
       ["1"] = "Depth1",
       ["2"] = "Depth2",
       ["3"] = "Depth3",
@@ -356,10 +377,16 @@ neojj.setup {
       ["<tab>"] = "Toggle",
       ["za"] = "Toggle",
       ["zo"] = "OpenFold",
+      ["zc"] = "CloseFold",
+      ["zC"] = "Depth1",
+      ["zO"] = "Depth4",
       ["x"] = "Discard",
       ["K"] = "Untrack",
+      ["R"] = "Rename",
+      ["y"] = "ShowRefs",
       ["$"] = "CommandHistory",
       ["Y"] = "YankSelected",
+      ["gp"] = "GoToParentRepo",
       ["<c-r>"] = "RefreshBuffer",
       ["<cr>"] = "GoToFile",
       ["<s-cr>"] = "PeekFile",
@@ -380,28 +407,65 @@ neojj.setup {
 ```
 </details>
 
-
 ## Popups
 
-The following popup menus are available from all buffers:
+The following popup menus are available from the status buffer (press `?` for the help popup to see all keybindings):
 
-- **Bookmark** - create, move, delete, forget, track bookmarks
-- **Change** - create new change, merge
-- **Commit** - commit, describe
-- **Diff** - view diffs
-- **Fetch** - fetch from remotes
-- **Help** - show available keybindings
-- **Log** - view log with revset support
-- **Margin** - toggle margin display
-- **Push** - push to remotes
-- **Rebase** - rebase changes
-- **Remote** - manage remotes
-- **Resolve** - conflict resolution
-- **Split** - split the current change
-- **Squash** - squash changes into parent
-- **Yank** - copy change/commit IDs
+| Key | Popup | Description |
+|-----|-------|-------------|
+| `?` | **Help** | Show available keybindings |
+| `b` | **Bookmark** | Create, move, delete, forget, rename, track/untrack bookmarks |
+| `c` | **Commit** | Commit, new change, describe, edit, abandon, duplicate, revert. Supports bookmark-advancing variants. |
+| `d` | **Diff** | View diffs (working copy, range, specific change, diffedit) |
+| `f` | **Fetch** | Fetch from remotes |
+| `l` | **Log** | View log with revset support |
+| `M` | **Remote** | Add, remove, rename remotes |
+| `O` | **Operations** | Browse and restore jj operations |
+| `P` | **Push** | Push bookmarks to remotes |
+| `r` | **Rebase** | Rebase changes (single, range, onto revision) |
+| `R` | **Resolve** | Conflict resolution |
+| `s` | **Split** | Split the current change |
+| `S` | **Squash** | Squash changes into parent |
+| `u` | **Undo** | Undo/redo jj operations |
+| `W` | **Workspace** | Add, delete, forget, rename, list workspaces. Quick-add to worktrees directory. |
+| `y` | **Yank** | Copy change/commit IDs |
 
 Many popups will use whatever is currently under the cursor or selected as input for an action. For example, to rebase a range of changes from the log view, a linewise visual selection can be made, and the rebase action will apply to that selection.
+
+## Status Buffer
+
+The status buffer shows:
+
+- **Change / Parent** headers with change ID, commit ID, bookmarks (highlighted), and description
+- **Conflicts** section (if any unresolved conflicts exist)
+- **Modified files** with inline diff support (toggle with `<tab>`)
+- **Recent Changes** showing ancestor commits
+- **Bookmarks** section with local and remote bookmarks (unpushed bookmarks marked with `*`)
+
+## Workspace Support
+
+NeoJJ includes full support for jj workspaces via the `W` popup:
+
+- **Add** (`a`) / **Add at revision** (`A`) — create a new workspace at a chosen path (defaults to parent of repo root)
+- **Quick add** (`q`) / **Quick add at revision** (`Q`) — instantly create a workspace with a random name under a configurable worktrees directory (default `~/.worktrees`)
+- **Forget** (`f`) — stop tracking a workspace (files stay on disk)
+- **Delete** (`d`) — forget and remove the workspace directory
+- **Rename** (`r`) — rename the current workspace
+- **List** (`l`) — list all workspaces with paths
+- **Update stale** (`u`) — recover a stale workspace
+
+Configure hooks to automatically open new workspaces:
+
+```lua
+neojj.setup {
+  -- Open a new tmux window in the workspace directory
+  workspace_open_command = "tmux new-window -c {path}",
+  -- Run a command in the workspace before opening (e.g., install deps)
+  workspace_initialize_command = nil,
+  -- Base directory for quick-add worktrees
+  workspace_worktrees_directory = "~/.worktrees",
+}
+```
 
 ## Highlight Groups
 
@@ -433,10 +497,6 @@ NeoJJ follows semantic versioning.
 ## Compatibility
 
 The `master` branch will always be compatible with the latest **stable** release of Neovim, and usually with the latest **nightly** build as well.
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
 
 ## Acknowledgements
 
