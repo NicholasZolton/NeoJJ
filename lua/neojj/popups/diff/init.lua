@@ -18,6 +18,8 @@ function M.create(env)
     :action_if(has_diff_viewer, "w", "working copy", actions.working_copy)
     :new_action_group("Show")
     :action_if(has_diff_viewer, "c", "Change", actions.change)
+    :new_action_group("Edit")
+    :action("e", "Diffedit revision", actions.diffedit)
     :env(env)
     :build()
 

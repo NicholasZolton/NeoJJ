@@ -174,7 +174,8 @@ function M:open(kind)
         [mappings["Depth3"]]                    = self:_action("n_depth3"),
         [mappings["Depth4"]]                    = self:_action("n_depth4"),
         [mappings["CommandHistory"]]            = self:_action("n_command_history"),
-        [mappings["YankSelected"]]              = self:_action("n_yank_selected"),
+        [mappings["YankSelected"]]              = self:_action("n_yank_commit_hash"),
+        [mappings["ShowRefs"]]                  = self:_action("n_yank_selected"),
         [mappings["Discard"]]                   = self:_action("n_discard"),
         [mappings["GoToNextHunkHeader"]]        = self:_action("n_go_to_next_hunk_header"),
         [mappings["GoToPreviousHunkHeader"]]    = self:_action("n_go_to_previous_hunk_header"),
@@ -188,6 +189,7 @@ function M:open(kind)
         ["d"]                                   = self:_action("n_describe"),
         ["N"]                                   = self:_action("n_new_change"),
         ["A"]                                   = self:_action("n_abandon"),
+        ["U"]                                   = self:_action("n_undo"),
         ["o"]                                   = self:_action("n_open_in_browser"),
         ["Q"]                                   = self:_action("n_squash_popup"),
         -- jj popup bindings

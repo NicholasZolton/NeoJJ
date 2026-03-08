@@ -18,6 +18,7 @@ function M.create()
     :action("b", "Bookmark", actions.log_bookmark)
     :new_action_group("Operations")
     :action("o", "Op log", actions.op_log)
+    :action("e", "Evolution log (obslog)", actions.obslog)
     :build()
 
   p:show()

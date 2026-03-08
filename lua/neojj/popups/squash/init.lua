@@ -11,6 +11,8 @@ function M.create(env)
     :group_heading("Squash")
     :action("s", "into parent", actions.squash)
     :action("S", "into revision", actions.squash_into)
+    :new_action_group("Absorb")
+    :action("a", "Absorb into prior changes", actions.absorb)
     :env(env or {})
     :build()
 

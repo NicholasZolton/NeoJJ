@@ -100,6 +100,48 @@ function M.forget(name)
   return jj.cli.bookmark_forget.args(name).call()
 end
 
+---Rename a bookmark
+---@param old_name string
+---@param new_name string
+function M.rename(old_name, new_name)
+  local jj = require("neojj.lib.jj")
+  return jj.cli.bookmark_rename.args(old_name, new_name).call()
+end
+
+---Set (create or update) a bookmark
+---@param name string
+---@param revision? string
+---@param allow_backwards? boolean
+function M.set(name, revision, allow_backwards)
+  local jj = require("neojj.lib.jj")
+  local builder = jj.cli.bookmark_set.args(name)
+  if revision then
+    builder = builder.revision(revision)
+  end
+  if allow_backwards then
+    builder = builder.allow_backwards
+  end
+  return builder.call()
+end
+
+---Untrack a remote bookmark
+---@param bookmark_at_remote string e.g., "main@origin"
+function M.untrack(bookmark_at_remote)
+  local jj = require("neojj.lib.jj")
+  return jj.cli.bookmark_untrack.args(bookmark_at_remote).call()
+end
+
+---Advance closest bookmarks to a target revision
+---@param to? string Target revision (defaults to @)
+function M.advance(to)
+  local jj = require("neojj.lib.jj")
+  local builder = jj.cli.bookmark_advance
+  if to then
+    builder = builder.to(to)
+  end
+  return builder.call()
+end
+
 ---Update repository state with bookmark data
 ---@param state NeoJJRepoState
 function meta.update(state)

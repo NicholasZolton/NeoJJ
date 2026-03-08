@@ -226,9 +226,9 @@ function M.setup(config)
     NeoJJBranch                   = { fg = palette.blue, bold = palette.bold, ctermfg = 4 },
     NeoJJBranchHead               = { fg = palette.blue, bold = palette.bold, underline = palette.underline, ctermfg = 4 },
     NeoJJRemote                   = { fg = palette.green, bold = palette.bold, ctermfg = 2 },
-    NeoJJObjectId                 = { link = "NeoJJSubtleText" },
-    NeoJJChangeId                 = { fg = palette.purple, bold = palette.bold, ctermfg = 5 },
-    NeoJJConflict                 = { fg = palette.red, bold = palette.bold, ctermfg = 1 },
+    NeoJJObjectId                 = { fg = palette.bg_cyan, ctermfg = 7 },
+    NeoJJChangeId                 = { fg = palette.bg_purple, ctermfg = 6 },
+    NeoJJConflict                 = { fg = "#f0c674", bold = true, ctermfg = 3 },
     NeoJJImmutable                = { fg = palette.grey, italic = palette.italic, ctermfg = 7 },
     NeoJJWorkingCopy              = { fg = palette.green, bold = palette.bold, ctermfg = 2 },
     NeoJJBookmark                 = { link = "NeoJJBranch" },
@@ -243,7 +243,7 @@ function M.setup(config)
     NeoJJChangeCopied             = { fg = palette.bg_cyan, bold = palette.bold, italic = palette.italic, ctermfg = 6 },
     NeoJJChangeUnmerged           = { fg = palette.bg_yellow, bold = palette.bold, italic = palette.italic, ctermfg = 3 },
     NeoJJChangeNewFile            = { fg = palette.bg_green, bold = palette.bold, italic = palette.italic, ctermfg = 2 },
-    NeoJJSectionHeader            = { fg = palette.bg_purple, bold = palette.bold, ctermfg = 5 },
+    NeoJJSectionHeader            = { fg = palette.md_purple, bold = palette.bold, ctermfg = 5 },
     NeoJJSectionHeaderCount       = {},
     NeoJJRecentcommits            = { link = "NeoJJSectionHeader" },
     NeoJJTagName                  = { fg = palette.yellow, ctermfg = 3 },
@@ -251,6 +251,13 @@ function M.setup(config)
     NeoJJFloatHeader              = { bg = palette.bg0, bold = palette.bold, ctermfg = 5 },
     NeoJJFloatHeaderHighlight     = { bg = palette.bg2, fg = palette.cyan, bold = palette.bold, ctermfg = 5 },
     NeoJJActiveItem               = { bg = palette.bg_orange, fg = palette.bg0, bold = palette.bold, ctermfg = 5 },
+    -- Status buffer section headers (customizable separately)
+    NeoJJSectionConflicts         = { link = "NeoJJGraphRed" },
+    NeoJJSectionFiles             = { link = "NeoJJSectionHeader" },
+    NeoJJSectionRecent            = { link = "NeoJJSectionHeader" },
+    NeoJJSectionBookmarks         = { link = "NeoJJSectionHeader" },
+    -- File mode text in Modified files section
+    NeoJJFileMode                 = { link = "NeoJJBranch" },
   }
 
   for group, hl in pairs(hl_store) do

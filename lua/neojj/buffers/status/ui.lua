@@ -61,7 +61,9 @@ local HINT = Component.new(function(props)
     text.highlight("NeoJJSubtleText")(" | "),
     entry("Discard", "discard"),
     text.highlight("NeoJJSubtleText")(" | "),
-    entry("CommitPopup", "commit"),
+    entry("CommitPopup", "change"),
+    text.highlight("NeoJJSubtleText")(" | "),
+    entry("RebasePopup", "rebase"),
     text.highlight("NeoJJSubtleText")(" | "),
     entry("BookmarkPopup", "bookmark"),
     text.highlight("NeoJJSubtleText")(" | "),
@@ -73,7 +75,7 @@ end)
 local JJHead = Component.new(function(props)
   local change_id = props.change_id or ""
   local commit_id = props.commit_id or ""
-  local short_change = change_id:sub(1, 12)
+  local short_change = change_id:sub(1, 8)
   local short_commit = commit_id:sub(1, 8)
 
   local bookmark_text = ""
@@ -94,11 +96,11 @@ local JJHead = Component.new(function(props)
     row({
       text.highlight("NeoJJStatusHEAD")(util.pad_right(props.name .. ": ", props.HEAD_padding or 10)),
       text.highlight("NeoJJBranch")(props.symbol .. " "),
-      text.highlight("NeoJJObjectId")(short_change),
+      text.highlight("NeoJJChangeId")(short_change),
       text(" "),
-      text.highlight("NeoJJSubtleText")(short_commit),
+      text.highlight("NeoJJObjectId")(short_commit),
       text.highlight("NeoJJBranch")(bookmark_text),
-      text.highlight("NeoJJSubtleText")(status_text),
+      text.highlight(props.conflict and "NeoJJConflict" or "NeoJJSubtleText")(status_text),
     }),
     row {
       text("  "),
@@ -212,7 +214,7 @@ local SectionItemFile = function(section, config)
     end
 
     local name = item.original_name and ("%s -> %s"):format(item.original_name, item.name) or item.name
-    local highlight = ("NeoJJChange%s%s"):format(item.mode:gsub("%?", "Untracked"), section)
+    local highlight = "NeoJJFileMode"
 
     return col.tag("Item")({
       row {
@@ -233,7 +235,7 @@ local SectionItemFile = function(section, config)
 end
 
 local SectionItemChange = Component.new(function(item)
-  local change_id = (item.change_id or ""):sub(1, 12)
+  local change_id = (item.change_id or ""):sub(1, 8)
   local commit_id = (item.commit_id or ""):sub(1, 8)
 
   local bookmark_text = ""
@@ -251,13 +253,13 @@ local SectionItemChange = Component.new(function(item)
   local status_suffix = #status_parts > 0 and " (" .. table.concat(status_parts, ", ") .. ")" or ""
 
   return row({
-    text.highlight("NeoJJObjectId")(change_id),
+    text.highlight("NeoJJChangeId")(change_id),
     text(" "),
-    text.highlight("NeoJJSubtleText")(commit_id),
+    text.highlight("NeoJJObjectId")(commit_id),
     text.highlight("NeoJJBranch")(bookmark_text),
     text(" "),
     text(item.description and vim.split(item.description, "\n")[1] or "(no description)"),
-    text.highlight("NeoJJSubtleText")(status_suffix),
+    text.highlight(item.conflict and "NeoJJConflict" or "NeoJJSubtleText")(status_suffix),
   }, {
     yankable = item.change_id,
     item = item,
@@ -273,7 +275,7 @@ local SectionItemBookmark = Component.new(function(item)
   return row({
     text.highlight("NeoJJBranch")(remote_text .. item.name),
     text(" "),
-    text.highlight("NeoJJObjectId")((item.change_id or ""):sub(1, 12)),
+    text.highlight("NeoJJChangeId")((item.change_id or ""):sub(1, 8)),
     text(" "),
     text(item.description and vim.split(item.description, "\n")[1] or "(no description)"),
   }, {
@@ -338,7 +340,7 @@ function M.Status(state, config)
         }, { foldable = true, folded = config.status and config.status.HEAD_folded }),
         EmptyLine(),
         show_conflicts and Section {
-          title = SectionTitle { title = "Conflicts", highlight = "NeoJJGraphRed" },
+          title = SectionTitle { title = "Conflicts", highlight = "NeoJJSectionConflicts" },
           count = true,
           render = SectionItemConflict,
           items = state.conflicts.items,
@@ -346,7 +348,7 @@ function M.Status(state, config)
           name = "conflicts",
         },
         show_files and Section {
-          title = SectionTitle { title = "Modified files", highlight = "NeoJJRecentcommits" },
+          title = SectionTitle { title = "Modified files", highlight = "NeoJJSectionFiles" },
           count = true,
           render = SectionItemFile("files", config),
           items = state.files.items,
@@ -354,7 +356,7 @@ function M.Status(state, config)
           name = "files",
         },
         show_recent and Section {
-          title = SectionTitle { title = "Recent Changes", highlight = "NeoJJRecentcommits" },
+          title = SectionTitle { title = "Recent Changes", highlight = "NeoJJSectionRecent" },
           count = false,
           render = SectionItemChange,
           items = state.recent.items,
@@ -362,7 +364,7 @@ function M.Status(state, config)
           name = "recent",
         },
         show_bookmarks and Section {
-          title = SectionTitle { title = "Bookmarks", highlight = "NeoJJBranch" },
+          title = SectionTitle { title = "Bookmarks", highlight = "NeoJJSectionBookmarks" },
           count = true,
           render = SectionItemBookmark,
           items = state.bookmarks.items,

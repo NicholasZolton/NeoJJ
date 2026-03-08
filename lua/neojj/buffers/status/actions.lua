@@ -334,11 +334,36 @@ end
 ---@return fun(): nil
 M.n_yank_selected = function(self)
   return function()
+    local item = self.buffer.ui:get_item_under_cursor()
+    if item and item.change_id then
+      local short = item.change_id:sub(1, 8)
+      vim.fn.setreg("+", short)
+      vim.cmd.echo(string.format("'%s'", short))
+      return
+    end
     local yank = self.buffer.ui:get_yankable_under_cursor()
     if yank then
-      yank = string.format("'%s'", yank)
-      vim.cmd.let("@+=" .. yank)
-      vim.cmd.echo(yank)
+      vim.fn.setreg("+", yank)
+      vim.cmd.echo(string.format("'%s'", yank))
+    else
+      vim.cmd("echo ''")
+    end
+  end
+end
+
+M.n_yank_commit_hash = function(self)
+  return function()
+    local item = self.buffer.ui:get_item_under_cursor()
+    if item and item.commit_id then
+      local short = item.commit_id:sub(1, 8)
+      vim.fn.setreg("+", short)
+      vim.cmd.echo(string.format("'%s'", short))
+      return
+    end
+    local yank = self.buffer.ui:get_yankable_under_cursor()
+    if yank then
+      vim.fn.setreg("+", yank)
+      vim.cmd.echo(string.format("'%s'", yank))
     else
       vim.cmd("echo ''")
     end
@@ -592,6 +617,18 @@ M.n_abandon = function(self)
       jj.cli.abandon.call()
       notification.info("Change abandoned")
       self:dispatch_refresh(nil, "n_abandon")
+    end
+  end)
+end
+
+---@param self StatusBuffer
+---@return fun(): nil
+M.n_undo = function(self)
+  return a.void(function()
+    if input.get_permission("Undo last operation?") then
+      jj.cli.undo.call()
+      notification.info("Undone")
+      self:dispatch_refresh(nil, "n_undo")
     end
   end)
 end

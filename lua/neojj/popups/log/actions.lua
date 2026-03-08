@@ -61,6 +61,31 @@ function M.op_log(_popup)
   require("neojj.buffers.op_view").new():open()
 end
 
+function M.obslog(_popup)
+  local options = {}
+  for _, item in ipairs(jj.repo.state.recent.items) do
+    local short = string.sub(item.change_id, 1, 12)
+    local desc = item.description ~= "" and item.description or "(no description)"
+    table.insert(options, short .. " " .. desc)
+  end
+
+  local selection = FuzzyFinderBuffer.new(options):open_async { prompt_prefix = "Obslog for change" }
+  if not selection then return end
+  local change_id = selection:match("^(%S+)")
+  if not change_id then return end
+
+  local result = jj.cli.obslog.args("-r", change_id).call { hidden = true, trim = true }
+  if result and result.code == 0 and result.stdout then
+    vim.cmd("new")
+    local buf = vim.api.nvim_get_current_buf()
+    vim.bo[buf].buftype = "nofile"
+    vim.bo[buf].bufhidden = "wipe"
+    vim.bo[buf].filetype = "jjlog"
+    vim.api.nvim_buf_set_lines(buf, 0, -1, false, result.stdout)
+    vim.bo[buf].modifiable = false
+  end
+end
+
 function M.limit_to_files()
   local a = require("plenary.async")
   local fn = function(popup, option)

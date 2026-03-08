@@ -456,7 +456,18 @@ end
 function Buffer:add_highlight(line, col_start, col_end, name, namespace)
   local ns_id = self:get_namespace_id(namespace)
   if ns_id then
-    api.nvim_buf_add_highlight(self.handle, ns_id, name, line, col_start, col_end)
+    local line_text = api.nvim_buf_get_lines(self.handle, line, line + 1, false)[1]
+    if line_text then
+      local line_len = #line_text
+      col_end = math.min(col_end, line_len)
+      col_start = math.min(col_start, line_len)
+    end
+    if col_end > col_start then
+      api.nvim_buf_set_extmark(self.handle, ns_id, line, col_start, {
+        end_col = col_end,
+        hl_group = name,
+      })
+    end
   end
 end
 

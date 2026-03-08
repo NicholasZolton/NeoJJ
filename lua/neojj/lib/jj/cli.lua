@@ -327,6 +327,9 @@ define_command("split", {
   },
 })
 
+-- jj edit
+define_command("edit", {})
+
 -- jj abandon
 define_command("abandon", {})
 
@@ -410,6 +413,37 @@ define_command("bookmark forget", {})
 
 -- jj bookmark track
 define_command("bookmark track", {})
+
+-- jj bookmark untrack
+define_command("bookmark untrack", {
+  options = {
+    remote = "--remote",
+  },
+})
+
+-- jj bookmark rename
+define_command("bookmark rename", {
+  flags = {
+    overwrite_existing = "--overwrite-existing",
+  },
+})
+
+-- jj bookmark set
+define_command("bookmark set", {
+  flags = {
+    allow_backwards = "--allow-backwards",
+  },
+  options = {
+    revision = "-r",
+  },
+})
+
+-- jj bookmark advance
+define_command("bookmark advance", {
+  options = {
+    to = "--to",
+  },
+})
 
 -- jj git push
 define_command("git push", {
@@ -509,6 +543,15 @@ define_command("absorb", {
 
 -- jj parallelize
 define_command("parallelize", {})
+
+-- jj obslog
+define_command("obslog", {
+  options = {
+    revision = "-r",
+    limit = "-n",
+    template = "-T",
+  },
+})
 
 -- ============================================================
 -- Module metatable: access commands as properties

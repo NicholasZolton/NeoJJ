@@ -74,4 +74,26 @@ function M.change(popup)
   end
 end
 
+function M.diffedit(_popup)
+  local options = {}
+  for _, item in ipairs(jj.repo.state.recent.items) do
+    local short = string.sub(item.change_id, 1, 12)
+    local desc = item.description ~= "" and item.description or "(no description)"
+    table.insert(options, short .. " " .. desc)
+  end
+
+  local selection = FuzzyFinderBuffer.new(options):open_async { prompt_prefix = "Diffedit revision" }
+  if not selection then return end
+  local change_id = selection:match("^(%S+)")
+  if not change_id then return end
+
+  local notification = require("neojj.lib.notification")
+  local result = jj.cli.diffedit.revision(change_id).call { pty = true }
+  if result and result.code == 0 then
+    notification.info("Diffedit complete", { dismiss = true })
+  else
+    notification.warn("Diffedit failed", { dismiss = true })
+  end
+end
+
 return M

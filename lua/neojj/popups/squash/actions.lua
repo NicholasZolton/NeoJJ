@@ -57,4 +57,13 @@ function M.squash_into(popup)
   end
 end
 
+function M.absorb(_popup)
+  local result = jj.cli.absorb.call()
+  if result and result.code == 0 then
+    notification.info("Absorbed changes into prior commits", { dismiss = true })
+  else
+    notification.warn("Absorb failed", { dismiss = true })
+  end
+end
+
 return M
