@@ -439,6 +439,12 @@ function M.get_default_values()
         folded = true,
         hidden = false,
       },
+      bookmarks = {
+        folded = false,
+        hidden = false,
+        show_deleted = true,
+        show_remote = true,
+      },
     },
     ignored_settings = {},
     mappings = {

@@ -48,6 +48,8 @@ local logger = require("neojj.logger")
 ---@field commit_id string
 ---@field description string
 ---@field remote string|nil Remote name if tracking bookmark
+---@field timestamp string|nil Committer timestamp for sorting
+---@field deleted boolean|nil True if bookmark has been deleted locally
 
 ---@class NeoJJRepoState
 ---@field worktree_root string

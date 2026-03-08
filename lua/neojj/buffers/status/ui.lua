@@ -267,18 +267,29 @@ local SectionItemChange = Component.new(function(item)
 end)
 
 local SectionItemBookmark = Component.new(function(item)
-  local remote_text = ""
-  if item.remote and item.remote ~= "" then
-    remote_text = item.remote .. "/"
+  local label = item.name
+  local highlight = "NeoJJBranch"
+  if item.deleted then
+    highlight = "NeoJJSubtleText"
+  elseif item.remote and item.remote ~= "" then
+    label = item.name .. "@" .. item.remote
+    highlight = "NeoJJRemote"
   end
 
-  return row({
-    text.highlight("NeoJJBranch")(remote_text .. item.name),
-    text(" "),
-    text.highlight("NeoJJChangeId")((item.change_id or ""):sub(1, 8)),
-    text(" "),
-    text(item.description and vim.split(item.description, "\n")[1] or "(no description)"),
-  }, {
+  local parts = {
+    text.highlight(highlight)(label),
+  }
+
+  if not item.deleted then
+    table.insert(parts, text(" "))
+    table.insert(parts, text.highlight("NeoJJChangeId")((item.change_id or ""):sub(1, 8)))
+    table.insert(parts, text(" "))
+    table.insert(parts, text(item.description and vim.split(item.description, "\n")[1] or "(no description)"))
+  else
+    table.insert(parts, text.highlight("NeoJJSubtleText")(" (deleted)"))
+  end
+
+  return row(parts, {
     yankable = item.name,
     item = item,
   })
@@ -304,7 +315,8 @@ function M.Status(state, config)
 
   local show_recent = state.recent and #state.recent.items > 0
 
-  local show_bookmarks = state.bookmarks and #state.bookmarks.items > 0
+  local bookmarks_hidden = config.sections and config.sections.bookmarks and config.sections.bookmarks.hidden
+  local show_bookmarks = not bookmarks_hidden and state.bookmarks and #state.bookmarks.items > 0
 
   local HEAD_padding = config.status and config.status.HEAD_padding or 10
 
@@ -368,7 +380,7 @@ function M.Status(state, config)
           count = true,
           render = SectionItemBookmark,
           items = state.bookmarks.items,
-          folded = config.sections and config.sections.recent and config.sections.recent.folded,
+          folded = config.sections and config.sections.bookmarks and config.sections.bookmarks.folded,
           name = "bookmarks",
         },
       },

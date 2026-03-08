@@ -783,8 +783,15 @@ end
 ---@return fun(): nil
 M.n_open_in_browser = function(self)
   return function()
-    local change_id = self.buffer.ui:get_yankable_under_cursor()
-    if not change_id then
+    local item = self.buffer.ui:get_item_under_cursor()
+    local change_id
+    if item and item.change_id then
+      change_id = item.change_id
+    else
+      -- For file lines, use the current working copy change
+      change_id = jj.repo.state.head.change_id
+    end
+    if not change_id or change_id == "" then
       notification.warn("No change under cursor", { dismiss = true })
       return
     end

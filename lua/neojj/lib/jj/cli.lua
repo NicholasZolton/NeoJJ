@@ -308,6 +308,8 @@ define_command("commit", {
 define_command("squash", {
   flags = {
     interactive = "-i",
+    keep_emptied = "--keep-emptied",
+    use_destination_message = "--use-destination-message",
   },
   options = {
     revision = "-r",
@@ -346,6 +348,8 @@ define_command("restore", {
 define_command("rebase", {
   flags = {
     skip_emptied = "--skip-emptied",
+    keep_divergent = "--keep-divergent",
+    simplify_parents = "--simplify-parents",
   },
   options = {
     source = "-s",

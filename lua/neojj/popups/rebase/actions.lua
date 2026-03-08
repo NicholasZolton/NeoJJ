@@ -11,11 +11,11 @@ end
 
 function M.source_onto(popup)
   local options = picker_cache.get_all_revisions()
-  local source_sel = FuzzyFinderBuffer.new(options):open_async { prompt_prefix = "Rebase source" }
+  local source_sel = FuzzyFinderBuffer.new(options):open_async { prompt_prefix = "Rebase source", refocus_status = false }
   local source = extract_change_id(source_sel)
   if not source then return end
 
-  local dest_sel = FuzzyFinderBuffer.new(options):open_async { prompt_prefix = "onto destination" }
+  local dest_sel = FuzzyFinderBuffer.new(options):open_async { prompt_prefix = "onto destination", refocus_status = false }
   local dest = extract_change_id(dest_sel)
   if not dest then return end
 
@@ -33,13 +33,13 @@ end
 
 function M.bookmark_onto(popup)
   local bookmarks = picker_cache.get_all_bookmarks()
-  local bm_sel = FuzzyFinderBuffer.new(bookmarks):open_async { prompt_prefix = "Rebase bookmark" }
+  local bm_sel = FuzzyFinderBuffer.new(bookmarks):open_async { prompt_prefix = "Rebase bookmark", refocus_status = false }
   if not bm_sel then return end
   local bm = bm_sel:match("^(%S+)")
   if not bm then return end
 
   local options = picker_cache.get_all_revisions()
-  local dest_sel = FuzzyFinderBuffer.new(options):open_async { prompt_prefix = "onto destination" }
+  local dest_sel = FuzzyFinderBuffer.new(options):open_async { prompt_prefix = "onto destination", refocus_status = false }
   local dest = extract_change_id(dest_sel)
   if not dest then return end
 
@@ -57,11 +57,11 @@ end
 
 function M.revision_onto(popup)
   local options = picker_cache.get_all_revisions()
-  local rev_sel = FuzzyFinderBuffer.new(options):open_async { prompt_prefix = "Rebase revision" }
+  local rev_sel = FuzzyFinderBuffer.new(options):open_async { prompt_prefix = "Rebase revision", refocus_status = false }
   local rev = extract_change_id(rev_sel)
   if not rev then return end
 
-  local dest_sel = FuzzyFinderBuffer.new(options):open_async { prompt_prefix = "onto destination" }
+  local dest_sel = FuzzyFinderBuffer.new(options):open_async { prompt_prefix = "onto destination", refocus_status = false }
   local dest = extract_change_id(dest_sel)
   if not dest then return end
 
@@ -95,7 +95,7 @@ function M.here_onto(popup)
   end
 end
 
-function M.onto_trunk(popup)
+local function fetch_and_rebase(popup, mode_flag, mode_value, desc)
   notification.info("Fetching from remote...", { dismiss = true })
   local fetch_result = jj.cli.git_fetch.call()
   if not fetch_result or fetch_result.code ~= 0 then
@@ -104,16 +104,27 @@ function M.onto_trunk(popup)
   end
 
   local args = popup:get_arguments()
-  local builder = jj.cli.rebase.source("@-").destination("trunk()")
+  local builder = jj.cli.rebase[mode_flag](mode_value).destination("trunk()")
   if #args > 0 then builder = builder.args(unpack(args)) end
   local result = builder.call()
   if result and result.code == 0 then
     picker_cache.invalidate()
-    notification.info("Rebased onto trunk", { dismiss = true })
+    notification.info(desc, { dismiss = true })
   else
-    local err = result and (type(result.stderr) == "string" and result.stderr or vim.inspect(result.stderr)) or "unknown error"
-    notification.warn("Rebase onto trunk failed: " .. err, { dismiss = true })
+    local err = result and result.stderr or {}
+    local msg = type(err) == "table" and table.concat(err, "\n") or tostring(err)
+    notification.warn("Rebase onto trunk failed: " .. msg, { dismiss = true })
   end
+end
+
+--- Fetch + rebase current change onto trunk (jj rebase -s @ -d trunk())
+function M.current_onto_trunk(popup)
+  fetch_and_rebase(popup, "source", "@", "Rebased @ onto trunk")
+end
+
+--- Fetch + rebase whole stack onto trunk (jj rebase -b @ -d trunk())
+function M.stack_onto_trunk(popup)
+  fetch_and_rebase(popup, "branch", "@", "Rebased stack onto trunk")
 end
 
 function M.parallelize(_popup)
