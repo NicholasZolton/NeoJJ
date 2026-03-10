@@ -95,6 +95,80 @@ local function advance_bookmarks()
   return moved, failed
 end
 
+function M.new_change_on(popup)
+  local options = picker_cache.get_all_revisions()
+  local selection = FuzzyFinderBuffer.new(options):open_async { prompt_prefix = "New change on" }
+  local rev = picker_cache.parse_selection(selection)
+  if not rev then
+    return
+  end
+
+  local args = popup:get_arguments()
+  local builder = jj.cli.new.revisions(rev)
+  if #args > 0 then
+    builder = builder.args(unpack(args))
+  end
+  local result = builder.call()
+  if result and result.code == 0 then
+    picker_cache.invalidate_revisions()
+    notification.info("Created new change on " .. rev, { dismiss = true })
+  else
+    notification.warn("Failed to create change: " .. picker_cache.error_msg(result), { dismiss = true })
+  end
+end
+
+function M.new_change_on_with_bookmark(popup)
+  local options = picker_cache.get_all_revisions()
+  local selection = FuzzyFinderBuffer.new(options):open_async { prompt_prefix = "New change on" }
+  local rev = picker_cache.parse_selection(selection)
+  if not rev then
+    return
+  end
+
+  local args = popup:get_arguments()
+  local builder = jj.cli.new.revisions(rev)
+  if #args > 0 then
+    builder = builder.args(unpack(args))
+  end
+  local result = builder.call()
+  if not result or result.code ~= 0 then
+    notification.warn("Failed to create change: " .. picker_cache.error_msg(result), { dismiss = true })
+    return
+  end
+
+  local moved, failed = advance_bookmarks()
+  picker_cache.invalidate_revisions()
+  if #failed > 0 then
+    notification.warn("Failed to move bookmarks: " .. table.concat(failed, "; "), { dismiss = true })
+  elseif #moved > 0 then
+    notification.info("Created new change on " .. rev .. ", moved: " .. table.concat(moved, ", "), { dismiss = true })
+  else
+    notification.info("Created new change on " .. rev .. " (no bookmarks to move)", { dismiss = true })
+  end
+end
+
+function M.new_change_before(popup)
+  local options = picker_cache.get_all_revisions()
+  local selection = FuzzyFinderBuffer.new(options):open_async { prompt_prefix = "New change before" }
+  local rev = picker_cache.parse_selection(selection)
+  if not rev then
+    return
+  end
+
+  local args = popup:get_arguments()
+  local builder = jj.cli.new.insert_before.revisions(rev)
+  if #args > 0 then
+    builder = builder.args(unpack(args))
+  end
+  local result = builder.call()
+  if result and result.code == 0 then
+    picker_cache.invalidate_revisions()
+    notification.info("Created new change before " .. rev, { dismiss = true })
+  else
+    notification.warn("Failed to create change: " .. picker_cache.error_msg(result), { dismiss = true })
+  end
+end
+
 function M.new_change_with_bookmark(popup)
   local args = popup:get_arguments()
   local builder = jj.cli.new

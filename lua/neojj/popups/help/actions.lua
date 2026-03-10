@@ -43,7 +43,7 @@ M.popups = function(env)
     { "DiffPopup", "Diff", popups.open("diff", function(p) p(env.diff or {}) end) },
     { "RebasePopup", "Rebase", popups.open("rebase", function(p) p(env.rebase or {}) end) },
     { "PushPopup", "Push", popups.open("push", function(p) p(env.push or {}) end) },
-    { "CommitPopup", "Commit", popups.open("commit", function(p) p(env.commit or {}) end) },
+    { "CommitPopup", "Change", popups.open("commit", function(p) p(env.commit or {}) end) },
     { "LogPopup", "Log", popups.open("log", function(p) p(env.log or {}) end) },
     { "FetchPopup", "Fetch", popups.open("fetch", function(p) p(env.fetch or {}) end) },
     { "BookmarkPopup", "Bookmark", popups.open("bookmark", function(p) p(env.bookmark or {}) end) },
