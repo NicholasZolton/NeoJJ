@@ -891,6 +891,18 @@ M.n_new_change_on = function(self)
       return
     end
 
+    -- Auto-track untracked remote bookmarks
+    local item = ctx.item
+    if item and item.remote and item.remote ~= "" and ctx.section == "bookmarks" then
+      local ref = item.name .. "@" .. item.remote
+      local track_result = jj.cli.bookmark_track.args(ref).call()
+      if track_result and track_result.code == 0 then
+        local picker_cache = require("neojj.lib.picker_cache")
+        picker_cache.invalidate_bookmarks()
+        notification.info("Tracked " .. ref, { dismiss = true })
+      end
+    end
+
     local short = change_id:sub(1, 8)
     local result = jj.cli.new.revisions(change_id).call()
     if result and result.code == 0 then

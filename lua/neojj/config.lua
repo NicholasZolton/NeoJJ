@@ -220,10 +220,6 @@ end
 ---| "SquashPopup"
 ---| "UndoPopup"
 ---| "BookmarkPopup"
----| "SplitPopup"
----| "ResolvePopup"
----| "YankPopup"
----| "OperationsPopup"
 ---| "WorkspacePopup"
 ---| false
 
@@ -509,10 +505,6 @@ function M.get_default_values()
         ["S"] = "SquashPopup",
         ["u"] = "UndoPopup",
         ["b"] = "BookmarkPopup",
-        ["s"] = "SplitPopup",
-        ["R"] = "ResolvePopup",
-        ["y"] = "YankPopup",
-        ["O"] = "OperationsPopup",
         ["W"] = "WorkspacePopup",
       },
       status = {

@@ -355,15 +355,11 @@ neojj.setup {
       ["f"] = "FetchPopup",
       ["l"] = "LogPopup",
       ["M"] = "RemotePopup",
-      ["O"] = "OperationsPopup",
       ["P"] = "PushPopup",
       ["r"] = "RebasePopup",
-      ["R"] = "ResolvePopup",
-      ["s"] = "SplitPopup",
       ["S"] = "SquashPopup",
       ["u"] = "UndoPopup",
       ["W"] = "WorkspacePopup",
-      ["y"] = "YankPopup",
     },
     status = {
       ["j"] = "MoveDown",
@@ -416,21 +412,17 @@ The following popup menus are available from the status buffer (press `?` for th
 | Key | Popup | Description |
 |-----|-------|-------------|
 | `?` | **Help** | Show available keybindings |
-| `b` | **Bookmark** | Create, move, delete, forget, rename, track/untrack bookmarks |
-| `c` | **Commit** | Commit, new change, describe, edit, abandon, duplicate, revert. Supports bookmark-advancing variants. |
+| `b` | **Bookmark** | Create, move, delete, forget, rename, track/untrack bookmarks. Move bookmark to another bookmark. |
+| `c` | **Change** | Commit, new change, new on revision/bookmark, new before, describe, edit, abandon, duplicate, revert. Uppercase variants move bookmarks forward. |
 | `d` | **Diff** | View diffs (working copy, range, specific change, diffedit) |
 | `f` | **Fetch** | Fetch from remotes |
 | `l` | **Log** | View log with revset support |
 | `M` | **Remote** | Add, remove, rename remotes |
-| `O` | **Operations** | Browse and restore jj operations |
 | `P` | **Push** | Push bookmarks to remotes |
 | `r` | **Rebase** | Rebase changes (single, range, onto revision) |
-| `R` | **Resolve** | Conflict resolution |
-| `s` | **Split** | Split the current change |
 | `S` | **Squash** | Squash changes into parent |
 | `u` | **Undo** | Undo/redo jj operations |
 | `W` | **Workspace** | Add, delete, forget, rename, list workspaces. Quick-add to worktrees directory. |
-| `y` | **Yank** | Copy change/commit IDs |
 
 Many popups will use whatever is currently under the cursor or selected as input for an action. For example, to rebase a range of changes from the log view, a linewise visual selection can be made, and the rebase action will apply to that selection.
 
@@ -443,6 +435,187 @@ The status buffer shows:
 - **Modified files** with inline diff support (toggle with `<tab>`)
 - **Recent Changes** showing ancestor commits
 - **Bookmarks** section with local and remote bookmarks (unpushed bookmarks marked with `*`)
+
+### Context Actions
+
+These keybindings work directly in the status buffer on whatever is under your cursor (a commit in Recent Changes, a bookmark, etc.):
+
+| Key | Action | Description |
+|-----|--------|-------------|
+| `D` | **Describe** | Edit the description of the change under cursor |
+| `E` | **Edit** | Switch your working copy to the change under cursor |
+| `N` | **New change** | Create a new empty change on top of the current working copy |
+| `O` | **New change on** | Create a new change on top of the revision under cursor |
+| `B` | **New change before** | Insert a new change before the revision under cursor |
+| `A` | **Abandon** | Abandon the current change |
+| `F` | **Forget bookmark** | Forget the bookmark under cursor (or track a remote bookmark) |
+| `o` | **Open in browser** | Open the commit under cursor on GitHub/GitLab |
+| `x` | **Discard** | Discard file changes, abandon a change, or delete a bookmark under cursor |
+
+## Common Workflows
+
+### For git users: how jj maps to what you know
+
+<details>
+<summary><strong>Checking out a PR / someone else's branch</strong></summary>
+
+In git you'd run `git fetch && git checkout feature-branch`. In jj, bookmarks are the equivalent of branches:
+
+1. Press `f` to open the **Fetch** popup, then `f` to fetch all remotes
+2. The remote bookmark will appear in the **Bookmarks** section (shown as `name@origin`)
+3. Move your cursor to the remote bookmark and press `O` to create a new change on top of it — Neojj automatically tracks the remote bookmark for you
+
+Alternatively, from the **Change** popup (`c`):
+- Press `p` to pick a bookmark from a fuzzy finder and create a new change on it
+- Press `o` to pick any revision from a fuzzy finder
+
+**CLI equivalent:** `jj git fetch && jj bookmark track <name>@origin && jj new <bookmark-name>`
+
+</details>
+
+<details>
+<summary><strong>Creating a PR / pushing a branch</strong></summary>
+
+In git you'd create a branch, commit, and push. In jj:
+
+1. Make your changes — they're automatically part of the current change (no staging needed)
+2. Press `c` then `c` to **commit** (opens an editor for the description), or `c` then `D` to describe inline
+3. Open the **Bookmark** popup with `b`, then `c` to **create** a bookmark on your change
+4. Press `P` to open the **Push** popup and push the bookmark
+
+To keep working after committing, press `c` then `n` to create a **new change** on top.
+
+If you want bookmarks to automatically follow your new changes, use the uppercase variants: `c` then `C` (commit + move bookmarks) or `c` then `N` (new change + move bookmarks).
+
+**CLI equivalent:** `jj commit -m "msg" && jj bookmark create my-branch && jj git push --bookmark my-branch`
+
+</details>
+
+<details>
+<summary><strong>Stashing changes</strong></summary>
+
+You don't need to stash in jj. Every change is automatically its own "stash." To set aside current work:
+
+1. Press `c` then `n` to create a **new change** — your previous work stays in the parent change
+2. Do whatever you need to do
+3. Press `c` then `e` to **edit** back to your original change when you're ready to resume
+
+Since there's no staging area, your working copy changes are always safely captured.
+
+**CLI equivalent:** `jj new` (to set aside) then `jj edit <change-id>` (to resume)
+
+</details>
+
+<details>
+<summary><strong>Rebasing onto latest main</strong></summary>
+
+In git you'd run `git rebase main`. In jj:
+
+1. Press `ff` to **fetch** the latest changes
+2. Press `r` to open the **Rebase** popup
+3. Press `h` to rebase **here (@) onto** a selected revision, or `t` to rebase the whole **stack onto trunk**
+
+If you have a chain of changes, use `s` in the rebase popup to rebase a **source** and all its descendants.
+
+**CLI equivalent:** `jj git fetch && jj rebase -d main`
+
+</details>
+
+<details>
+<summary><strong>Resolving merge conflicts</strong></summary>
+
+In jj, conflicts don't block operations — they're recorded in the commit. You can resolve them whenever you want:
+
+1. Conflicts appear in the **Conflicts** section of the status buffer
+2. Edit the conflicted files directly — jj uses conflict markers similar to git
+3. Once resolved, the conflict markers disappear from the status buffer on next refresh
+
+**CLI equivalent:** `jj resolve` (to use a merge tool) or edit files directly
+
+</details>
+
+<details>
+<summary><strong>Cherry-picking a commit</strong></summary>
+
+In jj, the equivalent of cherry-pick is "duplicate":
+
+1. Press `c` to open the **Change** popup
+2. Press `u` to **duplicate** — pick a change from the fuzzy finder
+3. The duplicated change appears as a new change with the same content
+
+**CLI equivalent:** `jj duplicate <change-id>`
+
+</details>
+
+### Neojj workflows
+
+<details>
+<summary><strong>Creating a change on top of a bookmark or revision</strong></summary>
+
+**Quickest way (from status buffer):** Move your cursor to a commit in **Recent Changes** or a bookmark in the **Bookmarks** section, then press `O`. This creates a new change directly on top of that revision.
+
+**From the Change popup (`c`):**
+- `o` — pick any revision from a fuzzy finder
+- `O` — same, but also moves bookmarks forward
+- `p` — pick a bookmark from a fuzzy finder
+- `P` — same, but also moves bookmarks forward
+
+</details>
+
+<details>
+<summary><strong>Inserting a change before an existing one</strong></summary>
+
+Sometimes you need to insert a fix before an existing change rather than on top of it.
+
+**From status buffer:** Move your cursor to the target revision and press `B`.
+
+**From the Change popup (`c`):** Press `b` to pick a revision from a fuzzy finder.
+
+This runs `jj new --insert-before`, which creates a new change whose child is the target revision.
+
+</details>
+
+<details>
+<summary><strong>Moving bookmarks with your changes</strong></summary>
+
+When you create new changes with `c` then `n`, bookmarks stay on the old change. If you want bookmarks to follow along:
+
+- `c` then `N` — new change + move bookmarks forward
+- `c` then `C` — commit + move bookmarks forward
+- `c` then `O` — new change on revision + move bookmarks forward
+- `c` then `P` — new change on bookmark + move bookmarks forward
+
+The uppercase variants move any bookmarks that were on the old `@` to the new `@`, and bookmarks from the old `@-` to the new `@-`.
+
+</details>
+
+<details>
+<summary><strong>Splitting and squashing changes</strong></summary>
+
+**Splitting**: Use `jj split` from the command line to break a change into two. Neojj will support this in a future release.
+
+**Squashing** (`S` popup): Merge changes together.
+- `s` — squash the current change into its parent
+- `S` — squash into a specific revision (picked from fuzzy finder)
+- `a` — absorb changes into prior commits automatically
+
+</details>
+
+<details>
+<summary><strong>Navigating and editing historical changes</strong></summary>
+
+In jj, you can edit any change in your history, not just the latest one:
+
+1. In the **Recent Changes** section, move your cursor to a commit
+2. Press `E` to **edit** that change — your working copy switches to it
+3. Make your modifications (they're automatically captured)
+4. Press `c` then `n` to create a new change when done, or `E` on another commit to jump elsewhere
+
+Press `D` on any commit to edit its description without switching to it.
+
+Use `[c` and `]c` to scroll through a commit's diff in a side panel without leaving the status buffer.
+
+</details>
 
 ## Workspace Support
 
