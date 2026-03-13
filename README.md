@@ -21,6 +21,8 @@ Neojj is a hard fork of [Neogit](https://github.com/NeogitOrg/neogit), adapted t
 
 **Maintainer:** [Nicholas Zolton](https://github.com/nicholaszolton)
 
+> **Note:** Some features (specifically diffview and codediff integration) currently require a [git-colocated repository](https://jj-vcs.github.io/jj/latest/git-compatibility/#co-located-jujutsugit-repos). Work is underway to remove this dependency.
+
 ## Installation
 
 Requires [jj (Jujutsu VCS)](https://github.com/jj-vcs/jj) to be installed and available on your `PATH`.

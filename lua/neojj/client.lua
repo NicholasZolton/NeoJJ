@@ -7,15 +7,34 @@ local fmt = string.format
 
 local M = {}
 
+--- Quote a string for use in a shlex-parsed command string.
+--- Uses double quotes with proper escaping (backslash for \, ", $, `).
+--- This is compatible with Rust's shlex crate, unlike vim.fn.shellescape()
+--- which uses the '\'' idiom that shlex does not support.
+---@param s string
+---@return string
+local function shlex_quote(s)
+  if s == "" then
+    return '""'
+  end
+  -- If the string has no special characters, return as-is
+  if not s:find("[%s'\"\\$`#&|;()<>!{}]") then
+    return s
+  end
+  -- Double-quote with escaping for \, ", $, `
+  local escaped = s:gsub('[\\"`$]', "\\%0")
+  return '"' .. escaped .. '"'
+end
+
 function M.get_nvim_remote_editor(show_diff)
   local neojj_path = debug.getinfo(1, "S").source:sub(2, -#"lua/neojj/client.lua" - 2)
-  local nvim_path = fn.shellescape(vim.v.progpath)
+  local nvim_path = shlex_quote(vim.v.progpath)
 
   logger.debug("[CLIENT] Neojj path: " .. neojj_path)
   logger.debug("[CLIENT] Neovim path: " .. nvim_path)
-  local runtimepath_cmd = fn.shellescape(fmt("set runtimepath^=%s", fn.fnameescape(tostring(neojj_path))))
+  local runtimepath_cmd = shlex_quote(fmt("set runtimepath^=%s", fn.fnameescape(tostring(neojj_path))))
   local lua_cmd =
-    fn.shellescape("lua require('neojj.client').client({ show_diff = " .. tostring(show_diff) .. " })")
+    shlex_quote("lua require('neojj.client').client({ show_diff = " .. tostring(show_diff) .. " })")
 
   local shell_cmd = {
     nvim_path,
