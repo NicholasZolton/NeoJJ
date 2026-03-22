@@ -86,6 +86,11 @@ local JJHead = Component.new(function(props)
   local short_change = change_id:sub(1, 8)
   local short_commit = commit_id:sub(1, 8)
 
+  -- Split change_id into shortest unique prefix and rest
+  local prefix_len = props.shortest_prefix and #props.shortest_prefix or #short_change
+  local change_prefix = short_change:sub(1, prefix_len)
+  local change_rest = short_change:sub(prefix_len + 1)
+
   local bookmark_parts = {}
   if props.bookmarks and #props.bookmarks > 0 then
     for _, bm in ipairs(props.bookmarks) do
@@ -106,7 +111,8 @@ local JJHead = Component.new(function(props)
   local header_parts = {
     text.highlight("NeojjStatusHEAD")(util.pad_right(props.name .. ": ", props.HEAD_padding or 10)),
     text.highlight("NeojjBranch")(props.symbol .. " "),
-    text.highlight("NeojjChangeId")(short_change),
+    text.highlight("NeojjChangeIdPrefix")(change_prefix),
+    text.highlight("NeojjChangeIdRest")(change_rest),
     text(" "),
     text.highlight("NeojjObjectId")(short_commit),
   }
@@ -251,6 +257,11 @@ local SectionItemChange = Component.new(function(item)
   local change_id = (item.change_id or ""):sub(1, 8)
   local commit_id = (item.commit_id or ""):sub(1, 8)
 
+  -- Split change_id into shortest unique prefix and rest
+  local prefix_len = item.shortest_prefix and #item.shortest_prefix or #change_id
+  local change_prefix = change_id:sub(1, prefix_len)
+  local change_rest = change_id:sub(prefix_len + 1)
+
   local bookmark_parts = {}
   if item.bookmarks and #item.bookmarks > 0 then
     for _, bm in ipairs(item.bookmarks) do
@@ -283,7 +294,8 @@ local SectionItemChange = Component.new(function(item)
   local status_suffix = #status_parts > 0 and " (" .. table.concat(status_parts, ", ") .. ")" or ""
 
   local parts = {
-    text.highlight("NeojjChangeId")(change_id),
+    text.highlight("NeojjChangeIdPrefix")(change_prefix),
+    text.highlight("NeojjChangeIdRest")(change_rest),
     text(" "),
     text.highlight("NeojjObjectId")(commit_id),
   }
@@ -378,6 +390,7 @@ function M.Status(state, config)
             bookmarks = state.head.bookmarks,
             empty = state.head.empty,
             conflict = state.head.conflict,
+            shortest_prefix = state.head.shortest_prefix,
             HEAD_padding = HEAD_padding,
           },
           EmptyLine(),
@@ -390,6 +403,7 @@ function M.Status(state, config)
             bookmarks = state.parent.bookmarks,
             empty = false,
             conflict = false,
+            shortest_prefix = state.parent.shortest_prefix,
             HEAD_padding = HEAD_padding,
           },
         }, { foldable = true, folded = config.status and config.status.HEAD_folded }),
