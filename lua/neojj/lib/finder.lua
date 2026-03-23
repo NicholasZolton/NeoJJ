@@ -153,13 +153,30 @@ local function fzf_actions(on_select, allow_multi, refocus_status)
   }
 end
 
+--- Extract plain text strings from entries (handles both string and table entries)
+---@param entries any[]
+---@return string[]
+local function entries_to_strings(entries)
+  local result = {}
+  for _, entry in ipairs(entries) do
+    if type(entry) == "table" then
+      table.insert(result, entry.text)
+    else
+      table.insert(result, entry)
+    end
+  end
+  return result
+end
+
 ---Convert entries to snack picker items
 ---@param entries any[]
 ---@return any[]
 local function entries_to_snack_items(entries)
   local items = {}
   for idx, entry in ipairs(entries) do
-    table.insert(items, { idx = idx, score = 0, text = entry })
+    local text = type(entry) == "table" and entry.text or entry
+    local prefix_len = type(entry) == "table" and entry.prefix_len or nil
+    table.insert(items, { idx = idx, score = 0, text = text, prefix_len = prefix_len })
   end
   return items
 end
@@ -328,14 +345,14 @@ function Finder:find(on_select)
 
     pickers
       .new(self.opts, {
-        finder = finders.new_table { results = self.entries },
+        finder = finders.new_table { results = entries_to_strings(self.entries) },
         sorter = config.values.telescope_sorter() or default_sorter,
         attach_mappings = telescope_mappings(on_select, self.opts.allow_multi, self.opts.refocus_status),
       })
       :find()
   elseif config.check_integration("fzf_lua") then
     local fzf_lua = require("fzf-lua")
-    fzf_lua.fzf_exec(self.entries, {
+    fzf_lua.fzf_exec(entries_to_strings(self.entries), {
       prompt = string.format("%s> ", self.opts.prompt_prefix),
       fzf_opts = fzf_opts(self.opts),
       winopts = {
@@ -347,15 +364,96 @@ function Finder:find(on_select)
     })
   elseif config.check_integration("mini_pick") then
     local mini_pick = require("mini.pick")
-    mini_pick.start { source = { items = self.entries, choose = on_select } }
+
+    -- Build a lookup from display text -> prefix_len for bold highlighting
+    local prefix_lookup = {}
+    for _, entry in ipairs(self.entries) do
+      if type(entry) == "table" and entry.prefix_len then
+        prefix_lookup[entry.text] = entry.prefix_len
+      end
+    end
+
+    local string_items = entries_to_strings(self.entries)
+    local has_prefixes = next(prefix_lookup) ~= nil
+
+    local show = nil
+    if has_prefixes then
+      local ns = vim.api.nvim_create_namespace("neojj_picker_prefix")
+      show = function(buf_id, items_to_show, query, opts)
+        mini_pick.default_show(buf_id, items_to_show, query, opts)
+        vim.api.nvim_buf_clear_namespace(buf_id, ns, 0, -1)
+        for i, item in ipairs(items_to_show) do
+          local item_text = type(item) == "string" and item or tostring(item)
+          local plen = prefix_lookup[item_text]
+          if plen and plen > 0 then
+            -- Bold prefix
+            vim.api.nvim_buf_set_extmark(buf_id, ns, i - 1, 0, {
+              end_col = plen,
+              hl_group = "NeojjChangeIdPrefix",
+              hl_mode = "combine",
+              priority = 210,
+            })
+            -- Dim rest of change_id (up to first space)
+            local rest_end = item_text:find(" ") or (#item_text + 1)
+            if rest_end > plen + 1 then
+              vim.api.nvim_buf_set_extmark(buf_id, ns, i - 1, plen, {
+                end_col = rest_end - 1,
+                hl_group = "NeojjChangeIdRest",
+                hl_mode = "combine",
+                priority = 210,
+              })
+            end
+          end
+        end
+      end
+    end
+
+    mini_pick.start {
+      source = {
+        items = string_items,
+        choose = on_select,
+        show = show or nil,
+      },
+    }
   elseif config.check_integration("snacks") then
     local snacks_picker = require("snacks.picker")
     local confirm, on_close = snacks_confirm(on_select, self.opts.allow_multi, self.opts.refocus_status)
+    local snack_items = entries_to_snack_items(self.entries)
+
+    -- Check if any items have prefix_len for change ID highlighting
+    local has_prefixes = false
+    for _, item in ipairs(snack_items) do
+      if item.prefix_len then
+        has_prefixes = true
+        break
+      end
+    end
+
+    local format_fn = "text"
+    if has_prefixes then
+      format_fn = function(item)
+        local ret = {}
+        local item_text = item.text or ""
+        local plen = item.prefix_len
+        if plen and plen > 0 and plen < #item_text then
+          local space_pos = item_text:find(" ") or (#item_text + 1)
+          ret[#ret + 1] = { item_text:sub(1, plen), "NeojjChangeIdPrefix" }
+          if space_pos > plen + 1 then
+            ret[#ret + 1] = { item_text:sub(plen + 1, space_pos - 1), "NeojjChangeIdRest" }
+          end
+          ret[#ret + 1] = { item_text:sub(space_pos) }
+        else
+          ret[#ret + 1] = { item_text }
+        end
+        return ret
+      end
+    end
+
     snacks_picker.pick(nil, {
       title = "Neojj",
       prompt = string.format("%s > ", self.opts.prompt_prefix),
-      items = entries_to_snack_items(self.entries),
-      format = "text",
+      items = snack_items,
+      format = format_fn,
       layout = {
         preset = self.opts.theme,
         preview = self.opts.previewer,
@@ -366,7 +464,7 @@ function Finder:find(on_select)
       on_close = on_close,
     })
   else
-    vim.ui.select(self.entries, {
+    vim.ui.select(entries_to_strings(self.entries), {
       prompt = string.format("%s: ", self.opts.prompt_prefix),
       format_item = function(entry)
         return entry

@@ -624,4 +624,24 @@ describe("NeoJJ config", function()
       end)
     end)
   end)
+
+  describe("check_integration", function()
+    it("should resolve mini_pick to mini.pick module", function()
+      -- When mini.pick is available, check_integration("mini_pick") should find it
+      -- via the integration_modules mapping instead of trying require("mini-pick")
+      config.values.integrations = {}
+      local has_mini_pick = pcall(require, "mini.pick")
+      assert.are.equal(has_mini_pick, config.check_integration("mini_pick"))
+    end)
+
+    it("should respect explicit integration overrides", function()
+      config.values.integrations = { mini_pick = false }
+      assert.is_false(config.check_integration("mini_pick"))
+    end)
+
+    it("should respect explicit true override", function()
+      config.values.integrations = { mini_pick = true }
+      assert.is_true(config.check_integration("mini_pick"))
+    end)
+  end)
 end)
