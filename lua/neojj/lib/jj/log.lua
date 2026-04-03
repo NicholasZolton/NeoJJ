@@ -132,7 +132,7 @@ end
 ---@param limit? number Max entries
 ---@return NeojjChangeLogEntry[]
 -- Template that appends immutable/empty/conflict/bookmarks as tab-separated fields after json
-local LIST_TEMPLATE = 'json(self) ++ if(immutable, "\\t1", "\\t0") ++ if(empty, "\\t1", "\\t0") ++ if(conflict, "\\t1", "\\t0") ++ "\\t" ++ local_bookmarks.map(|b| b.name()).join(",") ++ "\\t" ++ remote_bookmarks.filter(|b| b.remote() != "git").map(|b| b.name() ++ "@" ++ b.remote()).join(",") ++ "\\n"'
+local LIST_TEMPLATE = 'json(self) ++ if(immutable, "\\t1", "\\t0") ++ if(empty, "\\t1", "\\t0") ++ if(conflict, "\\t1", "\\t0") ++ "\\t" ++ local_bookmarks.map(|b| b.name()).join(",") ++ "\\t" ++ remote_bookmarks.filter(|b| b.remote() != "git").map(|b| b.name() ++ "@" ++ b.remote()).join(",") ++ "\\t" ++ change_id.shortest(8).prefix() ++ "\\n"'
 
 --- Parse lines produced by LIST_TEMPLATE into entries
 ---@param lines string[]
@@ -155,6 +155,9 @@ local function parse_enriched_lines(lines)
           end
           if parts[5] and parts[5] ~= "" then
             entry.remote_bookmarks = vim.split(parts[5], ",")
+          end
+          if parts[6] and parts[6] ~= "" then
+            entry.shortest_prefix = parts[6]
           end
           table.insert(entries, entry)
         end
@@ -243,21 +246,37 @@ function meta.update(state)
   local entries = (code == 0 and lines) and parse_enriched_lines(lines) or {}
   state.recent.items = entries
 
-  -- Enrich head description from log if status didn't provide it
-  if #entries > 0 and state.head.change_id ~= "" then
+  -- Enrich head and parent from log data (description, shortest_prefix)
+  if #entries > 0 then
     for _, entry in ipairs(entries) do
-      if entry.change_id == state.head.change_id
+      -- Match head
+      if state.head.change_id ~= "" and (
+        entry.change_id == state.head.change_id
         or state.head.change_id:find(entry.change_id, 1, true) == 1
-        or entry.change_id:find(state.head.change_id, 1, true) == 1 then
+        or entry.change_id:find(state.head.change_id, 1, true) == 1
+      ) then
         if entry.description ~= "" and (state.head.description == "" or state.head.description:match("^%(")) then
           state.head.description = entry.description
         end
-        break
+        if entry.shortest_prefix then
+          state.head.shortest_prefix = entry.shortest_prefix
+        end
+      end
+      -- Match parent
+      if state.parent.change_id ~= "" and (
+        entry.change_id == state.parent.change_id
+        or state.parent.change_id:find(entry.change_id, 1, true) == 1
+        or entry.change_id:find(state.parent.change_id, 1, true) == 1
+      ) then
+        if entry.shortest_prefix then
+          state.parent.shortest_prefix = entry.shortest_prefix
+        end
       end
     end
   end
 end
 
 M.meta = meta
+M.parse_enriched_lines = parse_enriched_lines
 
 return M

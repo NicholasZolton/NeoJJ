@@ -228,6 +228,8 @@ function M.setup(config)
     NeojjRemote                   = { fg = palette.green, bold = palette.bold, ctermfg = 2 },
     NeojjObjectId                 = { fg = palette.bg_cyan, ctermfg = 7 },
     NeojjChangeId                 = { fg = palette.bg_purple, ctermfg = 6 },
+    NeojjChangeIdPrefix           = { fg = palette.purple, bold = palette.bold, ctermfg = 5 },
+    NeojjChangeIdRest             = { fg = palette.bg_purple, ctermfg = 6 },
     NeojjConflict                 = { fg = "#f0c674", bold = true, ctermfg = 3 },
     NeojjImmutable                = { fg = palette.grey, italic = palette.italic, ctermfg = 7 },
     NeojjWorkingCopy              = { fg = palette.green, bold = palette.bold, ctermfg = 2 },

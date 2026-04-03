@@ -1038,12 +1038,18 @@ end
 
 ---@param name string
 ---@return boolean
+-- Map integration config keys to their actual Lua module names
+local integration_modules = {
+  mini_pick = "mini.pick",
+}
+
 function M.check_integration(name)
   local logger = require("neojj.logger")
   local enabled = M.values.integrations[name]
 
   if enabled == nil or enabled == "auto" then
-    local success, _ = pcall(require, name:gsub("_", "-"))
+    local mod_name = integration_modules[name] or name:gsub("_", "-")
+    local success, _ = pcall(require, mod_name)
     logger.info(("[CONFIG] Found auto integration '%s = %s'"):format(name, success))
     return success
   end

@@ -19,6 +19,7 @@ function M.get_all_revisions()
   local entries = {}
   for _, item in ipairs(items) do
     local short_id = (item.change_id or ""):sub(1, 8)
+    local prefix_len = item.shortest_prefix and #item.shortest_prefix or #short_id
     local label = short_id
     if item.description and item.description ~= "" then
       local first_line = vim.split(item.description, "\n")[1]
@@ -27,7 +28,7 @@ function M.get_all_revisions()
     if item.bookmarks and #item.bookmarks > 0 then
       label = label .. " [" .. table.concat(item.bookmarks, ", ") .. "]"
     end
-    table.insert(entries, label)
+    table.insert(entries, { text = label, prefix_len = prefix_len })
   end
 
   _cache.revisions = entries
@@ -66,12 +67,22 @@ function M.invalidate()
   _cache.bookmarks = nil
 end
 
+--- Extract text from a revision entry (handles both string and table entries)
+---@param entry string|table
+---@return string
+local function entry_text(entry)
+  if type(entry) == "table" then
+    return entry.text
+  end
+  return entry
+end
+
 --- Remove a specific revision from the cache by its short change_id prefix
 function M.remove_revision(change_id)
   _cache.bookmarks = nil -- bookmark on abandoned commit may be affected
   if not _cache.revisions then return end
   for i, entry in ipairs(_cache.revisions) do
-    if entry:sub(1, #change_id) == change_id then
+    if entry_text(entry):sub(1, #change_id) == change_id then
       table.remove(_cache.revisions, i)
       return
     end
@@ -82,9 +93,10 @@ end
 function M.update_revision_description(change_id, new_desc)
   if not _cache.revisions then return end
   for i, entry in ipairs(_cache.revisions) do
-    if entry:sub(1, #change_id) == change_id then
+    if entry_text(entry):sub(1, #change_id) == change_id then
       local first_line = vim.split(new_desc, "\n")[1]
-      _cache.revisions[i] = change_id .. " " .. first_line
+      local prefix_len = type(entry) == "table" and entry.prefix_len or #change_id
+      _cache.revisions[i] = { text = change_id .. " " .. first_line, prefix_len = prefix_len }
       return
     end
   end
@@ -131,13 +143,15 @@ end
 
 --- Extract the first whitespace-delimited token from a picker selection.
 --- Works for both revision entries ("change_id description") and bookmark entries ("name change_id desc").
----@param selection string?
+--- Handles both plain string selections and structured table entries.
+---@param selection string|table|nil
 ---@return string?
 function M.parse_selection(selection)
   if not selection then
     return nil
   end
-  return selection:match("^(%S+)")
+  local text = type(selection) == "table" and selection.text or selection
+  return text:match("^(%S+)")
 end
 
 --- Extract a human-readable error message from a command result's stderr.
