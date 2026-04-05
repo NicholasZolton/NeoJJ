@@ -153,4 +153,56 @@ describe("jj log parser", function()
       assert.are.equal("subject line", entry.description)
     end)
   end)
+
+  describe("parse_enriched_lines", function()
+    local function make_line(json_obj, flags)
+      return vim.json.encode(json_obj) .. "\t" .. flags
+    end
+
+    local sample_json = {
+      change_id = "muvqvxnnyrwstlmspzqvvqzmqstxmzwq",
+      commit_id = "7809cff3fa826599726c858a8c387ddc46fb7a72",
+      description = "add feature\n",
+    }
+
+    it("extracts shortest_prefix from the 6th tab field", function()
+      local line = make_line(sample_json, "0\t0\t0\t\t\tmuvq")
+      local entries = log.parse_enriched_lines({ line })
+      assert.are.equal(1, #entries)
+      assert.are.equal("muvq", entries[1].shortest_prefix)
+    end)
+
+    it("handles single-character shortest_prefix", function()
+      local line = make_line(sample_json, "0\t0\t0\t\t\tm")
+      local entries = log.parse_enriched_lines({ line })
+      assert.are.equal("m", entries[1].shortest_prefix)
+    end)
+
+    it("sets shortest_prefix to nil when 6th field is empty", function()
+      local line = make_line(sample_json, "0\t0\t0\t\t")
+      local entries = log.parse_enriched_lines({ line })
+      assert.is_nil(entries[1].shortest_prefix)
+    end)
+
+    it("parses bookmarks and shortest_prefix together", function()
+      local line = make_line(sample_json, "0\t0\t0\tmain,dev\torigin@main\tmuvq")
+      local entries = log.parse_enriched_lines({ line })
+      assert.are.same({ "main", "dev" }, entries[1].bookmarks)
+      assert.are.same({ "origin@main" }, entries[1].remote_bookmarks)
+      assert.are.equal("muvq", entries[1].shortest_prefix)
+    end)
+
+    it("parses immutable, empty, and conflict flags", function()
+      local line = make_line(sample_json, "1\t1\t1\t\t\tmuvq")
+      local entries = log.parse_enriched_lines({ line })
+      assert.is_true(entries[1].immutable)
+      assert.is_true(entries[1].empty)
+      assert.is_true(entries[1].conflict)
+    end)
+
+    it("skips empty lines", function()
+      local entries = log.parse_enriched_lines({ "", "" })
+      assert.are.equal(0, #entries)
+    end)
+  end)
 end)
