@@ -10,6 +10,73 @@ local Watcher = require("neojj.watcher")
 local jj = require("neojj.lib.jj")
 local a = require("plenary.async")
 
+-- Non-colocated jj workspaces have no `.git`, so diffview's built-in adapter
+-- detection fails. Patch `get_adapter` to fall back to a GitAdapter pointed at
+-- jj's git backing store, which contains every commit jj has created.
+local jj_backend = require("neojj.integrations.jj_backend")
+
+local function install_adapter_patch()
+  local vcs = require("diffview.vcs")
+  if vcs.__neojj_patched then return end
+  vcs.__neojj_patched = true
+
+  local GitAdapter = require("diffview.vcs.adapters.git").GitAdapter
+  local dv_config = require("diffview.config")
+  local orig_get_adapter = vcs.get_adapter
+
+  ---@param workspace string
+  ---@param git_dir string
+  ---@param opt table
+  local function build_jj_git_adapter(workspace, git_dir, opt)
+    local path_args = (opt.cmd_ctx and opt.cmd_ctx.path_args) or {}
+    local cpath = opt.cmd_ctx and opt.cmd_ctx.cpath
+
+    local adapter = GitAdapter({
+      toplevel = workspace,
+      path_args = path_args,
+      cpath = cpath,
+    })
+    adapter.ctx.toplevel = workspace
+    adapter.ctx.dir = git_dir
+
+    local wrapped = vim.list_extend({}, dv_config.get_config().git_cmd)
+    table.insert(wrapped, "--git-dir=" .. git_dir)
+    table.insert(wrapped, "--work-tree=" .. workspace)
+    adapter.get_command = function() return wrapped end
+
+    return adapter
+  end
+
+  function vcs.get_adapter(opt)
+    opt = opt or {}
+    local err, adapter = orig_get_adapter(opt)
+    if not err then return err, adapter end
+
+    local candidates = {}
+    if opt.top_indicators then
+      vim.list_extend(candidates, opt.top_indicators)
+    end
+    if opt.cmd_ctx and opt.cmd_ctx.cpath then
+      table.insert(candidates, opt.cmd_ctx.cpath)
+    end
+    table.insert(candidates, vim.uv.cwd())
+
+    for _, c in ipairs(candidates) do
+      local workspace = jj_backend.find_jj_workspace(c)
+      if workspace then
+        local git_dir = jj_backend.jj_backing_git_dir(workspace)
+        if git_dir then
+          return nil, build_jj_git_adapter(workspace, git_dir, opt)
+        end
+      end
+    end
+
+    return err, adapter
+  end
+end
+
+install_adapter_patch()
+
 --- Resolve a jj change ID to a git commit hash (only if it looks like a jj ID)
 local function resolve_jj_to_git(ref)
   -- jj change IDs are purely alphabetic; git hashes are hex. Skip if already hex or contains ".."
