@@ -618,6 +618,7 @@ Available events:
   `NeojjCommitComplete`         A commit/describe operation completed
   `NeojjPushComplete`           A push operation completed
   `NeojjFetchComplete`          A fetch operation completed
+  `NeojjSquashComplete`         A squash operation completed
 
 ==============================================================================
 13. JJ CONCEPTS                                        *neojj-jj-concepts*
