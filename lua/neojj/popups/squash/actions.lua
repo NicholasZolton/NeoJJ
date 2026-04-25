@@ -1,10 +1,34 @@
 local M = {}
 
 local jj = require("neojj.lib.jj")
+local client = require("neojj.client")
 local notification = require("neojj.lib.notification")
 local FuzzyFinderBuffer = require("neojj.buffers.fuzzy_finder")
 local picker_cache = require("neojj.lib.picker_cache")
 
+---@param builder table
+---@param success_msg string
+---@return integer
+local function wrap(builder, success_msg)
+  local code = client.wrap(builder, {
+    autocmd = "NeojjSquashComplete",
+    msg = {
+      success = success_msg,
+      fail = "Squash failed",
+    },
+    show_diff = true,
+    -- NOTE: Squash can potentially invoke editor flows even without
+    -- `--interactive`, e.g. when multiple commit messages are involved
+    -- and the user needs to edit the combined commit message.
+    interactive = true,
+  })
+
+  if code == 0 then
+    picker_cache.invalidate_revisions()
+  end
+
+  return code
+end
 
 function M.squash(popup)
   local args = popup:get_arguments()
@@ -12,13 +36,7 @@ function M.squash(popup)
   if #args > 0 then
     builder = builder.args(unpack(args))
   end
-  local result = builder.call()
-  if result and result.code == 0 then
-    picker_cache.invalidate_revisions()
-    notification.info("Squashed into parent", { dismiss = true })
-  else
-    notification.warn("Squash failed: " .. picker_cache.error_msg(result), { dismiss = true })
-  end
+  wrap(builder, "Squashed into parent")
 end
 
 function M.squash_into(popup)
@@ -39,13 +57,7 @@ function M.squash_into(popup)
   if #args > 0 then
     builder = builder.args(unpack(args))
   end
-  local result = builder.call()
-  if result and result.code == 0 then
-    picker_cache.invalidate_revisions()
-    notification.info("Squashed into " .. rev, { dismiss = true })
-  else
-    notification.warn("Squash failed: " .. picker_cache.error_msg(result), { dismiss = true })
-  end
+  wrap(builder, "Squashed into " .. rev)
 end
 
 function M.squash_revision(popup)
@@ -66,13 +78,7 @@ function M.squash_revision(popup)
   if #args > 0 then
     builder = builder.args(unpack(args))
   end
-  local result = builder.call()
-  if result and result.code == 0 then
-    picker_cache.invalidate_revisions()
-    notification.info("Squashed " .. rev .. " into its parent", { dismiss = true })
-  else
-    notification.warn("Squash failed: " .. picker_cache.error_msg(result), { dismiss = true })
-  end
+  wrap(builder, "Squashed " .. rev .. " into its parent")
 end
 
 function M.squash_range(popup)
@@ -106,13 +112,7 @@ function M.squash_range(popup)
   if #args > 0 then
     builder = builder.args(unpack(args))
   end
-  local result = builder.call()
-  if result and result.code == 0 then
-    picker_cache.invalidate_revisions()
-    notification.info("Squashed " .. range .. " into " .. into_rev, { dismiss = true })
-  else
-    notification.warn("Squash failed: " .. picker_cache.error_msg(result), { dismiss = true })
-  end
+  wrap(builder, "Squashed " .. range .. " into " .. into_rev)
 end
 
 function M.absorb(_popup)
