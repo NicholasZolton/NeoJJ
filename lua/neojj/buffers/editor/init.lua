@@ -81,7 +81,7 @@ function M:open(kind)
 
   self.buffer = Buffer.create {
     name = self.filename,
-    filetype = "jjcommit",
+    filetype = "jjdescription",
     load = true,
     spell_check = config.values.commit_editor.spell_check,
     buftype = "",
