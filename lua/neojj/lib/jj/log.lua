@@ -283,7 +283,7 @@ function M.list(revset, limit)
     return {}
   end
 
-  return parse_enriched_lines(result.stdout)
+  return M.group_divergent(parse_enriched_lines(result.stdout))
 end
 
 ---Parse a single line of `jj log -T 'json(self) ++ if(divergent, "\tdivergent", "")'` output.
@@ -342,7 +342,7 @@ function M.list_with_graph(revset, limit)
   for _, line in ipairs(result.stdout) do
     table.insert(entries, M.parse_with_graph_line(line))
   end
-  return entries
+  return M.group_divergent(entries)
 end
 
 ---Update repository state with recent changes
@@ -358,7 +358,7 @@ function meta.update(state)
   }, state.worktree_root)
 
   local entries = (code == 0 and lines) and parse_enriched_lines(lines) or {}
-  state.recent.items = entries
+  state.recent.items = M.group_divergent(entries)
 
   -- Enrich head and parent from log data (description, shortest_prefix)
   if #entries > 0 then
