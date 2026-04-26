@@ -253,41 +253,6 @@ local SectionItemFile = function(section, config)
   end)
 end
 
-local function render_section_variant(variant)
-  local v_commit = (variant.commit_id or ""):sub(1, 8)
-  local subject = variant.description and vim.split(variant.description, "\n")[1] or ""
-  local id_highlight = variant.current_working_copy and "NeojjBranchHead" or "NeojjObjectId"
-
-  local status_parts = {}
-  if variant.immutable then
-    table.insert(status_parts, "immutable")
-  end
-  if variant.empty then
-    table.insert(status_parts, "empty")
-  end
-  if variant.conflict then
-    table.insert(status_parts, "conflict")
-  end
-  local status_highlight = variant.conflict and "NeojjConflict" or "NeojjSubtleText"
-  local status_suffix = #status_parts > 0 and " (" .. table.concat(status_parts, ", ") .. ")" or ""
-
-  local parts = {
-    text("  "),
-    text.highlight("NeojjDivergent")("/" .. tostring(variant.change_offset)),
-    text("  "),
-    text.highlight(id_highlight)(v_commit),
-    text("  "),
-    text(subject),
-    text.highlight(status_highlight)(status_suffix),
-  }
-
-  return row(parts, {
-    yankable = variant.commit_id,
-    oid = variant.commit_id,
-    item = variant,
-  })
-end
-
 local SectionItemChange = Component.new(function(item)
   -- Divergent parent: render parent row + indented variant rows
   if item.variants then
@@ -329,7 +294,7 @@ local SectionItemChange = Component.new(function(item)
       }),
     }
     for _, v in ipairs(item.variants) do
-      table.insert(children, render_section_variant(v))
+      table.insert(children, common.DivergentVariantRow(v))
     end
 
     return col(children)

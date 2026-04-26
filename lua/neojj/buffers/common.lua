@@ -176,46 +176,53 @@ local function build_virtual_text(author_name, date)
   }
 end
 
+---Render a divergent variant row.
 ---@param variant NeojjChangeLogEntry
+---@param opts table|nil { virtual_text = boolean } — log view sets virtual_text=true to show author+date
 ---@return Component
-local function render_variant_row(variant)
+function M.DivergentVariantRow(variant, opts)
+  opts = opts or {}
   local commit_short = short_id(variant.commit_id)
   local subject = vim.split(variant.description or "", "\n")[1] or ""
-  local date = variant.author_date or ""
-  if #date > 16 then
-    date = string.sub(date, 1, 16)
-  end
-
   local id_highlight = variant.current_working_copy and "NeojjBranchHead" or "NeojjObjectId"
 
-  local markers = {}
-  if variant.conflict then
-    table.insert(markers, text("conflict ", { highlight = "NeojjDiffDeletions" }))
+  local status_parts = {}
+  if variant.immutable then
+    table.insert(status_parts, "immutable")
   end
   if variant.empty then
-    table.insert(markers, text("empty ", { highlight = "NeojjSubtleText" }))
+    table.insert(status_parts, "empty")
   end
-  if variant.immutable then
-    table.insert(markers, text("immutable ", { highlight = "NeojjSubtleText" }))
+  if variant.conflict then
+    table.insert(status_parts, "conflict")
   end
+  local status_highlight = variant.conflict and "NeojjConflict" or "NeojjSubtleText"
+  local status_suffix = #status_parts > 0 and " (" .. table.concat(status_parts, ", ") .. ")" or ""
 
   local children = {
-    text("  "), -- indent
+    text("  "),
     text("/" .. tostring(variant.change_offset), { highlight = "NeojjDivergent" }),
     text("  "),
     text(commit_short, { highlight = id_highlight }),
     text("  "),
+    text(subject),
+    text.highlight(status_highlight)(status_suffix),
   }
-  for _, m in ipairs(markers) do
-    table.insert(children, m)
-  end
-  table.insert(children, text(subject))
 
-  return col.tag("commit_variant")({
-    row(children, {
-      virtual_text = build_virtual_text(variant.author_name, date),
-    }),
-  }, {
+  local row_opts = {
+    yankable = variant.commit_id,
+    oid = variant.commit_id,
+    item = variant,
+  }
+  if opts.virtual_text then
+    local date = variant.author_date or ""
+    if #date > 16 then
+      date = string.sub(date, 1, 16)
+    end
+    row_opts.virtual_text = build_virtual_text(variant.author_name, date)
+  end
+
+  return col.tag("commit_variant")({ row(children, row_opts) }, {
     item = variant,
     oid = variant.commit_id,
     foldable = false,
@@ -253,7 +260,7 @@ M.CommitEntry = Component.new(function(commit, _remotes, args)
 
     local variant_rows = {}
     for _, v in ipairs(commit.variants) do
-      table.insert(variant_rows, render_variant_row(v))
+      table.insert(variant_rows, M.DivergentVariantRow(v, { virtual_text = true }))
     end
 
     return col.tag("divergent_parent")(

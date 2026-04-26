@@ -6,6 +6,7 @@ local popups = require("neojj.popups")
 local input = require("neojj.lib.input")
 local notification = require("neojj.lib.notification")
 local jump = require("neojj.lib.jump")
+local common = require("neojj.buffers.common")
 
 local fn = vim.fn
 
@@ -40,25 +41,6 @@ local function cursor_context(self)
     yank = yank,
     immutable = (item and item.immutable) or false,
   }
-end
-
----Returns true and warns if the cursor is on a divergent parent in the recent section.
----Callers should early-return when this returns true.
----@param ctx CursorContext
----@return boolean blocked
-local function divergent_parent_guard(ctx)
-  if ctx.section == "recent" and ctx.item and ctx.item.variants then
-    local short = string.sub(ctx.item.change_id or "", 1, 8)
-    notification.warn(
-      string.format(
-        "Change %s is divergent — move cursor to a variant line (/0, /1, ...) to operate on a specific commit.",
-        short
-      ),
-      { dismiss = true }
-    )
-    return true
-  end
-  return false
 end
 
 ---@param self StatusBuffer
@@ -756,7 +738,7 @@ M.n_describe = function(self)
   return a.void(function()
     local config = require("neojj.config")
     local ctx = cursor_context(self)
-    if divergent_parent_guard(ctx) then return end
+    if common.divergent_guard(ctx.item) then return end
 
     if ctx.immutable then
       notification.warn("Cannot describe immutable commit", { dismiss = true })
@@ -822,7 +804,7 @@ end
 M.n_edit_change = function(self)
   return a.void(function()
     local ctx = cursor_context(self)
-    if divergent_parent_guard(ctx) then return end
+    if common.divergent_guard(ctx.item) then return end
     local change_id = ctx.change_id
     if not change_id then
       notification.warn("No change under cursor", { dismiss = true })
@@ -858,7 +840,7 @@ end
 M.n_new_change = function(self)
   return a.void(function()
     local ctx = cursor_context(self)
-    if divergent_parent_guard(ctx) then return end
+    if common.divergent_guard(ctx.item) then return end
     jj.cli.new.call()
     notification.info("Created new change")
     self:dispatch_refresh(nil, "n_new_change")
@@ -870,7 +852,7 @@ end
 M.n_abandon = function(self)
   return a.void(function()
     local ctx = cursor_context(self)
-    if divergent_parent_guard(ctx) then return end
+    if common.divergent_guard(ctx.item) then return end
     if input.get_permission("Abandon current change?") then
       jj.cli.abandon.call()
       notification.info("Change abandoned")
@@ -937,7 +919,7 @@ end
 M.n_new_change_on = function(self)
   return a.void(function()
     local ctx = cursor_context(self)
-    if divergent_parent_guard(ctx) then return end
+    if common.divergent_guard(ctx.item) then return end
     local change_id = ctx.change_id
     if not change_id then
       notification.warn("No change under cursor", { dismiss = true })
@@ -970,7 +952,7 @@ end
 M.n_new_change_before = function(self)
   return a.void(function()
     local ctx = cursor_context(self)
-    if divergent_parent_guard(ctx) then return end
+    if common.divergent_guard(ctx.item) then return end
     local change_id = ctx.change_id
     if not change_id then
       notification.warn("No change under cursor", { dismiss = true })
@@ -1150,7 +1132,7 @@ end
 M.n_open_in_browser = function(self)
   return function()
     local ctx = cursor_context(self)
-    if divergent_parent_guard(ctx) then return end
+    if common.divergent_guard(ctx.item) then return end
 
     -- Helper to resolve remote URL
     local function get_remote_browser_url()
