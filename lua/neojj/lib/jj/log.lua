@@ -63,6 +63,9 @@ function M.json_to_entry(obj)
     immutable = false,
     current_working_copy = false,
     graph = nil,
+    divergent = false,
+    change_offset = nil,
+    variants = nil,
   }
 end
 
@@ -132,7 +135,7 @@ end
 ---@param limit? number Max entries
 ---@return NeojjChangeLogEntry[]
 -- Template that appends immutable/empty/conflict/bookmarks as tab-separated fields after json
-local LIST_TEMPLATE = 'json(self) ++ if(immutable, "\\t1", "\\t0") ++ if(empty, "\\t1", "\\t0") ++ if(conflict, "\\t1", "\\t0") ++ "\\t" ++ local_bookmarks.map(|b| b.name()).join(",") ++ "\\t" ++ remote_bookmarks.filter(|b| b.remote() != "git").map(|b| b.name() ++ "@" ++ b.remote()).join(",") ++ "\\t" ++ change_id.shortest(8).prefix() ++ "\\n"'
+local LIST_TEMPLATE = 'json(self) ++ if(immutable, "\\t1", "\\t0") ++ if(empty, "\\t1", "\\t0") ++ if(conflict, "\\t1", "\\t0") ++ if(divergent, "\\t1", "\\t0") ++ "\\t" ++ local_bookmarks.map(|b| b.name()).join(",") ++ "\\t" ++ remote_bookmarks.filter(|b| b.remote() != "git").map(|b| b.name() ++ "@" ++ b.remote()).join(",") ++ "\\t" ++ change_id.shortest(8).prefix() ++ "\\n"'
 
 --- Parse lines produced by LIST_TEMPLATE into entries
 ---@param lines string[]
@@ -150,14 +153,15 @@ local function parse_enriched_lines(lines)
           entry.immutable = parts[1] == "1"
           entry.empty = parts[2] == "1"
           entry.conflict = parts[3] == "1"
-          if parts[4] and parts[4] ~= "" then
-            entry.bookmarks = vim.split(parts[4], ",")
-          end
+          entry.divergent = parts[4] == "1"
           if parts[5] and parts[5] ~= "" then
-            entry.remote_bookmarks = vim.split(parts[5], ",")
+            entry.bookmarks = vim.split(parts[5], ",")
           end
           if parts[6] and parts[6] ~= "" then
-            entry.shortest_prefix = parts[6]
+            entry.remote_bookmarks = vim.split(parts[6], ",")
+          end
+          if parts[7] and parts[7] ~= "" then
+            entry.shortest_prefix = parts[7]
           end
           table.insert(entries, entry)
         end
