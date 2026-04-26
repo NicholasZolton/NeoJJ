@@ -272,12 +272,12 @@ function M.list(revset, limit)
   local jj = require("neojj.lib.jj")
   local config = require("neojj.config")
   limit = limit or config.values.status.recent_commit_count
-  revset = revset or ("ancestors(@, " .. limit .. ")")
 
-  local result = jj.cli.log.no_graph
-    .template(LIST_TEMPLATE)
-    .revisions(revset)
-    .call { hidden = true, trim = true }
+  local builder = jj.cli.log.no_graph.template(LIST_TEMPLATE)
+  if revset and revset ~= "" then
+    builder = builder.revisions(revset)
+  end
+  local result = builder.call { hidden = true, trim = true }
 
   if not result or result.code ~= 0 then
     return {}
@@ -327,12 +327,12 @@ function M.list_with_graph(revset, limit)
   local jj = require("neojj.lib.jj")
   local config = require("neojj.config")
   limit = limit or config.values.status.recent_commit_count
-  revset = revset or ("ancestors(@, " .. limit .. ")")
 
-  local result = jj.cli.log
-    .template('json(self) ++ if(divergent, "\\tdivergent", "")')
-    .revisions(revset)
-    .call { hidden = true, trim = true }
+  local builder = jj.cli.log.template('json(self) ++ if(divergent, "\\tdivergent", "")')
+  if revset and revset ~= "" then
+    builder = builder.revisions(revset)
+  end
+  local result = builder.call { hidden = true, trim = true }
 
   if not result or result.code ~= 0 then
     return {}
@@ -358,6 +358,42 @@ function meta.update(state)
   }, state.worktree_root)
 
   local entries = (code == 0 and lines) and parse_enriched_lines(lines) or {}
+
+  -- Expand divergent groups: ancestors(@, N) only walks @'s parent chain so
+  -- divergent siblings (same change_id, different parent) are missed. Issue a
+  -- second query for change_id(<id>) of each divergent change_id we saw.
+  local divergent_revsets = {}
+  local seen_change_ids = {}
+  for _, e in ipairs(entries) do
+    if e.divergent and e.change_id and e.change_id ~= "" and not seen_change_ids[e.change_id] then
+      seen_change_ids[e.change_id] = true
+      table.insert(divergent_revsets, "change_id(" .. e.change_id .. ")")
+    end
+  end
+
+  if #divergent_revsets > 0 then
+    local sibling_revset = table.concat(divergent_revsets, " | ")
+    local sibling_lines, sibling_code = shell.exec({
+      "jj", "--no-pager", "--color=never", "--ignore-working-copy",
+      "log", "--no-graph", "-T", LIST_TEMPLATE, "-r", sibling_revset,
+    }, state.worktree_root)
+    if sibling_code == 0 and sibling_lines then
+      local sibling_entries = parse_enriched_lines(sibling_lines)
+      local seen_commit = {}
+      for _, e in ipairs(entries) do
+        if e.commit_id and e.commit_id ~= "" then
+          seen_commit[e.commit_id] = true
+        end
+      end
+      for _, e in ipairs(sibling_entries) do
+        if e.commit_id and e.commit_id ~= "" and not seen_commit[e.commit_id] then
+          seen_commit[e.commit_id] = true
+          table.insert(entries, e)
+        end
+      end
+    end
+  end
+
   state.recent.items = M.group_divergent(entries)
 
   -- Enrich head and parent from log data (description, shortest_prefix)
