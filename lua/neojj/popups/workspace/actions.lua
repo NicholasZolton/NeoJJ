@@ -90,6 +90,23 @@ local function get_workspaces(include_current)
   return names, paths
 end
 
+---@class WorkspaceHookContext
+---@field path string
+
+---@param hook string|fun(ctx: WorkspaceHookContext)
+---@param path string
+local function run_workspace_hook(hook, path)
+  if type(hook) == "function" then
+    hook({ path = path })
+    return
+  end
+
+  if type(hook) == "string" and hook ~= "" then
+    local cmd = hook:gsub("{path}", path)
+    vim.fn.system(cmd)
+  end
+end
+
 --- Run workspace_initialize_command and workspace_open_command for a workspace path
 ---@param path string The workspace directory path
 local function run_workspace_hooks(path)
@@ -97,15 +114,8 @@ local function run_workspace_hooks(path)
   local init_cmd = config.values.workspace_initialize_command
   local open_cmd = config.values.workspace_open_command
 
-  if init_cmd and init_cmd ~= "" then
-    local cmd = init_cmd:gsub("{path}", path)
-    vim.fn.system(cmd)
-  end
-
-  if open_cmd and open_cmd ~= "" then
-    local cmd = open_cmd:gsub("{path}", path)
-    vim.fn.system(cmd)
-  end
+  run_workspace_hook(init_cmd, path)
+  run_workspace_hook(open_cmd, path)
 end
 
 --- Shared logic for creating a workspace

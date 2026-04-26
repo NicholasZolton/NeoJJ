@@ -309,8 +309,8 @@ end
 ---@field sections? NeojjConfigSections
 ---@field ignored_settings? string[] Settings to never persist, format: "Filetype--cli-value", i.e. "NeojjCommitPopup--author"
 ---@field mappings? NeojjConfigMappings
----@field workspace_open_command? string Shell command to open a new workspace ({path} is replaced with workspace path)
----@field workspace_initialize_command? string Shell command to run in workspace dir before opening ({path} is replaced)
+---@field workspace_open_command? string|function Shell command or callback to open a new workspace ({path} is replaced with workspace path)
+---@field workspace_initialize_command? string|function Shell command or callback to run in workspace dir before opening ({path} is replaced)
 ---@field workspace_worktrees_directory? string Base directory for quick-add worktrees (default: ~/.worktrees)
 ---@field notification_icon? string
 ---@field use_default_keymaps? boolean
@@ -982,6 +982,9 @@ function M.validate_config()
     validate_type(config.auto_show_console, "auto_show_console", "boolean")
     validate_type(config.auto_show_console_on, "auto_show_console_on", "string")
     validate_type(config.auto_close_console, "auto_close_console", "boolean")
+    validate_type(config.workspace_open_command, "workspace_open_command", { "string", "function", "nil" })
+    validate_type(config.workspace_initialize_command, "workspace_initialize_command", { "string", "function", "nil" })
+    validate_type(config.workspace_worktrees_directory, "workspace_worktrees_directory", "string")
     if validate_type(config.status, "status", "table") then
       validate_type(config.status.show_head_commit_hash, "status.show_head_commit_hash", "boolean")
       validate_type(config.status.recent_commit_count, "status.recent_commit_count", "number")

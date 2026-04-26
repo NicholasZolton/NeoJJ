@@ -121,6 +121,12 @@ describe("NeoJJ config", function()
         assert.True(vim.tbl_count(require("neojj.config").validate_config()) ~= 0)
       end)
 
+      it("should return valid when workspace hook commands are functions", function()
+        config.values.workspace_initialize_command = function() end
+        config.values.workspace_open_command = function() end
+        assert.True(vim.tbl_count(require("neojj.config").validate_config()) == 0)
+      end)
+
       -- status
       it("should return invalid when status isn't a table", function()
         config.values.status = "not a table"
