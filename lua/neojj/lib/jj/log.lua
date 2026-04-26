@@ -277,6 +277,9 @@ function M.list(revset, limit)
   if revset and revset ~= "" then
     builder = builder.revisions(revset)
   end
+  if limit and limit > 0 then
+    builder = builder.limit(limit)
+  end
   local result = builder.call { hidden = true, trim = true }
 
   if not result or result.code ~= 0 then
@@ -331,6 +334,9 @@ function M.list_with_graph(revset, limit)
   local builder = jj.cli.log.template('json(self) ++ if(divergent, "\\tdivergent", "")')
   if revset and revset ~= "" then
     builder = builder.revisions(revset)
+  end
+  if limit and limit > 0 then
+    builder = builder.limit(limit)
   end
   local result = builder.call { hidden = true, trim = true }
 
