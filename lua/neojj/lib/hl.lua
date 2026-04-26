@@ -231,6 +231,7 @@ function M.setup(config)
     NeojjChangeIdPrefix           = { fg = palette.purple, bold = palette.bold, ctermfg = 5 },
     NeojjChangeIdRest             = { fg = palette.bg_purple, ctermfg = 6 },
     NeojjConflict                 = { fg = "#f0c674", bold = true, ctermfg = 3 },
+    NeojjDivergent                = { fg = "#cc6666", bold = true, ctermfg = 1 },
     NeojjImmutable                = { fg = palette.grey, italic = palette.italic, ctermfg = 7 },
     NeojjWorkingCopy              = { fg = palette.green, bold = palette.bold, ctermfg = 2 },
     NeojjBookmark                 = { link = "NeojjBranch" },
