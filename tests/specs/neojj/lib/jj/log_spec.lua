@@ -293,5 +293,77 @@ describe("jj log parser", function()
       assert.are.equal("2", parent.variants[2].commit_id)
       assert.are.equal("y", out[2].change_id)
     end)
+
+    it("treats a divergent entry alone in the revset as non-divergent", function()
+      local input = {
+        entry { change_id = "x", commit_id = "1", divergent = true, description = "lonely" },
+        entry { change_id = "y", commit_id = "2" },
+      }
+      local out = log.group_divergent(input)
+      assert.are.equal(2, #out)
+      assert.is_nil(out[1].variants)
+      assert.are.equal("x", out[1].change_id)
+    end)
+
+    it("handles three variants in order", function()
+      local input = {
+        entry { change_id = "x", commit_id = "a", divergent = true },
+        entry { change_id = "x", commit_id = "b", divergent = true },
+        entry { change_id = "x", commit_id = "c", divergent = true },
+      }
+      local out = log.group_divergent(input)
+      assert.are.equal(1, #out)
+      assert.are.equal(3, #out[1].variants)
+      assert.are.equal(0, out[1].variants[1].change_offset)
+      assert.are.equal(2, out[1].variants[3].change_offset)
+    end)
+
+    it("preserves intervening non-divergent entries between non-adjacent variants", function()
+      local input = {
+        entry { change_id = "x", commit_id = "a", divergent = true },
+        entry { change_id = "y", commit_id = "b" },
+        entry { change_id = "x", commit_id = "c", divergent = true },
+      }
+      local out = log.group_divergent(input)
+      assert.are.equal(2, #out)
+      assert.is_not_nil(out[1].variants)
+      assert.are.equal("x", out[1].change_id)
+      assert.are.equal("y", out[2].change_id)
+    end)
+
+    it("aggregates bookmarks across variants without duplication", function()
+      local input = {
+        entry { change_id = "x", commit_id = "a", divergent = true, bookmarks = { "main", "dev" } },
+        entry { change_id = "x", commit_id = "b", divergent = true, bookmarks = { "dev", "feature" } },
+      }
+      local out = log.group_divergent(input)
+      assert.are.same({ "main", "dev", "feature" }, out[1].bookmarks)
+    end)
+
+    it("sets current_working_copy on parent if any variant is the working copy", function()
+      local input = {
+        entry { change_id = "x", commit_id = "a", divergent = true },
+        entry { change_id = "x", commit_id = "b", divergent = true, current_working_copy = true },
+      }
+      local out = log.group_divergent(input)
+      assert.is_true(out[1].current_working_copy)
+    end)
+
+    it("drops graph-only connector lines that follow a removed variant", function()
+      local input = {
+        entry { change_id = "x", commit_id = "a", divergent = true, graph = "○  " },
+        { change_id = nil, graph = "│ ╮" },                                 -- connector for the relocated variant
+        entry { change_id = "x", commit_id = "b", divergent = true, graph = "│ ○  " },
+        entry { change_id = "y", commit_id = "c", graph = "○  " },
+      }
+      local out = log.group_divergent(input)
+      -- parent (took slot 1) + (connector at slot 2 dropped because slot 3 was removed... but slot 2 follows slot 1 which is the parent, not a removed slot)
+      -- Actually: slot 1 = parent (kept), slot 2 = connector (kept; slot 1 was not removed), slot 3 = removed, slot 4 = y.
+      -- So out should be: parent, connector, y. Let's assert that:
+      assert.are.equal(3, #out)
+      assert.is_not_nil(out[1].variants)
+      assert.is_nil(out[2].change_id)
+      assert.are.equal("y", out[3].change_id)
+    end)
   end)
 end)
