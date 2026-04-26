@@ -61,27 +61,38 @@ local function maybe_select_remote(popup)
   return remote, true
 end
 
-function M.push(popup)
+---@param popup PopupData
+---@param base_builder table the jj.cli.git_push builder, optionally pre-narrowed (e.g. .bookmark(name))
+---@param subject string what is being pushed; "" for plain push, otherwise e.g. "bookmark main"
+local function run_push(popup, base_builder, subject)
   local remote, ok = maybe_select_remote(popup)
   if not ok then
     return
   end
 
-  notification.info("Pushing" .. (remote and (" to " .. remote) or ""))
-  local args = popup:get_arguments()
-  local builder = jj.cli.git_push
+  local subject_str = subject ~= "" and (" " .. subject) or ""
+  local remote_str = remote and (" to " .. remote) or ""
+  notification.info("Pushing" .. subject_str .. remote_str)
+
+  local builder = base_builder
   if remote then
     builder = builder.remote(remote)
   end
+  local args = popup:get_arguments()
   if #args > 0 then
     builder = builder.args(unpack(args))
   end
+
   local result = builder.call()
   if result and result.code == 0 then
-    notification.info("Pushed" .. (remote and (" to " .. remote) or ""), { dismiss = true })
+    notification.info("Pushed" .. subject_str .. remote_str, { dismiss = true })
   else
     notification.warn("Push failed: " .. push_error_msg(result), { dismiss = true })
   end
+end
+
+function M.push(popup)
+  run_push(popup, jj.cli.git_push, "")
 end
 
 function M.push_bookmark(popup)
@@ -90,27 +101,7 @@ function M.push_bookmark(popup)
   if not name then
     return
   end
-
-  local remote, ok = maybe_select_remote(popup)
-  if not ok then
-    return
-  end
-
-  notification.info("Pushing bookmark " .. name .. (remote and (" to " .. remote) or ""))
-  local args = popup:get_arguments()
-  local builder = jj.cli.git_push.bookmark(name)
-  if remote then
-    builder = builder.remote(remote)
-  end
-  if #args > 0 then
-    builder = builder.args(unpack(args))
-  end
-  local result = builder.call()
-  if result and result.code == 0 then
-    notification.info("Pushed " .. name .. (remote and (" to " .. remote) or ""), { dismiss = true })
-  else
-    notification.warn("Push failed: " .. push_error_msg(result), { dismiss = true })
-  end
+  run_push(popup, jj.cli.git_push.bookmark(name), "bookmark " .. name)
 end
 
 function M.push_change(popup)
@@ -120,50 +111,11 @@ function M.push_change(popup)
   if not rev then
     return
   end
-
-  local remote, ok = maybe_select_remote(popup)
-  if not ok then
-    return
-  end
-
-  notification.info("Pushing change " .. rev .. (remote and (" to " .. remote) or ""))
-  local args = popup:get_arguments()
-  local builder = jj.cli.git_push.change(rev)
-  if remote then
-    builder = builder.remote(remote)
-  end
-  if #args > 0 then
-    builder = builder.args(unpack(args))
-  end
-  local result = builder.call()
-  if result and result.code == 0 then
-    notification.info("Pushed change " .. rev .. (remote and (" to " .. remote) or ""), { dismiss = true })
-  else
-    notification.warn("Push failed: " .. push_error_msg(result), { dismiss = true })
-  end
+  run_push(popup, jj.cli.git_push.change(rev), "change " .. rev)
 end
 
 function M.push_all(popup)
-  local remote, ok = maybe_select_remote(popup)
-  if not ok then
-    return
-  end
-
-  notification.info("Pushing all bookmarks" .. (remote and (" to " .. remote) or ""))
-  local args = popup:get_arguments()
-  local builder = jj.cli.git_push.all
-  if remote then
-    builder = builder.remote(remote)
-  end
-  if #args > 0 then
-    builder = builder.args(unpack(args))
-  end
-  local result = builder.call()
-  if result and result.code == 0 then
-    notification.info("Pushed all bookmarks" .. (remote and (" to " .. remote) or ""), { dismiss = true })
-  else
-    notification.warn("Push failed: " .. push_error_msg(result), { dismiss = true })
-  end
+  run_push(popup, jj.cli.git_push.all, "all bookmarks")
 end
 
 return M
