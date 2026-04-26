@@ -12,7 +12,9 @@ local resolved_jj_path = nil
 local function find_mise_jj()
   local mise_dir = vim.env.HOME .. "/.local/share/mise/installs/jj"
   local stat = vim.uv.fs_stat(mise_dir)
-  if not stat then return nil end
+  if not stat then
+    return nil
+  end
 
   -- Try "latest" symlink first, then find highest version
   local latest = mise_dir .. "/latest/jj"
@@ -23,12 +25,16 @@ local function find_mise_jj()
 
   -- Fallback: scan for version directories
   local handle = vim.uv.fs_scandir(mise_dir)
-  if not handle then return nil end
+  if not handle then
+    return nil
+  end
 
   local best_version, best_path = nil, nil
   while true do
     local name, ftype = vim.uv.fs_scandir_next(handle)
-    if not name then break end
+    if not name then
+      break
+    end
     if ftype == "directory" and name:match("^%d") then
       local candidate = mise_dir .. "/" .. name .. "/jj"
       if vim.uv.fs_stat(candidate) then
@@ -54,7 +60,7 @@ function M.resolve_jj()
   local ok, config = pcall(require, "neojj.config")
   if ok and config.values and config.values.jj_binary and config.values.jj_binary ~= "auto" then
     resolved_jj_path = config.values.jj_binary
-    return resolved_jj_path
+    return resolved_jj_path --[[@as string]]
   end
 
   -- Auto-detect: check if current jj is a mise shim
@@ -67,8 +73,10 @@ function M.resolve_jj()
     end
   end
 
-  -- Not a shim or couldn't resolve — use as-is
-  resolved_jj_path = jj_path or "jj"
+  -- Not a shim or couldn't resolve — use as-is. `vim.fn.exepath` returns ""
+  -- (truthy in Lua) when not found, so check for the empty string explicitly
+  -- before falling through to the bare "jj" string.
+  resolved_jj_path = (jj_path ~= nil and jj_path ~= "" and jj_path) or "jj"
   return resolved_jj_path
 end
 

@@ -32,14 +32,14 @@ end
 
 ---@class ProcessOpts
 ---@field cmd string[]
----@field cwd string|nil
----@field env table<string, string>|nil
----@field input string|nil
----@field on_error (fun(res: ProcessResult): boolean) Intercept the error externally, returning false prevents the error from being logged
----@field pty boolean|nil
----@field suppress_console boolean
----@field git_hook boolean
----@field user_command boolean
+---@field cwd? string
+---@field env? table<string, string>
+---@field input? string
+---@field on_error? fun(res: ProcessResult): boolean Intercept the error externally; returning false prevents the error from being logged
+---@field pty? boolean
+---@field suppress_console? boolean
+---@field git_hook? boolean
+---@field user_command? boolean
 
 ---@class Process
 ---@field cmd string[]

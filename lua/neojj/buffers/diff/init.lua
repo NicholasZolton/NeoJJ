@@ -24,16 +24,23 @@ function M:new(header, revision)
   -- Get diff stat using --ignore-working-copy since jj describe may hold the lock
   local shell = require("neojj.lib.jj.shell")
   local cwd
-  local ok, repo = pcall(function() return jj.repo end)
+  local ok, repo = pcall(function()
+    return jj.repo
+  end)
   if ok and repo then
     cwd = repo.worktree_root
   end
   cwd = cwd or vim.fn.getcwd()
 
   local stat_cmd = {
-    "jj", "--no-pager", "--color=never", "--ignore-working-copy",
-    "-R", cwd,
-    "diff", "--stat",
+    "jj",
+    "--no-pager",
+    "--color=never",
+    "--ignore-working-copy",
+    "-R",
+    cwd,
+    "diff",
+    "--stat",
   }
   if revision then
     table.insert(stat_cmd, "-r")
@@ -67,9 +74,14 @@ function M:new(header, revision)
   -- Get full diff using --ignore-working-copy
   local diffs = {}
   local diff_cmd = {
-    "jj", "--no-pager", "--color=never", "--ignore-working-copy",
-    "-R", cwd,
-    "diff", "--git",
+    "jj",
+    "--no-pager",
+    "--color=never",
+    "--ignore-working-copy",
+    "-R",
+    cwd,
+    "diff",
+    "--git",
   }
   if revision then
     table.insert(diff_cmd, "-r")

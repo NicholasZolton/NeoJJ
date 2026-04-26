@@ -6,10 +6,14 @@ local picker_cache = require("neojj.lib.picker_cache")
 
 function M.add(_popup)
   local name = input.get_user_input("Remote name")
-  if not name or name == "" then return end
+  if not name or name == "" then
+    return
+  end
 
   local url = input.get_user_input("URL for " .. name)
-  if not url or url == "" then return end
+  if not url or url == "" then
+    return
+  end
 
   local result = jj.cli.git_remote_add.args(name, url).call()
   if result and result.code == 0 then
@@ -21,10 +25,14 @@ end
 
 function M.rename(_popup)
   local old = input.get_user_input("Rename remote")
-  if not old or old == "" then return end
+  if not old or old == "" then
+    return
+  end
 
   local new = input.get_user_input("Rename '" .. old .. "' to")
-  if not new or new == "" then return end
+  if not new or new == "" then
+    return
+  end
 
   local result = jj.cli.git_remote_rename.args(old, new).call()
   if result and result.code == 0 then
@@ -36,9 +44,13 @@ end
 
 function M.remove(_popup)
   local name = input.get_user_input("Remove remote")
-  if not name or name == "" then return end
+  if not name or name == "" then
+    return
+  end
 
-  if not input.get_permission(("Remove remote '%s'?"):format(name)) then return end
+  if not input.get_permission(("Remove remote '%s'?"):format(name)) then
+    return
+  end
 
   local result = jj.cli.git_remote_remove.args(name).call()
   if result and result.code == 0 then

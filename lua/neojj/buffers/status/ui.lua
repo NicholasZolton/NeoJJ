@@ -117,7 +117,10 @@ local JJHead = Component.new(function(props)
     text.highlight("NeojjObjectId")(short_commit),
   }
   vim.list_extend(header_parts, bookmark_parts)
-  table.insert(header_parts, text.highlight(props.conflict and "NeojjConflict" or "NeojjSubtleText")(status_text))
+  table.insert(
+    header_parts,
+    text.highlight(props.conflict and "NeojjConflict" or "NeojjSubtleText")(status_text)
+  )
 
   return col({
     row(header_parts),

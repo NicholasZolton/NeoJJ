@@ -63,7 +63,9 @@ local HunkLine = Component.new(function(line)
 
   -- Check if there are active conflicts (jj stores conflicts in commits)
   local has_conflicts = false
-  local ok, repo = pcall(function() return jj.repo end)
+  local ok, repo = pcall(function()
+    return jj.repo
+  end)
   if ok and repo and repo.state and repo.state.conflicts then
     has_conflicts = #repo.state.conflicts.items > 0
   end
@@ -263,14 +265,11 @@ M.CommitEntry = Component.new(function(commit, _remotes, args)
       table.insert(variant_rows, M.DivergentVariantRow(v, { virtual_text = true }))
     end
 
-    return col.tag("divergent_parent")(
-      vim.list_extend({ row(parent_children) }, variant_rows),
-      {
-        item = commit,
-        oid = commit.change_id,
-        foldable = false,
-      }
-    )
+    return col.tag("divergent_parent")(vim.list_extend({ row(parent_children) }, variant_rows), {
+      item = commit,
+      oid = commit.change_id,
+      foldable = false,
+    })
   end
 
   -- Non-divergent path: original rendering
@@ -470,7 +469,7 @@ end)
 
 ---Abandon a divergent variant. Handles immutable check, abandon call, notification,
 ---and refresh. The refresh callback is invoked only on successful abandon.
----@param item NeojjChangeLogEntry the variant entry (must have commit_id and change_offset)
+---@param item StatusItem|NeojjChangeLogEntry the variant entry (must have commit_id and change_offset)
 ---@param refresh fun(): nil callback to refresh whatever buffer hosted the action
 function M.abandon_variant(item, refresh)
   local notification = require("neojj.lib.notification")
@@ -490,7 +489,7 @@ end
 
 ---Returns true and shows a notification if the item is a divergent parent.
 ---Callers should early-return when this returns true.
----@param item NeojjChangeLogEntry|nil
+---@param item StatusItem|NeojjChangeLogEntry|nil
 ---@return boolean blocked
 function M.divergent_guard(item)
   if item and item.variants then

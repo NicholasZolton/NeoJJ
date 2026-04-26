@@ -34,24 +34,31 @@ function M.View(ops)
   local entries = map(ops, M.OpEntry)
 
   table.insert(entries, 1, col { row { text("") } })
-  table.insert(entries, 2, row {
-    text.highlight("NeojjFloatHeaderHighlight")("Operations Log"),
-  })
+  table.insert(
+    entries,
+    2,
+    row {
+      text.highlight("NeojjFloatHeaderHighlight")("Operations Log"),
+    }
+  )
   table.insert(entries, 3, col { row { text("") } })
 
-  table.insert(entries, col {
-    row { text("") },
-    row {
-      text.highlight("NeojjSubtleText")("u"),
-      text(" = undo last op, "),
-      text.highlight("NeojjSubtleText")("R"),
-      text(" = restore to op under cursor, "),
-      text.highlight("NeojjSubtleText")("q"),
-      text("/"),
-      text.highlight("NeojjSubtleText")("<esc>"),
-      text(" = close"),
-    },
-  })
+  table.insert(
+    entries,
+    col {
+      row { text("") },
+      row {
+        text.highlight("NeojjSubtleText")("u"),
+        text(" = undo last op, "),
+        text.highlight("NeojjSubtleText")("R"),
+        text(" = restore to op under cursor, "),
+        text.highlight("NeojjSubtleText")("q"),
+        text("/"),
+        text.highlight("NeojjSubtleText")("<esc>"),
+        text(" = close"),
+      },
+    }
+  )
 
   return entries
 end

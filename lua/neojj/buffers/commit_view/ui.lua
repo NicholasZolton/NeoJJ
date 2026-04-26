@@ -28,28 +28,40 @@ function M.CommitHeader(info)
 
   -- Show commit ID secondary
   if info.commit_id and info.commit_id ~= "" then
-    table.insert(header_items, row {
-      text.highlight("NeojjSubtleText")("Commit ID:  "),
-      text.highlight("NeojjObjectId")(info.commit_id),
-    })
+    table.insert(
+      header_items,
+      row {
+        text.highlight("NeojjSubtleText")("Commit ID:  "),
+        text.highlight("NeojjObjectId")(info.commit_id),
+      }
+    )
   end
 
   -- Author info
-  table.insert(header_items, row {
-    text.highlight("NeojjSubtleText")("Author:     "),
-    text((info.author_name or "") .. " <" .. (info.author_email or "") .. ">"),
-  })
-  table.insert(header_items, row {
-    text.highlight("NeojjSubtleText")("Date:       "),
-    text(info.author_date or ""),
-  })
+  table.insert(
+    header_items,
+    row {
+      text.highlight("NeojjSubtleText")("Author:     "),
+      text((info.author_name or "") .. " <" .. (info.author_email or "") .. ">"),
+    }
+  )
+  table.insert(
+    header_items,
+    row {
+      text.highlight("NeojjSubtleText")("Date:       "),
+      text(info.author_date or ""),
+    }
+  )
 
   -- Bookmarks
   if info.bookmarks and #info.bookmarks > 0 then
-    table.insert(header_items, row {
-      text.highlight("NeojjSubtleText")("Bookmarks:  "),
-      text.highlight("NeojjBranch")(table.concat(info.bookmarks, ", ")),
-    })
+    table.insert(
+      header_items,
+      row {
+        text.highlight("NeojjSubtleText")("Bookmarks:  "),
+        text.highlight("NeojjBranch")(table.concat(info.bookmarks, ", ")),
+      }
+    )
   end
 
   -- Status markers
@@ -61,10 +73,13 @@ function M.CommitHeader(info)
     table.insert(status_parts, "empty")
   end
   if #status_parts > 0 then
-    table.insert(header_items, row {
-      text.highlight("NeojjSubtleText")("Status:     "),
-      text.highlight("NeojjDiffDeletions")(table.concat(status_parts, ", ")),
-    })
+    table.insert(
+      header_items,
+      row {
+        text.highlight("NeojjSubtleText")("Status:     "),
+        text.highlight("NeojjDiffDeletions")(table.concat(status_parts, ", ")),
+      }
+    )
   end
 
   return col(header_items)

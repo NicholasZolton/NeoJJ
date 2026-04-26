@@ -179,17 +179,6 @@ describe("NeoJJ config", function()
         assert.True(vim.tbl_count(require("neojj.config").validate_config()) ~= 0)
       end)
 
-      -- commit_select_view
-      it("should return invalid when commit_select_view isn't a table", function()
-        config.values.commit_select_view = "not a table"
-        assert.True(vim.tbl_count(require("neojj.config").validate_config()) ~= 0)
-      end)
-
-      it("should return invalid when commit_select_view.kind isn't a valid kind", function()
-        config.values.commit_select_view.kind = "not a valid kind"
-        assert.True(vim.tbl_count(require("neojj.config").validate_config()) ~= 0)
-      end)
-
       -- commit_view
       it("should return invalid when commit_view isn't a table", function()
         config.values.commit_view = "not a table"
@@ -495,9 +484,18 @@ describe("NeoJJ config", function()
 
       it("should return valid for all valid window kinds", function()
         local valid_kinds = {
-          "split", "vsplit", "split_above", "split_above_all",
-          "split_below", "split_below_all", "vsplit_left",
-          "tab", "floating", "floating_console", "replace", "auto",
+          "split",
+          "vsplit",
+          "split_above",
+          "split_above_all",
+          "split_below",
+          "split_below_all",
+          "vsplit_left",
+          "tab",
+          "floating",
+          "floating_console",
+          "replace",
+          "auto",
         }
         for _, kind in ipairs(valid_kinds) do
           config.values = config.get_default_values()
@@ -528,11 +526,6 @@ describe("NeoJJ config", function()
 
       it("should return valid when commit_editor.kind is a valid window kind", function()
         config.values.commit_editor.kind = "replace"
-        assert.True(vim.tbl_count(require("neojj.config").validate_config()) == 0)
-      end)
-
-      it("should return valid when commit_select_view.kind is a valid window kind", function()
-        config.values.commit_select_view.kind = "tab"
         assert.True(vim.tbl_count(require("neojj.config").validate_config()) == 0)
       end)
 

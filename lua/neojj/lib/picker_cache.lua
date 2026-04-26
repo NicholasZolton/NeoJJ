@@ -9,9 +9,12 @@ local function invalidate_stale()
   end
 end
 
+---@return { text: string, prefix_len: integer }[]
 function M.get_all_revisions()
   invalidate_stale()
-  if _cache.revisions then return _cache.revisions end
+  if _cache.revisions then
+    return _cache.revisions
+  end
 
   local log = require("neojj.lib.jj.log")
   local items = log.list("all()")
@@ -94,13 +97,13 @@ end
 --- Extract the first whitespace-delimited token from a picker selection.
 --- Works for both revision entries ("change_id description") and bookmark entries ("name change_id desc").
 --- Handles both plain string selections and structured table entries.
----@param selection string|table|nil
+---@param selection string|{ text: string }|nil
 ---@return string?
 function M.parse_selection(selection)
   if not selection then
     return nil
   end
-  local text = type(selection) == "table" and selection.text or selection
+  local text = type(selection) == "table" and selection.text or selection --[[@as string]]
   return text:match("^(%S+)")
 end
 

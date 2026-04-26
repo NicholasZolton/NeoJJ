@@ -1,5 +1,3 @@
-local logger = require("neojj.logger")
-
 ---@class NeojjRepoHead
 ---@field change_id string Short change ID
 ---@field commit_id string Short commit ID
@@ -7,12 +5,14 @@ local logger = require("neojj.logger")
 ---@field bookmarks string[] Bookmarks pointing to this change
 ---@field empty boolean Whether the change is empty
 ---@field conflict boolean Whether the change has conflicts
+---@field shortest_prefix? string Shortest unique change_id prefix
 
 ---@class NeojjRepoParent
 ---@field change_id string
 ---@field commit_id string
 ---@field description string
 ---@field bookmarks string[]
+---@field shortest_prefix? string Shortest unique change_id prefix
 
 ---@class NeojjFileItem
 ---@field name string File path

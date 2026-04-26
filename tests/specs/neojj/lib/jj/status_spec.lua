@@ -90,7 +90,7 @@ describe("jj status parser", function()
     end)
 
     it("returns empty defaults when no matching lines", function()
-      local parsed = status.parse_status_lines({})
+      local parsed = status.parse_status_lines {}
       assert.are.equal("", parsed.head.change_id)
       assert.are.equal("", parsed.parent.change_id)
     end)

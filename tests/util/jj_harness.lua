@@ -21,13 +21,24 @@ function M.prepare_repository(opts)
   local init_cmd = {
     "jj",
     "--config=git.colocate=" .. tostring(opts.colocated and true or false),
-    "git", "init", working_dir,
+    "git",
+    "init",
+    working_dir,
   }
   util.system(init_cmd)
 
   -- Configure identity at the jj layer so both colocated and non-colocated
   -- repos accept commits (non-colocated has no `.git` to run `git config` on).
-  util.system { "jj", "--repository", working_dir, "config", "set", "--repo", "user.email", "test@neojj-test.test" }
+  util.system {
+    "jj",
+    "--repository",
+    working_dir,
+    "config",
+    "set",
+    "--repo",
+    "user.email",
+    "test@neojj-test.test",
+  }
   util.system { "jj", "--repository", working_dir, "config", "set", "--repo", "user.name", "NeoJJ Test" }
 
   vim.fn.writefile({ "line 1", "line 2", "line 3" }, working_dir .. "/a.txt")
@@ -76,7 +87,7 @@ function M.get_jj_status()
 end
 
 function M.get_jj_log()
-  return exec { "jj", "log", "--no-graph", "-T", "change_id ++ \" \" ++ description" }
+  return exec { "jj", "log", "--no-graph", "-T", 'change_id ++ " " ++ description' }
 end
 
 function M.get_jj_bookmarks()

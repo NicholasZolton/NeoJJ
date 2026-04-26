@@ -25,14 +25,9 @@ local function get_changes(popup, revset)
 end
 
 local function open_log(popup, changes, header)
-  LogViewBuffer.new(
-    changes,
-    popup:get_internal_arguments(),
-    popup.state.env.files,
-    function(_offset) return {} end,
-    header,
-    {}
-  ):open()
+  LogViewBuffer.new(changes, popup:get_internal_arguments(), popup.state.env.files, function(_offset)
+    return {}
+  end, header, {}):open()
 end
 
 function M.log_all(popup)
@@ -42,7 +37,9 @@ end
 
 function M.log_revset(popup)
   local revset = input.get_user_input("Revset")
-  if not revset or revset == "" then return end
+  if not revset or revset == "" then
+    return
+  end
 
   local changes = get_changes(popup, revset)
   open_log(popup, changes, "Changes matching: " .. revset)
@@ -52,7 +49,9 @@ function M.log_bookmark(popup)
   local bookmarks = picker_cache.get_local_bookmark_names()
 
   local bm = FuzzyFinderBuffer.new(bookmarks):open_async { prompt_prefix = "Log bookmark" }
-  if not bm then return end
+  if not bm then
+    return
+  end
 
   local changes = get_changes(popup, bm .. "::@")
   open_log(popup, changes, "Changes in " .. bm)
@@ -66,9 +65,13 @@ function M.obslog(_popup)
   local options = picker_cache.get_all_revisions()
 
   local selection = FuzzyFinderBuffer.new(options):open_async { prompt_prefix = "Obslog for change" }
-  if not selection then return end
+  if not selection then
+    return
+  end
   local change_id = picker_cache.parse_selection(selection)
-  if not change_id then return end
+  if not change_id then
+    return
+  end
 
   local result = jj.cli.obslog.args("-r", change_id).call { hidden = true, trim = true }
   if result and result.code == 0 and result.stdout then

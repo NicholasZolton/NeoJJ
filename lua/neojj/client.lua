@@ -94,7 +94,10 @@ function M.client(opts)
 
   local lua_cmd = fmt(
     'lua require("neojj.client").editor(%q, %q, %s, %s)',
-    file_target, client, opts.show_diff, revision_arg
+    file_target,
+    client,
+    opts.show_diff,
+    revision_arg
   )
   local rpc_server = RPC.create_connection(nvim_server)
   rpc_server:send_cmd(lua_cmd)
@@ -124,7 +127,11 @@ function M.editor(target, client, show_diff, revision)
   end
 
   local kind
-  if target:find("COMMIT_EDITMSG$") or target:find("EDIT_DESCRIPTION$") or target:find("%.jjdescription$") then
+  if
+    target:find("COMMIT_EDITMSG$")
+    or target:find("EDIT_DESCRIPTION$")
+    or target:find("%.jjdescription$")
+  then
     kind = config.values.commit_editor.kind
   else
     kind = "auto"
@@ -171,7 +178,8 @@ function M.wrap(cmd, opts)
     end
     vim.api.nvim_exec_autocmds("User", { pattern = opts.autocmd, modeline = false })
   else
-    if opts.msg.fail then
+    local fail_msg = opts.msg.fail
+    if fail_msg then
       -- In PTY mode stderr is merged into stdout, so check both
       local output = result.stderr
       if type(output) == "table" then
@@ -184,11 +192,10 @@ function M.wrap(cmd, opts)
         end
       end
 
-      local msg = opts.msg.fail
       if output and output ~= "" then
-        msg = msg .. ": " .. output
+        fail_msg = fail_msg .. ": " .. output
       end
-      notification.warn(msg, { dismiss = true })
+      notification.warn(fail_msg, { dismiss = true })
     end
   end
 

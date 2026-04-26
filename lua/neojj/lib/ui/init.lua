@@ -2,7 +2,60 @@ local Component = require("neojj.lib.ui.component")
 local util = require("neojj.lib.util")
 local Renderer = require("neojj.lib.ui.renderer")
 local Collection = require("neojj.lib.collection")
-local logger = require("neojj.logger") -- TODO: Add logging
+local logger = require("neojj.logger")
+
+---@class Hunk
+---@field index_from integer
+---@field index_len integer|nil
+---@field disk_from integer
+---@field disk_len integer|nil
+---@field diff_from integer|nil
+---@field diff_to integer|nil
+---@field length integer|nil
+---@field hash string|nil
+---@field lines string[]
+---@field file string|nil
+---@field first integer|nil
+---@field last integer|nil
+
+---@class ParsedRef
+---@field name string|nil
+---@field type string|nil
+---@field oid string|nil
+
+---Polymorphic union covering every kind of item that can appear under a Section
+---in a NeojjStatusBuffer (file changes, conflicts, bookmarks, recent commits, etc).
+---Most fields are optional because any given item only carries a subset.
+---@class StatusItem
+---@field name string|nil
+---@field folded boolean|nil
+---@field diff { hunks: Hunk[]|nil }|nil
+---@field commit CommitLogEntry|nil
+---@field change_id string|nil
+---@field commit_id string|nil
+---@field description string|nil
+---@field immutable boolean|nil
+---@field empty boolean|nil
+---@field conflict boolean|nil
+---@field current_working_copy boolean|nil
+---@field bookmarks string[]|nil
+---@field remote string|nil
+---@field deleted boolean|nil
+---@field timestamp string|nil
+---@field author_name string|nil
+---@field author_email string|nil
+---@field author_date string|nil
+---@field divergent boolean|nil
+---@field variants NeojjChangeLogEntry[]|nil
+---@field change_offset integer|nil
+---@field graph string|nil
+---@field absolute_path string|nil
+---@field escaped_path string|nil
+---@field fileset_path string|nil
+---@field mode string|nil
+---@field original_name string|nil
+---@field first integer|nil populated by the renderer with the buffer line range
+---@field last integer|nil populated by the renderer with the buffer line range
 
 ---@class Section
 ---@field items StatusItem[]

@@ -34,14 +34,18 @@ for _, mode in ipairs(modes) do
     local repo, working_dir
 
     before_each(function()
-      if skip_if_no_jj() then return end
+      if skip_if_no_jj() then
+        return
+      end
       working_dir = make_repo(mode.colocated)
       repo = Repo.new(working_dir)
       repo:refresh()
     end)
 
     it("populates head with a valid change_id and commit_id", function()
-      if skip_if_no_jj() then return end
+      if skip_if_no_jj() then
+        return
+      end
       assert.is_string(repo.state.head.change_id)
       assert.is_true(#repo.state.head.change_id > 0)
       assert.is_string(repo.state.head.commit_id)
@@ -49,27 +53,38 @@ for _, mode in ipairs(modes) do
     end)
 
     it("populates parent change_id (harness creates @- via `jj new`)", function()
-      if skip_if_no_jj() then return end
+      if skip_if_no_jj() then
+        return
+      end
       assert.is_string(repo.state.parent.change_id)
       assert.is_true(#repo.state.parent.change_id > 0)
     end)
 
     it("lists the working-copy modification (harness modifies a.txt)", function()
-      if skip_if_no_jj() then return end
+      if skip_if_no_jj() then
+        return
+      end
       local files = repo.state.files.items
       local names = {}
-      for _, f in ipairs(files) do table.insert(names, f.name) end
-      assert.is_true(vim.tbl_contains(names, "a.txt"),
-        "expected 'a.txt' in working-copy changes, got: " .. vim.inspect(names))
+      for _, f in ipairs(files) do
+        table.insert(names, f.name)
+      end
+      assert.is_true(
+        vim.tbl_contains(names, "a.txt"),
+        "expected 'a.txt' in working-copy changes, got: " .. vim.inspect(names)
+      )
     end)
 
     it("includes the 'main' bookmark created by the harness", function()
-      if skip_if_no_jj() then return end
+      if skip_if_no_jj() then
+        return
+      end
       local bookmarks = repo.state.bookmarks.items
       local names = {}
-      for _, b in ipairs(bookmarks) do table.insert(names, b.name) end
-      assert.is_true(vim.tbl_contains(names, "main"),
-        "expected 'main' bookmark, got: " .. vim.inspect(names))
+      for _, b in ipairs(bookmarks) do
+        table.insert(names, b.name)
+      end
+      assert.is_true(vim.tbl_contains(names, "main"), "expected 'main' bookmark, got: " .. vim.inspect(names))
     end)
   end)
 
@@ -77,42 +92,49 @@ for _, mode in ipairs(modes) do
     local working_dir
 
     before_each(function()
-      if skip_if_no_jj() then return end
+      if skip_if_no_jj() then
+        return
+      end
       working_dir = make_repo(mode.colocated)
     end)
 
     -- `jump.lua` and the diffview integration both rely on reading historical
     -- file contents via `jj.cli.file_show.revision(<rev>).args(<path>)`.
     it("returns the committed content of a.txt at the parent revision", function()
-      if skip_if_no_jj() then return end
-      local result = jj.cli.file_show
-        .revision("@-")
-        .args("a.txt")
-        .call { await = true, trim = false, ignore_error = true }
+      if skip_if_no_jj() then
+        return
+      end
+      local result =
+        jj.cli.file_show.revision("@-").args("a.txt").call { await = true, trim = false, ignore_error = true }
 
       assert.is_not_nil(result)
       assert.are.equal(0, result.code)
-      local content = type(result.stdout) == "table"
-        and table.concat(result.stdout, "\n")
+      local content = type(result.stdout) == "table" and table.concat(result.stdout, "\n")
         or (result.stdout or "")
       assert.is_truthy(content:find("line 1", 1, true))
       assert.is_truthy(content:find("line 2", 1, true))
       assert.is_truthy(content:find("line 3", 1, true))
-      assert.is_falsy(content:find("modified", 1, true),
-        "@- should hold the unmodified version, but diff leaked in: " .. content)
+      assert.is_falsy(
+        content:find("modified", 1, true),
+        "@- should hold the unmodified version, but diff leaked in: " .. content
+      )
     end)
   end)
 
   describe("jj config round-trip (repo-scoped) — " .. mode.name, function()
     before_each(function()
-      if skip_if_no_jj() then return end
+      if skip_if_no_jj() then
+        return
+      end
       make_repo(mode.colocated)
     end)
 
     -- `popup/builder.lua` and `popup/init.lua` drive repo-scoped config through
     -- this API to persist switch/option toggles.
     it("set -> get -> unset round-trips a namespaced key", function()
-      if skip_if_no_jj() then return end
+      if skip_if_no_jj() then
+        return
+      end
       local key = "neojj.test.integration." .. tostring(math.random(1, 2 ^ 30))
 
       assert.is_false(jj_config.get(key):is_set())

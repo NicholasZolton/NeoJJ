@@ -29,13 +29,17 @@ describe("jj_backend.find_jj_workspace", function()
   end)
 
   it("finds workspace from its root", function()
-    if skip_if_no_jj() then return end
+    if skip_if_no_jj() then
+      return
+    end
     local ws = harness.prepare_repository { cd = false }
     assert.are.equal(canon(ws), canon(jj_backend.find_jj_workspace(ws)))
   end)
 
   it("finds workspace from a nested subdirectory", function()
-    if skip_if_no_jj() then return end
+    if skip_if_no_jj() then
+      return
+    end
     local ws = harness.prepare_repository { cd = false }
     local nested = ws .. "/nested/deeper"
     vim.fn.mkdir(nested, "p")
@@ -43,7 +47,9 @@ describe("jj_backend.find_jj_workspace", function()
   end)
 
   it("finds workspace from a file path inside the workspace", function()
-    if skip_if_no_jj() then return end
+    if skip_if_no_jj() then
+      return
+    end
     local ws = harness.prepare_repository { cd = false }
     assert.are.equal(canon(ws), canon(jj_backend.find_jj_workspace(ws .. "/a.txt")))
   end)
@@ -51,7 +57,9 @@ end)
 
 describe("jj_backend.jj_backing_git_dir — non-colocated", function()
   it("resolves to the internal bare repo in `.jj/repo/store/git`", function()
-    if skip_if_no_jj() then return end
+    if skip_if_no_jj() then
+      return
+    end
     local ws = harness.prepare_repository { colocated = false, cd = false }
     local git_dir = jj_backend.jj_backing_git_dir(ws)
     assert.is_not_nil(git_dir)
@@ -62,7 +70,9 @@ end)
 
 describe("jj_backend.jj_backing_git_dir — colocated", function()
   it("resolves to the sibling `.git` directory", function()
-    if skip_if_no_jj() then return end
+    if skip_if_no_jj() then
+      return
+    end
     local ws = harness.prepare_repository { colocated = true, cd = false }
     local git_dir = jj_backend.jj_backing_git_dir(ws)
     assert.is_not_nil(git_dir)
@@ -73,7 +83,9 @@ end)
 
 describe("jj_backend.jj_backing_git_dir — secondary workspaces", function()
   it("follows the `.jj/repo` pointer file to a non-colocated primary", function()
-    if skip_if_no_jj() then return end
+    if skip_if_no_jj() then
+      return
+    end
     local primary = harness.prepare_repository { colocated = false, cd = false }
     local secondary = harness.add_secondary_workspace(primary, "secondary-nc")
 
@@ -86,7 +98,9 @@ describe("jj_backend.jj_backing_git_dir — secondary workspaces", function()
   end)
 
   it("follows the `.jj/repo` pointer file to a colocated primary", function()
-    if skip_if_no_jj() then return end
+    if skip_if_no_jj() then
+      return
+    end
     local primary = harness.prepare_repository { colocated = true, cd = false }
     local secondary = harness.add_secondary_workspace(primary, "secondary-co")
 

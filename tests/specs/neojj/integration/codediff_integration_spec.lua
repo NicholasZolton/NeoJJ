@@ -25,8 +25,13 @@ end
 local function wrap_codediff_git_for_jj(codediff_git, git_dir, workspace)
   local wrapped = setmetatable({}, { __index = codediff_git })
   local git_callers = {
-    "get_status", "get_diff_revisions", "resolve_revision", "get_merge_base",
-    "get_git_root", "get_git_dir", "get_file_content",
+    "get_status",
+    "get_diff_revisions",
+    "resolve_revision",
+    "get_merge_base",
+    "get_git_root",
+    "get_git_dir",
+    "get_file_content",
   }
   for _, name in ipairs(git_callers) do
     local orig = codediff_git[name]
@@ -39,7 +44,9 @@ local function wrap_codediff_git_for_jj(codediff_git, git_dir, workspace)
         local ok, ret = pcall(orig, ...)
         vim.env.GIT_DIR = prev_dir
         vim.env.GIT_WORK_TREE = prev_wt
-        if not ok then error(ret) end
+        if not ok then
+          error(ret)
+        end
         return ret
       end
     end
@@ -61,7 +68,9 @@ describe("codediff integration — env wrapper", function()
           GIT_WORK_TREE = vim.env.GIT_WORK_TREE,
         }
       end,
-      get_relative_path = function() return "passthrough" end,
+      get_relative_path = function()
+        return "passthrough"
+      end,
     }
   end)
 
@@ -106,7 +115,9 @@ describe("codediff integration — env wrapper", function()
 
   it("restores env even when the wrapped function errors", function()
     vim.env.GIT_DIR = "/before"
-    fake_codediff_git.get_status = function() error("boom") end
+    fake_codediff_git.get_status = function()
+      error("boom")
+    end
 
     local wrapped = wrap_codediff_git_for_jj(fake_codediff_git, "/mid", "/mid-wt")
     local ok = pcall(wrapped.get_status)
@@ -120,10 +131,12 @@ end)
 describe("codediff integration — real git against jj backing store", function()
   local function run_git_with_env(args, env)
     local cmd = vim.list_extend({ "git" }, args)
-    local result = vim.system(cmd, {
-      text = true,
-      env = vim.tbl_extend("force", vim.fn.environ(), env),
-    }):wait()
+    local result = vim
+      .system(cmd, {
+        text = true,
+        env = vim.tbl_extend("force", vim.fn.environ(), env),
+      })
+      :wait()
     return result.code, vim.trim(result.stdout or ""), vim.trim(result.stderr or "")
   end
 
@@ -132,32 +145,46 @@ describe("codediff integration — real git against jj backing store", function(
   -- `resolve_jj_to_git`, not a symbolic name like HEAD. jj's backing store
   -- contains every commit as a git object, so this works with env vars set.
   it("`git rev-parse --verify <hash>` succeeds against jj's backing store", function()
-    if skip_if_no_jj() then return end
+    if skip_if_no_jj() then
+      return
+    end
     local ws = harness.prepare_repository { colocated = false, cd = false }
     local git_dir = jj_backend.jj_backing_git_dir(ws)
     assert.is_not_nil(git_dir)
 
     -- Resolve a real commit hash from the backing store via jj.
     local hash = vim.trim(harness.exec({
-      "jj", "--repository", ws, "log", "--no-graph", "-r", "@-", "-T", "commit_id",
+      "jj",
+      "--repository",
+      ws,
+      "log",
+      "--no-graph",
+      "-r",
+      "@-",
+      "-T",
+      "commit_id",
     })[1] or "")
     assert.is_true(hash:match("^[0-9a-f]+$") ~= nil, "bad hash: " .. hash)
 
     local bare_code = run_git_with_env({ "-C", ws, "rev-parse", "--verify", hash }, {})
-    assert.are_not.equal(0, bare_code,
-      "expected naked git to fail in non-colocated workspace, but it succeeded")
+    assert.are_not.equal(
+      0,
+      bare_code,
+      "expected naked git to fail in non-colocated workspace, but it succeeded"
+    )
 
     local code, out, err = run_git_with_env(
       { "rev-parse", "--verify", hash },
       { GIT_DIR = git_dir, GIT_WORK_TREE = ws }
     )
-    assert.are.equal(0, code,
-      "git rev-parse with env vars failed: stderr=" .. err)
+    assert.are.equal(0, code, "git rev-parse with env vars failed: stderr=" .. err)
     assert.are.equal(hash, out)
   end)
 
   it("`git status` surfaces the working-copy edit (harness modifies a.txt)", function()
-    if skip_if_no_jj() then return end
+    if skip_if_no_jj() then
+      return
+    end
     local ws = harness.prepare_repository { colocated = false, cd = false }
     local git_dir = jj_backend.jj_backing_git_dir(ws)
     assert.is_not_nil(git_dir)
@@ -168,7 +195,6 @@ describe("codediff integration — real git against jj backing store", function(
     )
     assert.are.equal(0, code, "git status failed: stderr=" .. err)
     -- codediff's get_status runs `git status` and expects to see edits.
-    assert.is_truthy(out:find("a.txt", 1, true),
-      "expected a.txt in git status, got: " .. out)
+    assert.is_truthy(out:find("a.txt", 1, true), "expected a.txt in git status, got: " .. out)
   end)
 end)

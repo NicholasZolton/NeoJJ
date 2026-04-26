@@ -124,18 +124,24 @@ function Watcher:start_poll()
   self.last_op_id = self:get_current_op_id()
 
   self.poll_timer = vim.uv.new_timer()
-  self.poll_timer:start(interval, interval, vim.schedule_wrap(function()
-    if vim.tbl_isempty(self.buffers) then
-      return
-    end
+  self.poll_timer:start(
+    interval,
+    interval,
+    vim.schedule_wrap(function()
+      if vim.tbl_isempty(self.buffers) then
+        return
+      end
 
-    local current_op = self:get_current_op_id()
-    if current_op and current_op ~= self.last_op_id then
-      logger.debug("[WATCHER] Poll detected op change: " .. (self.last_op_id or "nil") .. " -> " .. current_op)
-      self.last_op_id = current_op
-      self:dispatch_refresh()
-    end
-  end))
+      local current_op = self:get_current_op_id()
+      if current_op and current_op ~= self.last_op_id then
+        logger.debug(
+          "[WATCHER] Poll detected op change: " .. (self.last_op_id or "nil") .. " -> " .. current_op
+        )
+        self.last_op_id = current_op
+        self:dispatch_refresh()
+      end
+    end)
+  )
 
   logger.debug("[WATCHER] Started polling every " .. interval .. "ms")
 end
@@ -151,10 +157,19 @@ end
 
 function Watcher:get_current_op_id()
   local root = self.jj_dir:gsub("/.jj$", "")
-  local lines, code = require("neojj.lib.jj.shell").exec(
-    { "jj", "--no-pager", "--color=never", "--ignore-working-copy", "op", "log", "--no-graph", "-T", "self.id()", "-n", "1" },
-    root
-  )
+  local lines, code = require("neojj.lib.jj.shell").exec({
+    "jj",
+    "--no-pager",
+    "--color=never",
+    "--ignore-working-copy",
+    "op",
+    "log",
+    "--no-graph",
+    "-T",
+    "self.id()",
+    "-n",
+    "1",
+  }, root)
   if code == 0 and lines and lines[1] then
     return lines[1]
   end

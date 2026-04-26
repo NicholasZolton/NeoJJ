@@ -1,6 +1,26 @@
 local config = require("neojj.lib.jj.config")
+local harness = require("tests.util.jj_harness")
 
 describe("jj config", function()
+  local original_cwd
+
+  before_each(function()
+    if not harness.jj_available() then
+      pending("jj binary not available; skipping config test")
+      return
+    end
+    -- Repo-scoped config writes (`jj config set --repo`) require us to be
+    -- inside a workspace, so spin up a throwaway jj repo for each test.
+    original_cwd = vim.fn.getcwd()
+    harness.prepare_repository { cd = true }
+  end)
+
+  after_each(function()
+    if original_cwd then
+      vim.api.nvim_set_current_dir(original_cwd)
+    end
+  end)
+
   describe("ConfigEntry", function()
     it("returns a ConfigEntry from get()", function()
       local entry = config.get("neojj.test.nonexistent.key.12345")

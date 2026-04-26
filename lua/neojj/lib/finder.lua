@@ -429,6 +429,7 @@ function Finder:find(on_select)
       end
     end
 
+    ---@type string|fun(item: table): table
     local format_fn = "text"
     if has_prefixes then
       format_fn = function(item)
