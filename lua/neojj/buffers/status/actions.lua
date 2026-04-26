@@ -483,6 +483,30 @@ M.n_context_delete = function(self)
         action()
         self:dispatch_refresh(nil, "n_context_delete")
       end
+    elseif ctx.section == "recent" and item and item.change_offset ~= nil then
+      -- Variant of a divergent change: abandon by commit_id, no permission prompt
+      local short = string.sub(item.commit_id or "", 1, 8)
+      if item.immutable then
+        notification.warn("Cannot abandon immutable variant " .. short, { dismiss = true })
+        return
+      end
+      local result = jj.cli.abandon.args(item.commit_id).call()
+      if result and result.code == 0 then
+        notification.info("Abandoned variant " .. short, { dismiss = true })
+        self:dispatch_refresh(nil, "n_context_delete")
+      else
+        notification.warn("Failed to abandon variant " .. short, { dismiss = true })
+      end
+    elseif ctx.section == "recent" and item and item.variants then
+      -- Divergent parent line: tell the user where to go
+      local short = string.sub(item.change_id or "", 1, 8)
+      notification.warn(
+        string.format(
+          "Change %s is divergent — move cursor to a variant line (/0, /1, ...) to abandon a specific commit.",
+          short
+        ),
+        { dismiss = true }
+      )
     elseif ctx.section == "recent" and item and item.change_id then
       local short = item.change_id:sub(1, 8)
       if item.immutable then
