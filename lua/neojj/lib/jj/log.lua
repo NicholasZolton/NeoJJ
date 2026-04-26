@@ -171,6 +171,103 @@ local function parse_enriched_lines(lines)
   return entries
 end
 
+---Synthesize a parent entry from a list of divergent variants. Variants must share change_id.
+---@param variants NeojjChangeLogEntry[]
+---@return NeojjChangeLogEntry
+local function synthesize_parent(variants)
+  local lead = variants[1]
+  local bookmarks = {}
+  local seen = {}
+  local working_copy = false
+  local immutable = false
+  for _, v in ipairs(variants) do
+    if v.current_working_copy then working_copy = true end
+    if v.immutable then immutable = true end
+    for _, b in ipairs(v.bookmarks or {}) do
+      if not seen[b] then
+        seen[b] = true
+        table.insert(bookmarks, b)
+      end
+    end
+  end
+  return {
+    change_id = lead.change_id,
+    commit_id = "",
+    description = "",
+    author_name = "",
+    author_email = "",
+    author_date = "",
+    bookmarks = bookmarks,
+    empty = false,
+    conflict = false,
+    immutable = immutable,
+    current_working_copy = working_copy,
+    graph = lead.graph,
+    divergent = true,
+    change_offset = nil,
+    variants = variants,
+    shortest_prefix = lead.shortest_prefix,
+  }
+end
+
+---Group divergent entries (sharing a change_id) under a synthesized parent.
+---Single-entry "groups" pass through unchanged. Order of non-divergent
+---entries is preserved; the parent takes the slot of the first variant.
+---@param entries NeojjChangeLogEntry[]
+---@return NeojjChangeLogEntry[]
+function M.group_divergent(entries)
+  -- First pass: collect indices per divergent change_id (in original order)
+  local groups = {}
+  for i, e in ipairs(entries) do
+    if e and e.divergent and e.change_id and e.change_id ~= "" then
+      groups[e.change_id] = groups[e.change_id] or {}
+      table.insert(groups[e.change_id], i)
+    end
+  end
+
+  -- Decide which slots are removed and where parents go
+  local removed = {}
+  local parent_at = {} -- index -> parent entry
+  for _, indices in pairs(groups) do
+    if #indices >= 2 then
+      local variants = {}
+      for offset, idx in ipairs(indices) do
+        local v = vim.deepcopy(entries[idx])
+        v.change_offset = offset - 1
+        table.insert(variants, v)
+      end
+      parent_at[indices[1]] = synthesize_parent(variants)
+      for k = 2, #indices do
+        removed[indices[k]] = true
+      end
+    end
+  end
+
+  -- Second pass: emit, replacing/skipping as decided
+  local out = {}
+  local just_removed = false
+  for i, e in ipairs(entries) do
+    if removed[i] then
+      just_removed = true
+    elseif parent_at[i] then
+      table.insert(out, parent_at[i])
+      just_removed = false
+    elseif e and e.change_id == nil then
+      -- graph-only connector: drop it if it immediately follows a removed slot
+      if not just_removed then
+        table.insert(out, e)
+      end
+      -- keep just_removed false on connector pass-through
+      just_removed = false
+    else
+      table.insert(out, e)
+      just_removed = false
+    end
+  end
+
+  return out
+end
+
 function M.list(revset, limit)
   local jj = require("neojj.lib.jj")
   local config = require("neojj.config")

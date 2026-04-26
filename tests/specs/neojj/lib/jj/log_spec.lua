@@ -239,4 +239,59 @@ describe("jj log parser", function()
       assert.are.equal("│ ╮", entry.graph)
     end)
   end)
+
+  describe("group_divergent", function()
+    local function entry(overrides)
+      return vim.tbl_extend("force", {
+        change_id = "",
+        commit_id = "",
+        description = "",
+        author_name = "",
+        author_email = "",
+        author_date = "",
+        bookmarks = {},
+        empty = false,
+        conflict = false,
+        immutable = false,
+        current_working_copy = false,
+        graph = nil,
+        divergent = false,
+        change_offset = nil,
+        variants = nil,
+      }, overrides or {})
+    end
+
+    it("returns input unchanged when nothing is divergent", function()
+      local input = {
+        entry { change_id = "a", commit_id = "1" },
+        entry { change_id = "b", commit_id = "2" },
+      }
+      local out = log.group_divergent(input)
+      assert.are.equal(2, #out)
+      assert.are.equal("a", out[1].change_id)
+      assert.are.equal("b", out[2].change_id)
+      assert.is_nil(out[1].variants)
+    end)
+
+    it("collapses two divergent entries into a parent + two variants", function()
+      local input = {
+        entry { change_id = "x", commit_id = "1", divergent = true, description = "v1" },
+        entry { change_id = "x", commit_id = "2", divergent = true, description = "v2" },
+        entry { change_id = "y", commit_id = "3" },
+      }
+      local out = log.group_divergent(input)
+      assert.are.equal(2, #out)
+      local parent = out[1]
+      assert.are.equal("x", parent.change_id)
+      assert.are.equal("", parent.commit_id)
+      assert.are.equal("", parent.description)
+      assert.is_not_nil(parent.variants)
+      assert.are.equal(2, #parent.variants)
+      assert.are.equal(0, parent.variants[1].change_offset)
+      assert.are.equal(1, parent.variants[2].change_offset)
+      assert.are.equal("1", parent.variants[1].commit_id)
+      assert.are.equal("2", parent.variants[2].commit_id)
+      assert.are.equal("y", out[2].change_id)
+    end)
+  end)
 end)
