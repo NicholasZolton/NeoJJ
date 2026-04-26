@@ -61,6 +61,29 @@ local function maybe_select_remote(popup)
   return remote, true
 end
 
+function M.push(popup)
+  local remote, ok = maybe_select_remote(popup)
+  if not ok then
+    return
+  end
+
+  notification.info("Pushing" .. (remote and (" to " .. remote) or ""))
+  local args = popup:get_arguments()
+  local builder = jj.cli.git_push
+  if remote then
+    builder = builder.remote(remote)
+  end
+  if #args > 0 then
+    builder = builder.args(unpack(args))
+  end
+  local result = builder.call()
+  if result and result.code == 0 then
+    notification.info("Pushed" .. (remote and (" to " .. remote) or ""), { dismiss = true })
+  else
+    notification.warn("Push failed: " .. push_error_msg(result), { dismiss = true })
+  end
+end
+
 function M.push_bookmark(popup)
   local bookmarks = picker_cache.get_local_bookmark_names()
   local name = FuzzyFinderBuffer.new(bookmarks):open_async { prompt_prefix = "Push bookmark" }

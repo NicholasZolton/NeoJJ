@@ -438,4 +438,130 @@ describe("push popup actions remote mode", function()
     assert.is_true(all_builder.called)
     assert.are.equal("origin", all_builder.remote_value)
   end)
+
+  it("pushes with no explicit source", function()
+    local push_builder = new_builder("push")
+    local info_messages = {}
+    local remote_list_calls = 0
+
+    with_actions_module({
+      ["neojj.lib.jj"] = {
+        cli = {
+          git_push = push_builder,
+          git_remote_list = {
+            call = function()
+              remote_list_calls = remote_list_calls + 1
+              return { code = 0, stdout = { "origin git@example/origin" } }
+            end,
+          },
+        },
+      },
+      ["neojj.lib.notification"] = {
+        info = function(msg)
+          table.insert(info_messages, msg)
+        end,
+        warn = function() end,
+      },
+      ["neojj.buffers.fuzzy_finder"] = {
+        new = function()
+          error("unexpected remote picker invocation")
+        end,
+      },
+      ["neojj.lib.picker_cache"] = {
+        get_local_bookmark_names = function()
+          return {}
+        end,
+        get_all_revisions = function()
+          return {}
+        end,
+        parse_selection = function(selection)
+          return selection
+        end,
+        error_msg = function()
+          return "err"
+        end,
+      },
+    }, function(actions)
+      local popup = {
+        get_arguments = function()
+          return { "--dry-run" }
+        end,
+        get_internal_arguments = function()
+          return {}
+        end,
+      }
+      actions.push(popup)
+    end)
+
+    assert.are.equal(0, remote_list_calls)
+    assert.is_true(push_builder.called)
+    assert.are.same({ "--dry-run" }, push_builder.args_values)
+    assert.is_nil(push_builder.remote_value)
+    assert.is_true(has_message(info_messages, "Pushed"))
+  end)
+
+  it("applies selected remote for plain push", function()
+    local push_builder = new_builder("push")
+    local selections = { "origin" }
+    local finder_calls = {}
+    local remote_list_calls = 0
+
+    with_actions_module({
+      ["neojj.lib.jj"] = {
+        cli = {
+          git_push = push_builder,
+          git_remote_list = {
+            call = function()
+              remote_list_calls = remote_list_calls + 1
+              return { code = 0, stdout = { "origin git@example/origin", "upstream git@example/upstream" } }
+            end,
+          },
+        },
+      },
+      ["neojj.lib.notification"] = {
+        info = function() end,
+        warn = function() end,
+      },
+      ["neojj.buffers.fuzzy_finder"] = {
+        new = function(items)
+          return {
+            open_async = function(_, opts)
+              table.insert(finder_calls, { items = items, prompt_prefix = opts.prompt_prefix })
+              return table.remove(selections, 1)
+            end,
+          }
+        end,
+      },
+      ["neojj.lib.picker_cache"] = {
+        get_local_bookmark_names = function()
+          return {}
+        end,
+        get_all_revisions = function()
+          return {}
+        end,
+        parse_selection = function(selection)
+          return selection
+        end,
+        error_msg = function()
+          return "err"
+        end,
+      },
+    }, function(actions)
+      local popup = {
+        get_arguments = function()
+          return {}
+        end,
+        get_internal_arguments = function()
+          return { remote = true }
+        end,
+      }
+      actions.push(popup)
+    end)
+
+    assert.are.equal(1, remote_list_calls)
+    assert.is_true(push_builder.called)
+    assert.are.equal("origin", push_builder.remote_value)
+    assert.are.equal(1, #finder_calls)
+    assert.are.equal("Push remote", finder_calls[1].prompt_prefix)
+  end)
 end)
