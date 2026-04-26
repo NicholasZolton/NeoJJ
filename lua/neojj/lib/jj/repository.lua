@@ -43,6 +43,11 @@ local logger = require("neojj.logger")
 ---@field immutable boolean
 ---@field current_working_copy boolean
 ---@field graph string|nil Graph ASCII art
+---@field divergent boolean Whether jj reports this commit as part of a divergent change group
+---@field change_offset integer|nil 0,1,... offset within a divergent group (set on variant entries)
+---@field variants NeojjChangeLogEntry[]|nil Set only on synthesized parent entries; holds the original divergent entries
+---@field shortest_prefix string|nil
+---@field remote_bookmarks string[]|nil
 
 ---@class NeojjBookmarkItem
 ---@field name string
@@ -211,6 +216,7 @@ end
 ---Wrapped in vim.schedule to avoid blocking the caller's context.
 function Repo:dispatch_refresh(opts)
   vim.schedule(function()
+    require("neojj.lib.picker_cache").invalidate()
     self:refresh(opts)
   end)
 end

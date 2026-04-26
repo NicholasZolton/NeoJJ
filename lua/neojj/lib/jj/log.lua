@@ -63,6 +63,9 @@ function M.json_to_entry(obj)
     immutable = false,
     current_working_copy = false,
     graph = nil,
+    divergent = false,
+    change_offset = nil,
+    variants = nil,
   }
 end
 
@@ -132,7 +135,7 @@ end
 ---@param limit? number Max entries
 ---@return NeojjChangeLogEntry[]
 -- Template that appends immutable/empty/conflict/bookmarks as tab-separated fields after json
-local LIST_TEMPLATE = 'json(self) ++ if(immutable, "\\t1", "\\t0") ++ if(empty, "\\t1", "\\t0") ++ if(conflict, "\\t1", "\\t0") ++ "\\t" ++ local_bookmarks.map(|b| b.name()).join(",") ++ "\\t" ++ remote_bookmarks.filter(|b| b.remote() != "git").map(|b| b.name() ++ "@" ++ b.remote()).join(",") ++ "\\t" ++ change_id.shortest(8).prefix() ++ "\\n"'
+local LIST_TEMPLATE = 'json(self) ++ if(immutable, "\\t1", "\\t0") ++ if(empty, "\\t1", "\\t0") ++ if(conflict, "\\t1", "\\t0") ++ if(divergent, "\\t1", "\\t0") ++ "\\t" ++ local_bookmarks.map(|b| b.name()).join(",") ++ "\\t" ++ remote_bookmarks.filter(|b| b.remote() != "git").map(|b| b.name() ++ "@" ++ b.remote()).join(",") ++ "\\t" ++ change_id.shortest(8).prefix() ++ "\\n"'
 
 --- Parse lines produced by LIST_TEMPLATE into entries
 ---@param lines string[]
@@ -150,14 +153,15 @@ local function parse_enriched_lines(lines)
           entry.immutable = parts[1] == "1"
           entry.empty = parts[2] == "1"
           entry.conflict = parts[3] == "1"
-          if parts[4] and parts[4] ~= "" then
-            entry.bookmarks = vim.split(parts[4], ",")
-          end
+          entry.divergent = parts[4] == "1"
           if parts[5] and parts[5] ~= "" then
-            entry.remote_bookmarks = vim.split(parts[5], ",")
+            entry.bookmarks = vim.split(parts[5], ",")
           end
           if parts[6] and parts[6] ~= "" then
-            entry.shortest_prefix = parts[6]
+            entry.remote_bookmarks = vim.split(parts[6], ",")
+          end
+          if parts[7] and parts[7] ~= "" then
+            entry.shortest_prefix = parts[7]
           end
           table.insert(entries, entry)
         end
@@ -167,22 +171,176 @@ local function parse_enriched_lines(lines)
   return entries
 end
 
+---Synthesize a parent entry from a list of divergent variants. Variants must share change_id.
+---@param variants NeojjChangeLogEntry[]
+---@return NeojjChangeLogEntry
+local function synthesize_parent(variants)
+  local lead = variants[1]
+  local bookmarks = {}
+  local seen = {}
+  local working_copy = false
+  local immutable = false
+  for _, v in ipairs(variants) do
+    if v.current_working_copy then working_copy = true end
+    if v.immutable then immutable = true end
+    for _, b in ipairs(v.bookmarks or {}) do
+      if not seen[b] then
+        seen[b] = true
+        table.insert(bookmarks, b)
+      end
+    end
+  end
+  return {
+    change_id = lead.change_id,
+    commit_id = "",
+    description = "",
+    author_name = "",
+    author_email = "",
+    author_date = "",
+    bookmarks = bookmarks,
+    empty = false,
+    conflict = false,
+    immutable = immutable,
+    current_working_copy = working_copy,
+    graph = lead.graph,
+    divergent = true,
+    change_offset = nil,
+    variants = variants,
+    shortest_prefix = lead.shortest_prefix,
+  }
+end
+
+---Group divergent entries (sharing a change_id) under a synthesized parent.
+---Single-entry "groups" pass through unchanged. Order of non-divergent
+---entries is preserved; the parent takes the slot of the first variant.
+---@param entries NeojjChangeLogEntry[]
+---@return NeojjChangeLogEntry[]
+function M.group_divergent(entries)
+  -- First pass: collect indices per divergent change_id (in original order)
+  local groups = {}
+  for i, e in ipairs(entries) do
+    if e and e.divergent and e.change_id and e.change_id ~= "" then
+      groups[e.change_id] = groups[e.change_id] or {}
+      table.insert(groups[e.change_id], i)
+    end
+  end
+
+  -- Decide which slots are removed and where parents go
+  local removed = {}
+  local parent_at = {} -- index -> parent entry
+  for _, indices in pairs(groups) do
+    if #indices >= 2 then
+      local variants = {}
+      for offset, idx in ipairs(indices) do
+        local v = vim.deepcopy(entries[idx])
+        v.change_offset = offset - 1
+        table.insert(variants, v)
+      end
+      parent_at[indices[1]] = synthesize_parent(variants)
+      for k = 2, #indices do
+        removed[indices[k]] = true
+      end
+    end
+  end
+
+  -- Second pass: emit, replacing/skipping as decided
+  local out = {}
+  local just_removed = false
+  for i, e in ipairs(entries) do
+    if removed[i] then
+      just_removed = true
+    elseif parent_at[i] then
+      table.insert(out, parent_at[i])
+      just_removed = false
+    elseif e and e.change_id == nil then
+      -- graph-only connector: drop it if it immediately follows a removed slot
+      if not just_removed then
+        table.insert(out, e)
+      end
+      -- keep just_removed false on connector pass-through
+      just_removed = false
+    else
+      table.insert(out, e)
+      just_removed = false
+    end
+  end
+
+  return out
+end
+
+---Append entries from `additional` to `primary`, skipping any whose `commit_id`
+---already appears in `primary`. Mutates and returns `primary` for convenience.
+---Empty/nil commit_ids are skipped on both sides.
+---@param primary NeojjChangeLogEntry[]
+---@param additional NeojjChangeLogEntry[]
+---@return NeojjChangeLogEntry[]
+function M.merge_unique_by_commit_id(primary, additional)
+  local seen = {}
+  for _, e in ipairs(primary) do
+    if e.commit_id and e.commit_id ~= "" then
+      seen[e.commit_id] = true
+    end
+  end
+  for _, e in ipairs(additional) do
+    if e.commit_id and e.commit_id ~= "" and not seen[e.commit_id] then
+      seen[e.commit_id] = true
+      table.insert(primary, e)
+    end
+  end
+  return primary
+end
+
 function M.list(revset, limit)
   local jj = require("neojj.lib.jj")
   local config = require("neojj.config")
   limit = limit or config.values.status.recent_commit_count
-  revset = revset or ("ancestors(@, " .. limit .. ")")
 
-  local result = jj.cli.log.no_graph
-    .template(LIST_TEMPLATE)
-    .revisions(revset)
-    .call { hidden = true, trim = true }
+  local builder = jj.cli.log.no_graph.template(LIST_TEMPLATE)
+  if revset and revset ~= "" then
+    builder = builder.revisions(revset)
+  end
+  if limit and limit > 0 then
+    builder = builder.limit(limit)
+  end
+  local result = builder.call { hidden = true, trim = true }
 
   if not result or result.code ~= 0 then
     return {}
   end
 
-  return parse_enriched_lines(result.stdout)
+  return M.group_divergent(parse_enriched_lines(result.stdout))
+end
+
+---Parse a single line of `jj log -T 'json(self) ++ if(divergent, "\tdivergent", "")'` output.
+---@param line string
+---@return NeojjChangeLogEntry
+function M.parse_with_graph_line(line)
+  local json_start = line:find("{")
+  if not json_start then
+    return { change_id = nil, graph = line }
+  end
+  local graph = line:sub(1, json_start - 1)
+  local rest = line:sub(json_start)
+
+  -- Find the LAST '}' so we don't mistakenly split inside a JSON string.
+  local last_brace = rest:match("^.*()}")
+  if not last_brace then
+    return { change_id = nil, graph = line }
+  end
+  local json_str = rest:sub(1, last_brace)
+  local trailing = rest:sub(last_brace + 1)
+
+  local ok, obj = pcall(vim.json.decode, json_str)
+  if not ok or not obj then
+    return { change_id = nil, graph = line }
+  end
+
+  local entry = M.json_to_entry(obj)
+  entry.graph = graph
+  entry.divergent = trailing:find("divergent", 1, true) ~= nil
+  entry.immutable = graph:match("◆") ~= nil
+  entry.current_working_copy = graph:match("@") ~= nil
+  return entry
 end
 
 ---Fetch changes with graph characters from `jj log -T 'json(self)'` (with graph).
@@ -194,12 +352,15 @@ function M.list_with_graph(revset, limit)
   local jj = require("neojj.lib.jj")
   local config = require("neojj.config")
   limit = limit or config.values.status.recent_commit_count
-  revset = revset or ("ancestors(@, " .. limit .. ")")
 
-  local result = jj.cli.log
-    .template("json(self)")
-    .revisions(revset)
-    .call { hidden = true, trim = true }
+  local builder = jj.cli.log.template('json(self) ++ if(divergent, "\\tdivergent", "")')
+  if revset and revset ~= "" then
+    builder = builder.revisions(revset)
+  end
+  if limit and limit > 0 then
+    builder = builder.limit(limit)
+  end
+  local result = builder.call { hidden = true, trim = true }
 
   if not result or result.code ~= 0 then
     return {}
@@ -207,28 +368,9 @@ function M.list_with_graph(revset, limit)
 
   local entries = {}
   for _, line in ipairs(result.stdout) do
-    local json_start = line:find("{")
-    if json_start then
-      local graph = line:sub(1, json_start - 1)
-      local json_str = line:sub(json_start)
-      local ok, obj = pcall(vim.json.decode, json_str)
-      if ok and obj then
-        local entry = M.json_to_entry(obj)
-        entry.graph = graph
-        entry.immutable = graph:match("◆") ~= nil
-        entry.current_working_copy = graph:match("@") ~= nil
-        table.insert(entries, entry)
-      end
-    else
-      -- Graph-only line (connectors like │, ╭, ~, etc.)
-      table.insert(entries, {
-        change_id = nil,
-        graph = line,
-      })
-    end
+    table.insert(entries, M.parse_with_graph_line(line))
   end
-
-  return entries
+  return M.group_divergent(entries)
 end
 
 ---Update repository state with recent changes
@@ -244,7 +386,32 @@ function meta.update(state)
   }, state.worktree_root)
 
   local entries = (code == 0 and lines) and parse_enriched_lines(lines) or {}
-  state.recent.items = entries
+
+  -- Expand divergent groups: ancestors(@, N) only walks @'s parent chain so
+  -- divergent siblings (same change_id, different parent) are missed. Issue a
+  -- second query for change_id(<id>) of each divergent change_id we saw.
+  local divergent_revsets = {}
+  local seen_change_ids = {}
+  for _, e in ipairs(entries) do
+    if e.divergent and e.change_id and e.change_id ~= "" and not seen_change_ids[e.change_id] then
+      seen_change_ids[e.change_id] = true
+      table.insert(divergent_revsets, "change_id(" .. e.change_id .. ")")
+    end
+  end
+
+  if #divergent_revsets > 0 then
+    local sibling_revset = table.concat(divergent_revsets, " | ")
+    local sibling_lines, sibling_code = shell.exec({
+      "jj", "--no-pager", "--color=never", "--ignore-working-copy",
+      "log", "--no-graph", "-T", LIST_TEMPLATE, "-r", sibling_revset,
+    }, state.worktree_root)
+    if sibling_code == 0 and sibling_lines then
+      local sibling_entries = parse_enriched_lines(sibling_lines)
+      M.merge_unique_by_commit_id(entries, sibling_entries)
+    end
+  end
+
+  state.recent.items = M.group_divergent(entries)
 
   -- Enrich head and parent from log data (description, shortest_prefix)
   if #entries > 0 then

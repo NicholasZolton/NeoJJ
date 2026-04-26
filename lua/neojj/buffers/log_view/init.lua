@@ -1,5 +1,6 @@
 local Buffer = require("neojj.lib.buffer")
 local ui = require("neojj.buffers.log_view.ui")
+local common = require("neojj.buffers.common")
 local config = require("neojj.config")
 local popups = require("neojj.popups")
 local status_maps = require("neojj.config").get_reversed_status_maps()
@@ -74,6 +75,15 @@ function M:open()
 
   M.instance = self
 
+  local function guarded(action)
+    return function()
+      if common.divergent_guard(self.buffer.ui:get_commit_item_under_cursor()) then
+        return
+      end
+      action()
+    end
+  end
+
   self.buffer = Buffer.create {
     name = "NeojjLogView",
     filetype = "NeojjLogView",
@@ -85,16 +95,16 @@ function M:open()
     status_column = not config.values.disable_signs and "" or nil,
     mappings = {
       v = {
-        [popups.mapping_for("CommitPopup")] = popups.open("commit", function(p)
+        [popups.mapping_for("CommitPopup")] = guarded(popups.open("commit", function(p)
           p { commit = self.buffer.ui:get_commit_under_cursor() }
-        end),
+        end)),
         [popups.mapping_for("FetchPopup")] = popups.open("fetch"),
-        [popups.mapping_for("PushPopup")] = popups.open("push", function(p)
+        [popups.mapping_for("PushPopup")] = guarded(popups.open("push", function(p)
           p { commit = self.buffer.ui:get_commit_under_cursor() }
-        end),
-        [popups.mapping_for("RebasePopup")] = popups.open("rebase", function(p)
+        end)),
+        [popups.mapping_for("RebasePopup")] = guarded(popups.open("rebase", function(p)
           p { commit = self.buffer.ui:get_commit_under_cursor() }
-        end),
+        end)),
         [popups.mapping_for("RemotePopup")] = popups.open("remote"),
         [popups.mapping_for("DiffPopup")] = popups.open("diff", function(p)
           local items = self.buffer.ui:get_ordered_commits_in_selection()
@@ -103,39 +113,39 @@ function M:open()
             item = { name = items },
           }
         end),
-        [popups.mapping_for("BookmarkPopup")] = popups.open("bookmark", function(p)
+        [popups.mapping_for("BookmarkPopup")] = guarded(popups.open("bookmark", function(p)
           p { commit = self.buffer.ui:get_commit_under_cursor() }
-        end),
-        [popups.mapping_for("SquashPopup")] = popups.open("squash", function(p)
+        end)),
+        [popups.mapping_for("SquashPopup")] = guarded(popups.open("squash", function(p)
           p { commit = self.buffer.ui:get_commit_under_cursor() }
-        end),
+        end)),
       },
       n = {
-        [popups.mapping_for("CommitPopup")] = popups.open("commit", function(p)
+        [popups.mapping_for("CommitPopup")] = guarded(popups.open("commit", function(p)
           p { commit = self.buffer.ui:get_commit_under_cursor() }
-        end),
+        end)),
         [popups.mapping_for("FetchPopup")] = popups.open("fetch"),
-        [popups.mapping_for("PushPopup")] = popups.open("push", function(p)
+        [popups.mapping_for("PushPopup")] = guarded(popups.open("push", function(p)
           p { commit = self.buffer.ui:get_commit_under_cursor() }
-        end),
-        [popups.mapping_for("RebasePopup")] = popups.open("rebase", function(p)
+        end)),
+        [popups.mapping_for("RebasePopup")] = guarded(popups.open("rebase", function(p)
           p { commit = self.buffer.ui:get_commit_under_cursor() }
-        end),
+        end)),
         [popups.mapping_for("RemotePopup")] = popups.open("remote"),
-        [popups.mapping_for("DiffPopup")] = popups.open("diff", function(p)
-          local item = self.buffer.ui:get_commit_under_cursor()
+        [popups.mapping_for("DiffPopup")] = guarded(popups.open("diff", function(p)
+          local commit = self.buffer.ui:get_commit_under_cursor()
           p {
             section = { name = "log" },
-            item = { name = item },
+            item = { name = commit },
           }
-        end),
+        end)),
         [popups.mapping_for("LogPopup")] = popups.open("log"),
-        [popups.mapping_for("BookmarkPopup")] = popups.open("bookmark", function(p)
+        [popups.mapping_for("BookmarkPopup")] = guarded(popups.open("bookmark", function(p)
           p { commit = self.buffer.ui:get_commit_under_cursor() }
-        end),
-        [popups.mapping_for("SquashPopup")] = popups.open("squash", function(p)
+        end)),
+        [popups.mapping_for("SquashPopup")] = guarded(popups.open("squash", function(p)
           p { commit = self.buffer.ui:get_commit_under_cursor() }
-        end),
+        end)),
         [status_maps["YankSelected"]] = function()
           local yank = self.buffer.ui:get_commit_under_cursor()
           if yank then
@@ -146,15 +156,32 @@ function M:open()
             vim.cmd("echo ''")
           end
         end,
+        ["dd"] = function()
+          local item = self.buffer.ui:get_commit_item_under_cursor()
+          if not (item and item.change_offset ~= nil) then return end
+          CommitViewBuffer.new(item.commit_id, self.files):open()
+        end,
+        ["x"] = function()
+          local item = self.buffer.ui:get_commit_item_under_cursor()
+          if not (item and item.change_offset ~= nil) then return end
+          common.abandon_variant(item, function()
+            a.run(function()
+              local permit = self.refresh_lock:acquire()
+              self.commits = self.fetch_func(0)
+              self.buffer.ui:render(unpack(ui.View(self.commits, self.remotes, self.internal_args)))
+              permit:forget()
+            end)
+          end)
+        end,
         ["<esc>"] = require("neojj.lib.ui.helpers").close_topmost(self),
         [status_maps["Close"]] = require("neojj.lib.ui.helpers").close_topmost(self),
-        [status_maps["GoToFile"]] = function()
+        [status_maps["GoToFile"]] = guarded(function()
           local commit = self.buffer.ui:get_commit_under_cursor()
           if commit then
             CommitViewBuffer.new(commit, self.files):open()
           end
-        end,
-        [status_maps["PeekFile"]] = function()
+        end),
+        [status_maps["PeekFile"]] = guarded(function()
           local commit = self.buffer.ui:get_commit_under_cursor()
           if commit then
             local buffer = CommitViewBuffer.new(commit, self.files):open()
@@ -162,19 +189,19 @@ function M:open()
 
             self.buffer:focus()
           end
-        end,
-        [status_maps["OpenOrScrollDown"]] = function()
+        end),
+        [status_maps["OpenOrScrollDown"]] = guarded(function()
           local commit = self.buffer.ui:get_commit_under_cursor()
           if commit then
             CommitViewBuffer.open_or_scroll_down(commit, self.files)
           end
-        end,
-        [status_maps["OpenOrScrollUp"]] = function()
+        end),
+        [status_maps["OpenOrScrollUp"]] = guarded(function()
           local commit = self.buffer.ui:get_commit_under_cursor()
           if commit then
             CommitViewBuffer.open_or_scroll_up(commit, self.files)
           end
-        end,
+        end),
         [status_maps["PeekUp"]] = function()
           -- Open prev fold
           pcall(vim.cmd, "normal! zc")
@@ -189,9 +216,13 @@ function M:open()
           end
 
           if CommitViewBuffer.is_open() then
-            local commit = self.buffer.ui:get_commit_under_cursor()
-            if commit then
-              CommitViewBuffer.instance:update(commit, self.files)
+            local item = self.buffer.ui:get_commit_item_under_cursor()
+            -- Skip update on divergent parent lines (no single commit to show)
+            if item and not item.variants then
+              local commit = self.buffer.ui:get_commit_under_cursor()
+              if commit then
+                CommitViewBuffer.instance:update(commit, self.files)
+              end
             end
           else
             pcall(vim.cmd, "normal! zo")
@@ -211,9 +242,13 @@ function M:open()
           end
 
           if CommitViewBuffer.is_open() then
-            local commit = self.buffer.ui:get_commit_under_cursor()
-            if commit then
-              CommitViewBuffer.instance:update(commit, self.files)
+            local item = self.buffer.ui:get_commit_item_under_cursor()
+            -- Skip update on divergent parent lines (no single commit to show)
+            if item and not item.variants then
+              local commit = self.buffer.ui:get_commit_under_cursor()
+              if commit then
+                CommitViewBuffer.instance:update(commit, self.files)
+              end
             end
           else
             pcall(vim.cmd, "normal! zo")
@@ -238,11 +273,13 @@ function M:open()
             vim.cmd("norm! j")
           end
 
-          while self.buffer:get_current_line()[1]:sub(1, 1) == " " do
-            if vim.fn.line(".") == vim.fn.line("$") then
-              break
-            end
-
+          while true do
+            local line = self.buffer:get_current_line()[1]
+            -- Stop on: the original commit lines (start with non-space) AND on variant rows
+            -- (start with spaces but contain a '/' followed by a digit after the indent).
+            local is_landable = line:sub(1, 1) ~= " " or line:match("^%s+/%d")
+            if is_landable then break end
+            if vim.fn.line(".") == vim.fn.line("$") then break end
             vim.cmd("norm! j")
           end
         end,
@@ -253,11 +290,11 @@ function M:open()
             vim.cmd("norm! k")
           end
 
-          while self.buffer:get_current_line()[1]:sub(1, 1) == " " do
-            if vim.fn.line(".") == 1 then
-              break
-            end
-
+          while true do
+            local line = self.buffer:get_current_line()[1]
+            local is_landable = line:sub(1, 1) ~= " " or line:match("^%s+/%d")
+            if is_landable then break end
+            if vim.fn.line(".") == 1 then break end
             vim.cmd("norm! k")
           end
         end,

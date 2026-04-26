@@ -292,7 +292,7 @@ function Ui:get_ordered_commits_in_selection()
   local commits = {}
   for i = start, stop, increment do
     local component = self:_find_component_by_index(i, function(node)
-      return node.options.oid ~= nil
+      return node.options.oid ~= nil and not (node.options.item and node.options.item.variants)
     end)
 
     if component then
@@ -331,6 +331,18 @@ function Ui:get_commit_under_cursor()
   end)
 
   return component and component.options.oid
+end
+
+---Returns the full item table under the cursor (the nearest component with `options.item` set).
+---Sibling to `get_commit_under_cursor`, which returns just the oid string.
+---@return table|nil
+function Ui:get_commit_item_under_cursor()
+  local cursor = vim.api.nvim_win_get_cursor(0)
+  local component = self:_find_component_by_index(cursor[1], function(node)
+    return node.options.item ~= nil
+  end)
+
+  return component and component.options.item
 end
 
 ---@return ParsedRef|nil

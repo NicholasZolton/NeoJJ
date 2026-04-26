@@ -149,18 +149,132 @@ local function short_id(id)
   return string.sub(id, 1, 12)
 end
 
----@param commit NeojjChangeLogEntry
+---Build bookmark decorations
+---@param bookmarks string[]|nil
 ---@param args table
-M.CommitEntry = Component.new(function(commit, _remotes, args)
+---@return Component[]
+local function build_ref(bookmarks, args)
   local ref = {}
-
-  -- Render bookmarks as decorations
-  if args.decorate and commit.bookmarks and #commit.bookmarks > 0 then
-    for _, bm in ipairs(commit.bookmarks) do
+  if args.decorate and bookmarks and #bookmarks > 0 then
+    for _, bm in ipairs(bookmarks) do
       table.insert(ref, text(bm, { highlight = "NeojjBranch" }))
       table.insert(ref, text(" "))
     end
   end
+  return ref
+end
+
+---Build virtual text for commit lines (right-side display)
+---@param author_name string|nil
+---@param date string
+---@return table[]
+local function build_virtual_text(author_name, date)
+  return {
+    { " ", "Constant" },
+    { util.str_clamp(author_name or "", 30 - (#date > 10 and #date or 10)), "NeojjGraphAuthor" },
+    { util.str_min_width(date, 10), "Special" },
+  }
+end
+
+---Render a divergent variant row.
+---@param variant NeojjChangeLogEntry
+---@param opts table|nil { virtual_text = boolean } — log view sets virtual_text=true to show author+date
+---@return Component
+function M.DivergentVariantRow(variant, opts)
+  opts = opts or {}
+  local commit_short = short_id(variant.commit_id)
+  local subject = vim.split(variant.description or "", "\n")[1] or ""
+  local id_highlight = variant.current_working_copy and "NeojjBranchHead" or "NeojjObjectId"
+
+  local status_parts = {}
+  if variant.immutable then
+    table.insert(status_parts, "immutable")
+  end
+  if variant.empty then
+    table.insert(status_parts, "empty")
+  end
+  if variant.conflict then
+    table.insert(status_parts, "conflict")
+  end
+  local status_highlight = variant.conflict and "NeojjConflict" or "NeojjSubtleText"
+  local status_suffix = #status_parts > 0 and " (" .. table.concat(status_parts, ", ") .. ")" or ""
+
+  local children = {
+    text("  "),
+    text("/" .. tostring(variant.change_offset), { highlight = "NeojjDivergent" }),
+    text("  "),
+    text(commit_short, { highlight = id_highlight }),
+    text("  "),
+    text(subject),
+    text.highlight(status_highlight)(status_suffix),
+  }
+
+  local row_opts = {
+    yankable = variant.commit_id,
+    oid = variant.commit_id,
+    item = variant,
+  }
+  if opts.virtual_text then
+    local date = variant.author_date or ""
+    if #date > 16 then
+      date = string.sub(date, 1, 16)
+    end
+    row_opts.virtual_text = build_virtual_text(variant.author_name, date)
+  end
+
+  return col.tag("commit_variant")({ row(children, row_opts) }, {
+    item = variant,
+    oid = variant.commit_id,
+    foldable = false,
+  })
+end
+
+---@param commit NeojjChangeLogEntry
+---@param args table
+M.CommitEntry = Component.new(function(commit, _remotes, args)
+  -- Divergent parent path: render parent line + indented variants
+  if commit.variants then
+    local change_short = short_id(commit.change_id)
+    local graph = args.graph and build_graph(commit.graph or "") or { text("") }
+
+    local ref = build_ref(commit.bookmarks, args)
+
+    local id_highlight = commit.current_working_copy and "NeojjBranchHead" or "NeojjObjectId"
+
+    local parent_children = {
+      text(change_short, { highlight = id_highlight }),
+      text(" "),
+    }
+    for _, g in ipairs(graph) do
+      table.insert(parent_children, g)
+    end
+    table.insert(parent_children, text(" "))
+    table.insert(parent_children, text("<divergent>", { highlight = "NeojjDivergent" }))
+    table.insert(parent_children, text(" "))
+    if commit.immutable then
+      table.insert(parent_children, text("immutable ", { highlight = "NeojjSubtleText" }))
+    end
+    for _, r in ipairs(ref) do
+      table.insert(parent_children, r)
+    end
+
+    local variant_rows = {}
+    for _, v in ipairs(commit.variants) do
+      table.insert(variant_rows, M.DivergentVariantRow(v, { virtual_text = true }))
+    end
+
+    return col.tag("divergent_parent")(
+      vim.list_extend({ row(parent_children) }, variant_rows),
+      {
+        item = commit,
+        oid = commit.change_id,
+        foldable = false,
+      }
+    )
+  end
+
+  -- Non-divergent path: original rendering
+  local ref = build_ref(commit.bookmarks, args)
 
   -- Status markers
   local markers = {}
@@ -248,14 +362,7 @@ M.CommitEntry = Component.new(function(commit, _remotes, args)
         text(" "),
       }, graph, { text(" ") }, markers, ref, { text(subject) }),
       {
-        virtual_text = {
-          { " ", "Constant" },
-          {
-            util.str_clamp(commit.author_name or "", 30 - (#date > 10 and #date or 10)),
-            "NeojjGraphAuthor",
-          },
-          { util.str_min_width(date, 10), "Special" },
-        },
+        virtual_text = build_virtual_text(commit.author_name, date),
       }
     ),
     details,
@@ -360,5 +467,45 @@ M.Grid = Component.new(function(props)
 
   return col(rendered)
 end)
+
+---Abandon a divergent variant. Handles immutable check, abandon call, notification,
+---and refresh. The refresh callback is invoked only on successful abandon.
+---@param item NeojjChangeLogEntry the variant entry (must have commit_id and change_offset)
+---@param refresh fun(): nil callback to refresh whatever buffer hosted the action
+function M.abandon_variant(item, refresh)
+  local notification = require("neojj.lib.notification")
+  local short = string.sub(item.commit_id or "", 1, 8)
+  if item.immutable then
+    notification.warn("Cannot abandon immutable variant " .. short, { dismiss = true })
+    return
+  end
+  local result = jj.cli.abandon.args(item.commit_id).call()
+  if result and result.code == 0 then
+    notification.info("Abandoned variant " .. short, { dismiss = true })
+    refresh()
+  else
+    notification.warn("Failed to abandon variant " .. short, { dismiss = true })
+  end
+end
+
+---Returns true and shows a notification if the item is a divergent parent.
+---Callers should early-return when this returns true.
+---@param item NeojjChangeLogEntry|nil
+---@return boolean blocked
+function M.divergent_guard(item)
+  if item and item.variants then
+    local short = string.sub(item.change_id or "", 1, 8)
+    local notification = require("neojj.lib.notification")
+    notification.warn(
+      string.format(
+        "Change %s is divergent — move cursor to a variant line (/0, /1, ...) to operate on a specific commit.",
+        short
+      ),
+      { dismiss = true }
+    )
+    return true
+  end
+  return false
+end
 
 return M

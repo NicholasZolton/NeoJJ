@@ -6,6 +6,7 @@ local popups = require("neojj.popups")
 local input = require("neojj.lib.input")
 local notification = require("neojj.lib.notification")
 local jump = require("neojj.lib.jump")
+local common = require("neojj.buffers.common")
 
 local fn = vim.fn
 
@@ -385,6 +386,7 @@ end
 M.n_yank_commit_hash = function(self)
   return function()
     local ctx = cursor_context(self)
+    if common.divergent_guard(ctx.item) then return end
     if ctx.item and ctx.item.commit_id then
       local short = ctx.item.commit_id:sub(1, 8)
       vim.fn.setreg("+", short)
@@ -483,6 +485,20 @@ M.n_context_delete = function(self)
         action()
         self:dispatch_refresh(nil, "n_context_delete")
       end
+    elseif ctx.section == "recent" and item and item.change_offset ~= nil then
+      common.abandon_variant(item, function()
+        self:dispatch_refresh(nil, "n_context_delete")
+      end)
+    elseif ctx.section == "recent" and item and item.variants then
+      -- Divergent parent line: tell the user where to go
+      local short = string.sub(item.change_id or "", 1, 8)
+      notification.warn(
+        string.format(
+          "Change %s is divergent — move cursor to a variant line (/0, /1, ...) to abandon a specific commit.",
+          short
+        ),
+        { dismiss = true }
+      )
     elseif ctx.section == "recent" and item and item.change_id then
       local short = item.change_id:sub(1, 8)
       if item.immutable then
@@ -494,8 +510,6 @@ M.n_context_delete = function(self)
       end
       local result = jj.cli.abandon.args(item.change_id).call()
       if result and result.code == 0 then
-        local picker_cache = require("neojj.lib.picker_cache")
-        picker_cache.remove_revision(item.change_id)
         notification.info("Abandoned " .. short, { dismiss = true })
         self:dispatch_refresh(nil, "n_context_delete")
       else
@@ -512,8 +526,6 @@ M.n_context_delete = function(self)
         end
         local result = jj.cli.bookmark_set.args(item.name, "-r", item.name .. "@origin").call()
         if result and result.code == 0 then
-          local picker_cache = require("neojj.lib.picker_cache")
-          picker_cache.invalidate_bookmarks()
           notification.info("Restored bookmark " .. item.name, { dismiss = true })
           self:dispatch_refresh(nil, "n_context_delete")
         else
@@ -526,8 +538,6 @@ M.n_context_delete = function(self)
       end
       local result = jj.cli.bookmark_delete.args(item.name).call()
       if result and result.code == 0 then
-        local picker_cache = require("neojj.lib.picker_cache")
-        picker_cache.invalidate_bookmarks()
         notification.info("Deleted bookmark " .. item.name, { dismiss = true })
         self:dispatch_refresh(nil, "n_context_delete")
       else
@@ -629,6 +639,17 @@ end
 
 ---@param self StatusBuffer
 ---@return fun(): nil
+M.n_open_variant_diff = function(self)
+  return function()
+    local ctx = cursor_context(self)
+    local item = ctx.item
+    if not (item and item.change_offset ~= nil) then return end
+    require("neojj.buffers.commit_view").new(item.commit_id):open()
+  end
+end
+
+---@param self StatusBuffer
+---@return fun(): nil
 M.n_tab_open = function(self)
   return function()
     local item = self.buffer.ui:get_item_under_cursor()
@@ -708,6 +729,7 @@ M.n_describe = function(self)
   return a.void(function()
     local config = require("neojj.config")
     local ctx = cursor_context(self)
+    if common.divergent_guard(ctx.item) then return end
 
     if ctx.immutable then
       notification.warn("Cannot describe immutable commit", { dismiss = true })
@@ -773,6 +795,7 @@ end
 M.n_edit_change = function(self)
   return a.void(function()
     local ctx = cursor_context(self)
+    if common.divergent_guard(ctx.item) then return end
     local change_id = ctx.change_id
     if not change_id then
       notification.warn("No change under cursor", { dismiss = true })
@@ -807,6 +830,8 @@ end
 ---@return fun(): nil
 M.n_new_change = function(self)
   return a.void(function()
+    local ctx = cursor_context(self)
+    if common.divergent_guard(ctx.item) then return end
     jj.cli.new.call()
     notification.info("Created new change")
     self:dispatch_refresh(nil, "n_new_change")
@@ -817,6 +842,8 @@ end
 ---@return fun(): nil
 M.n_abandon = function(self)
   return a.void(function()
+    local ctx = cursor_context(self)
+    if common.divergent_guard(ctx.item) then return end
     if input.get_permission("Abandon current change?") then
       jj.cli.abandon.call()
       notification.info("Change abandoned")
@@ -856,8 +883,6 @@ M.n_forget_bookmark = function(self)
       end
       local result = jj.cli.bookmark_track.args(ref).call()
       if result and result.code == 0 then
-        local picker_cache = require("neojj.lib.picker_cache")
-        picker_cache.invalidate_bookmarks()
         notification.info("Tracking " .. ref, { dismiss = true })
         self:dispatch_refresh(nil, "n_forget_bookmark")
       else
@@ -872,8 +897,6 @@ M.n_forget_bookmark = function(self)
 
     local result = jj.cli.bookmark_forget.args(item.name).call()
     if result and result.code == 0 then
-      local picker_cache = require("neojj.lib.picker_cache")
-      picker_cache.invalidate_bookmarks()
       notification.info("Forgot bookmark " .. item.name, { dismiss = true })
       self:dispatch_refresh(nil, "n_forget_bookmark")
     else
@@ -887,6 +910,7 @@ end
 M.n_new_change_on = function(self)
   return a.void(function()
     local ctx = cursor_context(self)
+    if common.divergent_guard(ctx.item) then return end
     local change_id = ctx.change_id
     if not change_id then
       notification.warn("No change under cursor", { dismiss = true })
@@ -899,8 +923,6 @@ M.n_new_change_on = function(self)
       local ref = item.name .. "@" .. item.remote
       local track_result = jj.cli.bookmark_track.args(ref).call()
       if track_result and track_result.code == 0 then
-        local picker_cache = require("neojj.lib.picker_cache")
-        picker_cache.invalidate_bookmarks()
         notification.info("Tracked " .. ref, { dismiss = true })
       end
     end
@@ -908,8 +930,6 @@ M.n_new_change_on = function(self)
     local short = change_id:sub(1, 8)
     local result = jj.cli.new.revisions(change_id).call()
     if result and result.code == 0 then
-      local picker_cache = require("neojj.lib.picker_cache")
-      picker_cache.invalidate_revisions()
       notification.info("Created new change on " .. short, { dismiss = true })
       self:dispatch_refresh(nil, "n_new_change_on")
     else
@@ -923,6 +943,7 @@ end
 M.n_new_change_before = function(self)
   return a.void(function()
     local ctx = cursor_context(self)
+    if common.divergent_guard(ctx.item) then return end
     local change_id = ctx.change_id
     if not change_id then
       notification.warn("No change under cursor", { dismiss = true })
@@ -932,8 +953,6 @@ M.n_new_change_before = function(self)
     local short = change_id:sub(1, 8)
     local result = jj.cli.new.insert_before.revisions(change_id).call()
     if result and result.code == 0 then
-      local picker_cache = require("neojj.lib.picker_cache")
-      picker_cache.invalidate_revisions()
       notification.info("Created new change before " .. short, { dismiss = true })
       self:dispatch_refresh(nil, "n_new_change_before")
     else
@@ -1104,6 +1123,7 @@ end
 M.n_open_in_browser = function(self)
   return function()
     local ctx = cursor_context(self)
+    if common.divergent_guard(ctx.item) then return end
 
     -- Helper to resolve remote URL
     local function get_remote_browser_url()

@@ -23,10 +23,6 @@ local function wrap(builder, success_msg)
     interactive = true,
   })
 
-  if code == 0 then
-    picker_cache.invalidate_revisions()
-  end
-
   return code
 end
 
@@ -118,7 +114,6 @@ end
 function M.absorb(_popup)
   local result = jj.cli.absorb.call()
   if result and result.code == 0 then
-    picker_cache.invalidate_revisions()
     notification.info("Absorbed changes into prior commits", { dismiss = true })
   else
     notification.warn("Absorb failed", { dismiss = true })

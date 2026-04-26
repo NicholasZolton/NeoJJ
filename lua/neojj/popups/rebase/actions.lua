@@ -19,7 +19,6 @@ function M.source_onto(popup)
   if #args > 0 then builder = builder.args(unpack(args)) end
   local result = builder.call()
   if result and result.code == 0 then
-    picker_cache.invalidate_revisions()
     notification.info("Rebased " .. source .. " onto " .. dest, { dismiss = true })
   else
     notification.warn("Rebase failed: " .. picker_cache.error_msg(result), { dismiss = true })
@@ -27,7 +26,7 @@ function M.source_onto(popup)
 end
 
 function M.bookmark_onto(popup)
-  local bookmarks = picker_cache.get_all_bookmarks()
+  local bookmarks = picker_cache.get_local_bookmarks_with_labels()
   local bm_sel = FuzzyFinderBuffer.new(bookmarks):open_async { prompt_prefix = "Rebase bookmark", refocus_status = false }
   if not bm_sel then return end
   local bm = picker_cache.parse_selection(bm_sel)
@@ -43,7 +42,6 @@ function M.bookmark_onto(popup)
   if #args > 0 then builder = builder.args(unpack(args)) end
   local result = builder.call()
   if result and result.code == 0 then
-    picker_cache.invalidate_revisions()
     notification.info("Rebased bookmark " .. bm .. " onto " .. dest, { dismiss = true })
   else
     notification.warn("Rebase failed: " .. picker_cache.error_msg(result), { dismiss = true })
@@ -65,7 +63,6 @@ function M.revision_onto(popup)
   if #args > 0 then builder = builder.args(unpack(args)) end
   local result = builder.call()
   if result and result.code == 0 then
-    picker_cache.invalidate_revisions()
     notification.info("Rebased " .. rev .. " onto " .. dest, { dismiss = true })
   else
     notification.warn("Rebase failed: " .. picker_cache.error_msg(result), { dismiss = true })
@@ -83,7 +80,6 @@ function M.here_onto(popup)
   if #args > 0 then builder = builder.args(unpack(args)) end
   local result = builder.call()
   if result and result.code == 0 then
-    picker_cache.invalidate_revisions()
     notification.info("Rebased @ onto " .. dest, { dismiss = true })
   else
     notification.warn("Rebase failed: " .. picker_cache.error_msg(result), { dismiss = true })
@@ -103,7 +99,6 @@ local function fetch_and_rebase(popup, mode_flag, mode_value, desc)
   if #args > 0 then builder = builder.args(unpack(args)) end
   local result = builder.call()
   if result and result.code == 0 then
-    picker_cache.invalidate()
     notification.info(desc, { dismiss = true })
   else
     notification.warn("Rebase onto trunk failed: " .. picker_cache.error_msg(result), { dismiss = true })
@@ -128,7 +123,6 @@ function M.parallelize(_popup)
 
   local result = jj.cli.parallelize.args(change_id .. "::@").call()
   if result and result.code == 0 then
-    picker_cache.invalidate_revisions()
     notification.info("Parallelized changes", { dismiss = true })
   else
     notification.warn("Parallelize failed: " .. picker_cache.error_msg(result), { dismiss = true })
