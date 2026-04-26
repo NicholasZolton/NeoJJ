@@ -272,9 +272,13 @@ function M:open()
           end
 
           if CommitViewBuffer.is_open() then
-            local commit = self.buffer.ui:get_commit_under_cursor()
-            if commit then
-              CommitViewBuffer.instance:update(commit, self.files)
+            local item = self.buffer.ui:get_commit_item_under_cursor()
+            -- Skip update on divergent parent lines (no single commit to show)
+            if item and not item.variants then
+              local commit = self.buffer.ui:get_commit_under_cursor()
+              if commit then
+                CommitViewBuffer.instance:update(commit, self.files)
+              end
             end
           else
             pcall(vim.cmd, "normal! zo")
@@ -294,9 +298,13 @@ function M:open()
           end
 
           if CommitViewBuffer.is_open() then
-            local commit = self.buffer.ui:get_commit_under_cursor()
-            if commit then
-              CommitViewBuffer.instance:update(commit, self.files)
+            local item = self.buffer.ui:get_commit_item_under_cursor()
+            -- Skip update on divergent parent lines (no single commit to show)
+            if item and not item.variants then
+              local commit = self.buffer.ui:get_commit_under_cursor()
+              if commit then
+                CommitViewBuffer.instance:update(commit, self.files)
+              end
             end
           else
             pcall(vim.cmd, "normal! zo")
