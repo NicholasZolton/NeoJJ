@@ -149,7 +149,35 @@ local function short_id(id)
   return string.sub(id, 1, 12)
 end
 
----@param variant table
+---Build bookmark decorations
+---@param bookmarks string[]|nil
+---@param args table
+---@return Component[]
+local function build_ref(bookmarks, args)
+  local ref = {}
+  if args.decorate and bookmarks and #bookmarks > 0 then
+    for _, bm in ipairs(bookmarks) do
+      table.insert(ref, text(bm, { highlight = "NeojjBranch" }))
+      table.insert(ref, text(" "))
+    end
+  end
+  return ref
+end
+
+---Build virtual text for commit lines (right-side display)
+---@param author_name string|nil
+---@param date string
+---@return table[]
+local function build_virtual_text(author_name, date)
+  return {
+    { " ", "Constant" },
+    { util.str_clamp(author_name or "", 30 - (#date > 10 and #date or 10)), "NeojjGraphAuthor" },
+    { util.str_min_width(date, 10), "Special" },
+  }
+end
+
+---@param variant NeojjChangeLogEntry
+---@return Component
 local function render_variant_row(variant)
   local commit_short = short_id(variant.commit_id)
   local subject = vim.split(variant.description or "", "\n")[1] or ""
@@ -185,11 +213,7 @@ local function render_variant_row(variant)
 
   return col.tag("commit_variant")({
     row(children, {
-      virtual_text = {
-        { " ", "Constant" },
-        { util.str_clamp(variant.author_name or "", 30 - (#date > 10 and #date or 10)), "NeojjGraphAuthor" },
-        { util.str_min_width(date, 10), "Special" },
-      },
+      virtual_text = build_virtual_text(variant.author_name, date),
     }),
   }, {
     item = variant,
@@ -206,13 +230,7 @@ M.CommitEntry = Component.new(function(commit, _remotes, args)
     local change_short = short_id(commit.change_id)
     local graph = args.graph and build_graph(commit.graph or "") or { text("") }
 
-    local ref = {}
-    if args.decorate and commit.bookmarks and #commit.bookmarks > 0 then
-      for _, bm in ipairs(commit.bookmarks) do
-        table.insert(ref, text(bm, { highlight = "NeojjBranch" }))
-        table.insert(ref, text(" "))
-      end
-    end
+    local ref = build_ref(commit.bookmarks, args)
 
     local id_highlight = commit.current_working_copy and "NeojjBranchHead" or "NeojjObjectId"
 
@@ -249,15 +267,7 @@ M.CommitEntry = Component.new(function(commit, _remotes, args)
   end
 
   -- Non-divergent path: original rendering
-  local ref = {}
-
-  -- Render bookmarks as decorations
-  if args.decorate and commit.bookmarks and #commit.bookmarks > 0 then
-    for _, bm in ipairs(commit.bookmarks) do
-      table.insert(ref, text(bm, { highlight = "NeojjBranch" }))
-      table.insert(ref, text(" "))
-    end
-  end
+  local ref = build_ref(commit.bookmarks, args)
 
   -- Status markers
   local markers = {}
@@ -345,14 +355,7 @@ M.CommitEntry = Component.new(function(commit, _remotes, args)
         text(" "),
       }, graph, { text(" ") }, markers, ref, { text(subject) }),
       {
-        virtual_text = {
-          { " ", "Constant" },
-          {
-            util.str_clamp(commit.author_name or "", 30 - (#date > 10 and #date or 10)),
-            "NeojjGraphAuthor",
-          },
-          { util.str_min_width(date, 10), "Special" },
-        },
+        virtual_text = build_virtual_text(commit.author_name, date),
       }
     ),
     details,
