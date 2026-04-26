@@ -268,6 +268,28 @@ function M.group_divergent(entries)
   return out
 end
 
+---Append entries from `additional` to `primary`, skipping any whose `commit_id`
+---already appears in `primary`. Mutates and returns `primary` for convenience.
+---Empty/nil commit_ids are skipped on both sides.
+---@param primary NeojjChangeLogEntry[]
+---@param additional NeojjChangeLogEntry[]
+---@return NeojjChangeLogEntry[]
+function M.merge_unique_by_commit_id(primary, additional)
+  local seen = {}
+  for _, e in ipairs(primary) do
+    if e.commit_id and e.commit_id ~= "" then
+      seen[e.commit_id] = true
+    end
+  end
+  for _, e in ipairs(additional) do
+    if e.commit_id and e.commit_id ~= "" and not seen[e.commit_id] then
+      seen[e.commit_id] = true
+      table.insert(primary, e)
+    end
+  end
+  return primary
+end
+
 function M.list(revset, limit)
   local jj = require("neojj.lib.jj")
   local config = require("neojj.config")
@@ -385,18 +407,7 @@ function meta.update(state)
     }, state.worktree_root)
     if sibling_code == 0 and sibling_lines then
       local sibling_entries = parse_enriched_lines(sibling_lines)
-      local seen_commit = {}
-      for _, e in ipairs(entries) do
-        if e.commit_id and e.commit_id ~= "" then
-          seen_commit[e.commit_id] = true
-        end
-      end
-      for _, e in ipairs(sibling_entries) do
-        if e.commit_id and e.commit_id ~= "" and not seen_commit[e.commit_id] then
-          seen_commit[e.commit_id] = true
-          table.insert(entries, e)
-        end
-      end
+      M.merge_unique_by_commit_id(entries, sibling_entries)
     end
   end
 

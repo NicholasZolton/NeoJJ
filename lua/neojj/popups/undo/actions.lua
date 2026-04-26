@@ -7,7 +7,6 @@ local picker_cache = require("neojj.lib.picker_cache")
 function M.undo(_popup)
   local result = jj.cli.undo.call()
   if result and result.code == 0 then
-    picker_cache.invalidate()
     notification.info("Undone", { dismiss = true })
   else
     notification.warn("Undo failed: " .. picker_cache.error_msg(result), { dismiss = true })
@@ -17,7 +16,6 @@ end
 function M.redo(_popup)
   local result = jj.cli.redo.call()
   if result and result.code == 0 then
-    picker_cache.invalidate()
     notification.info("Redone", { dismiss = true })
   else
     notification.warn("Redo failed: " .. picker_cache.error_msg(result), { dismiss = true })
@@ -66,7 +64,6 @@ function M.op_restore(_popup)
 
   local restore_result = jj.cli.op_restore.args(op_id).call()
   if restore_result and restore_result.code == 0 then
-    picker_cache.invalidate()
     notification.info("Restored to operation " .. op_id, { dismiss = true })
   else
     notification.warn("Restore failed: " .. picker_cache.error_msg(restore_result), { dismiss = true })

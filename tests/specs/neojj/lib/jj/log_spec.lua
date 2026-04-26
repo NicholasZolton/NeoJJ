@@ -375,4 +375,55 @@ describe("jj log parser", function()
       assert.are.equal("y", out[3].change_id)
     end)
   end)
+
+  describe("merge_unique_by_commit_id", function()
+    local function entry(overrides)
+      return vim.tbl_extend("force", { change_id = "", commit_id = "", description = "" }, overrides)
+    end
+
+    it("appends entries that aren't already in primary", function()
+      local primary = { entry { commit_id = "a" }, entry { commit_id = "b" } }
+      local additional = { entry { commit_id = "c" } }
+      local result = log.merge_unique_by_commit_id(primary, additional)
+      assert.are.equal(3, #result)
+      assert.are.equal("c", result[3].commit_id)
+    end)
+
+    it("skips entries already present in primary", function()
+      local primary = { entry { commit_id = "a" } }
+      local additional = { entry { commit_id = "a" }, entry { commit_id = "b" } }
+      log.merge_unique_by_commit_id(primary, additional)
+      assert.are.equal(2, #primary)
+      assert.are.equal("b", primary[2].commit_id)
+    end)
+
+    it("skips entries with empty or nil commit_id", function()
+      local primary = { entry { commit_id = "a" } }
+      local additional = {
+        entry { commit_id = "" },
+        { commit_id = nil },
+        entry { commit_id = "b" },
+      }
+      log.merge_unique_by_commit_id(primary, additional)
+      assert.are.equal(2, #primary)
+      assert.are.equal("b", primary[2].commit_id)
+    end)
+
+    it("dedupes within additional too", function()
+      local primary = {}
+      local additional = {
+        entry { commit_id = "x" },
+        entry { commit_id = "x" },
+        entry { commit_id = "y" },
+      }
+      log.merge_unique_by_commit_id(primary, additional)
+      assert.are.equal(2, #primary)
+    end)
+
+    it("returns primary unchanged when additional is empty", function()
+      local primary = { entry { commit_id = "a" } }
+      log.merge_unique_by_commit_id(primary, {})
+      assert.are.equal(1, #primary)
+    end)
+  end)
 end)

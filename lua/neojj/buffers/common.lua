@@ -468,6 +468,26 @@ M.Grid = Component.new(function(props)
   return col(rendered)
 end)
 
+---Abandon a divergent variant. Handles immutable check, abandon call, notification,
+---and refresh. The refresh callback is invoked only on successful abandon.
+---@param item NeojjChangeLogEntry the variant entry (must have commit_id and change_offset)
+---@param refresh fun(): nil callback to refresh whatever buffer hosted the action
+function M.abandon_variant(item, refresh)
+  local notification = require("neojj.lib.notification")
+  local short = string.sub(item.commit_id or "", 1, 8)
+  if item.immutable then
+    notification.warn("Cannot abandon immutable variant " .. short, { dismiss = true })
+    return
+  end
+  local result = jj.cli.abandon.args(item.commit_id).call()
+  if result and result.code == 0 then
+    notification.info("Abandoned variant " .. short, { dismiss = true })
+    refresh()
+  else
+    notification.warn("Failed to abandon variant " .. short, { dismiss = true })
+  end
+end
+
 ---Returns true and shows a notification if the item is a divergent parent.
 ---Callers should early-return when this returns true.
 ---@param item NeojjChangeLogEntry|nil

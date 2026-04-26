@@ -99,7 +99,6 @@ local function fetch_and_rebase(popup, mode_flag, mode_value, desc)
   if #args > 0 then builder = builder.args(unpack(args)) end
   local result = builder.call()
   if result and result.code == 0 then
-    picker_cache.invalidate()
     notification.info(desc, { dismiss = true })
   else
     notification.warn("Rebase onto trunk failed: " .. picker_cache.error_msg(result), { dismiss = true })
