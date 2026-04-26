@@ -349,6 +349,15 @@ describe("jj log parser", function()
       assert.is_true(out[1].current_working_copy)
     end)
 
+    it("sets immutable on parent if any variant is immutable", function()
+      local input = {
+        entry { change_id = "x", commit_id = "a", divergent = true },
+        entry { change_id = "x", commit_id = "b", divergent = true, immutable = true },
+      }
+      local out = log.group_divergent(input)
+      assert.is_true(out[1].immutable)
+    end)
+
     it("drops graph-only connector lines that follow a removed variant", function()
       local input = {
         entry { change_id = "x", commit_id = "a", divergent = true, graph = "○  " },
