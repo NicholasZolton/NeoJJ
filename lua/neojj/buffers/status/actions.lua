@@ -653,6 +653,17 @@ end
 
 ---@param self StatusBuffer
 ---@return fun(): nil
+M.n_open_variant_diff = function(self)
+  return function()
+    local ctx = cursor_context(self)
+    local item = ctx.item
+    if not (item and item.change_offset ~= nil) then return end
+    require("neojj.buffers.commit_view").new(item.commit_id):open()
+  end
+end
+
+---@param self StatusBuffer
+---@return fun(): nil
 M.n_tab_open = function(self)
   return function()
     local item = self.buffer.ui:get_item_under_cursor()
