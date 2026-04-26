@@ -149,9 +149,106 @@ local function short_id(id)
   return string.sub(id, 1, 12)
 end
 
+---@param variant table
+local function render_variant_row(variant)
+  local commit_short = short_id(variant.commit_id)
+  local subject = vim.split(variant.description or "", "\n")[1] or ""
+  local date = variant.author_date or ""
+  if #date > 16 then
+    date = string.sub(date, 1, 16)
+  end
+
+  local id_highlight = variant.current_working_copy and "NeojjBranchHead" or "NeojjObjectId"
+
+  local markers = {}
+  if variant.conflict then
+    table.insert(markers, text("conflict ", { highlight = "NeojjDiffDeletions" }))
+  end
+  if variant.empty then
+    table.insert(markers, text("empty ", { highlight = "NeojjSubtleText" }))
+  end
+  if variant.immutable then
+    table.insert(markers, text("immutable ", { highlight = "NeojjSubtleText" }))
+  end
+
+  local children = {
+    text("  "), -- indent
+    text("/" .. tostring(variant.change_offset), { highlight = "NeojjDivergent" }),
+    text("  "),
+    text(commit_short, { highlight = id_highlight }),
+    text("  "),
+  }
+  for _, m in ipairs(markers) do
+    table.insert(children, m)
+  end
+  table.insert(children, text(subject))
+
+  return col.tag("commit_variant")({
+    row(children, {
+      virtual_text = {
+        { " ", "Constant" },
+        { util.str_clamp(variant.author_name or "", 30 - (#date > 10 and #date or 10)), "NeojjGraphAuthor" },
+        { util.str_min_width(date, 10), "Special" },
+      },
+    }),
+  }, {
+    item = variant,
+    oid = variant.commit_id,
+    foldable = false,
+  })
+end
+
 ---@param commit NeojjChangeLogEntry
 ---@param args table
 M.CommitEntry = Component.new(function(commit, _remotes, args)
+  -- Divergent parent path: render parent line + indented variants
+  if commit.variants then
+    local change_short = short_id(commit.change_id)
+    local graph = args.graph and build_graph(commit.graph or "") or { text("") }
+
+    local ref = {}
+    if args.decorate and commit.bookmarks and #commit.bookmarks > 0 then
+      for _, bm in ipairs(commit.bookmarks) do
+        table.insert(ref, text(bm, { highlight = "NeojjBranch" }))
+        table.insert(ref, text(" "))
+      end
+    end
+
+    local id_highlight = commit.current_working_copy and "NeojjBranchHead" or "NeojjObjectId"
+
+    local parent_children = {
+      text(change_short, { highlight = id_highlight }),
+      text(" "),
+    }
+    for _, g in ipairs(graph) do
+      table.insert(parent_children, g)
+    end
+    table.insert(parent_children, text(" "))
+    table.insert(parent_children, text("<divergent>", { highlight = "NeojjDivergent" }))
+    table.insert(parent_children, text(" "))
+    if commit.immutable then
+      table.insert(parent_children, text("immutable ", { highlight = "NeojjSubtleText" }))
+    end
+    for _, r in ipairs(ref) do
+      table.insert(parent_children, r)
+    end
+
+    local variant_rows = {}
+    for _, v in ipairs(commit.variants) do
+      table.insert(variant_rows, render_variant_row(v))
+    end
+
+    return col.tag("divergent_parent")(
+      vim.list_extend({ row(parent_children) }, variant_rows),
+      {
+        item = commit,
+        oid = commit.change_id,
+        foldable = false,
+      }
+    )
+  end
+
+  -- Non-divergent path: original rendering
   local ref = {}
 
   -- Render bookmarks as decorations
