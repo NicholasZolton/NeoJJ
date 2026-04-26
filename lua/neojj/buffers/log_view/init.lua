@@ -354,11 +354,13 @@ function M:open()
             vim.cmd("norm! j")
           end
 
-          while self.buffer:get_current_line()[1]:sub(1, 1) == " " do
-            if vim.fn.line(".") == vim.fn.line("$") then
-              break
-            end
-
+          while true do
+            local line = self.buffer:get_current_line()[1]
+            -- Stop on: the original commit lines (start with non-space) AND on variant rows
+            -- (start with spaces but contain a '/' followed by a digit after the indent).
+            local is_landable = line:sub(1, 1) ~= " " or line:match("^%s+/%d")
+            if is_landable then break end
+            if vim.fn.line(".") == vim.fn.line("$") then break end
             vim.cmd("norm! j")
           end
         end,
@@ -369,11 +371,11 @@ function M:open()
             vim.cmd("norm! k")
           end
 
-          while self.buffer:get_current_line()[1]:sub(1, 1) == " " do
-            if vim.fn.line(".") == 1 then
-              break
-            end
-
+          while true do
+            local line = self.buffer:get_current_line()[1]
+            local is_landable = line:sub(1, 1) ~= " " or line:match("^%s+/%d")
+            if is_landable then break end
+            if vim.fn.line(".") == 1 then break end
             vim.cmd("norm! k")
           end
         end,
