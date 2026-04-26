@@ -461,4 +461,24 @@ M.Grid = Component.new(function(props)
   return col(rendered)
 end)
 
+---Returns true and shows a notification if the item is a divergent parent.
+---Callers should early-return when this returns true.
+---@param item NeojjChangeLogEntry|nil
+---@return boolean blocked
+function M.divergent_guard(item)
+  if item and item.variants then
+    local short = string.sub(item.change_id or "", 1, 8)
+    local notification = require("neojj.lib.notification")
+    notification.warn(
+      string.format(
+        "Change %s is divergent — move cursor to a variant line (/0, /1, ...) to operate on a specific commit.",
+        short
+      ),
+      { dismiss = true }
+    )
+    return true
+  end
+  return false
+end
+
 return M
