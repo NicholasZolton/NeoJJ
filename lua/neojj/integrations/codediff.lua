@@ -1,7 +1,47 @@
 local M = {}
 
-local git = require("neojj.lib.git")
 local jj = require("neojj.lib.jj")
+local jj_backend = require("neojj.integrations.jj_backend")
+
+-- Non-colocated jj workspaces have no `.git`, so codediff's git subprocess
+-- calls (which use cwd=<workspace>) fail. Wrap each codediff git function so
+-- that `GIT_DIR`/`GIT_WORK_TREE` are injected around the synchronous spawn —
+-- `vim.system` copies env at spawn time, so restoring env after the call
+-- returns is safe even though the subprocess itself is async.
+---@param codediff_git table
+---@param git_dir string
+---@param workspace string
+---@return table wrapped Proxy exposing the same API with env-injected git fns
+local function wrap_codediff_git_for_jj(codediff_git, git_dir, workspace)
+  local wrapped = setmetatable({}, { __index = codediff_git })
+  -- `get_relative_path` is pure path-manipulation; the rest shell out to git.
+  local git_callers = {
+    "get_status",
+    "get_diff_revisions",
+    "resolve_revision",
+    "get_merge_base",
+    "get_git_root",
+    "get_git_dir",
+    "get_file_content",
+  }
+  for _, name in ipairs(git_callers) do
+    local orig = codediff_git[name]
+    if type(orig) == "function" then
+      wrapped[name] = function(...)
+        local prev_dir = vim.env.GIT_DIR
+        local prev_wt = vim.env.GIT_WORK_TREE
+        vim.env.GIT_DIR = git_dir
+        vim.env.GIT_WORK_TREE = workspace
+        local ok, ret = pcall(orig, ...)
+        vim.env.GIT_DIR = prev_dir
+        vim.env.GIT_WORK_TREE = prev_wt
+        if not ok then error(ret) end
+        return ret
+      end
+    end
+  end
+  return wrapped
+end
 
 --- Resolve a jj change ID to a git commit hash (only if it looks like a jj ID)
 local function resolve_jj_to_git(ref)
@@ -307,10 +347,20 @@ function M.open(section_name, item_name, opts)
 
   setup_on_close(opts)
 
-  local git_root = git.repo.worktree_root
+  local git_root = jj.repo.worktree_root
   if type(git_root) ~= "string" or git_root == "" then
     notify_error("git root is unavailable")
     return
+  end
+
+  -- In a non-colocated jj workspace, git can't find `.git`. Route codediff's
+  -- git calls through jj's backing store via GIT_DIR/GIT_WORK_TREE env vars.
+  local workspace = jj_backend.find_jj_workspace(git_root)
+  if workspace and vim.fn.isdirectory(workspace .. "/.git") == 0 then
+    local backing = jj_backend.jj_backing_git_dir(workspace)
+    if backing then
+      codediff_git = wrap_codediff_git_for_jj(codediff_git, backing, workspace)
+    end
   end
 
   -- Map Neojj sections to codediff operations
