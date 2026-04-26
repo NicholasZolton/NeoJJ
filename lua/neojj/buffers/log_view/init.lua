@@ -1,5 +1,6 @@
 local Buffer = require("neojj.lib.buffer")
 local ui = require("neojj.buffers.log_view.ui")
+local common = require("neojj.buffers.common")
 local config = require("neojj.config")
 local popups = require("neojj.popups")
 local status_maps = require("neojj.config").get_reversed_status_maps()
@@ -85,16 +86,34 @@ function M:open()
     status_column = not config.values.disable_signs and "" or nil,
     mappings = {
       v = {
-        [popups.mapping_for("CommitPopup")] = popups.open("commit", function(p)
-          p { commit = self.buffer.ui:get_commit_under_cursor() }
-        end),
+        [popups.mapping_for("CommitPopup")] = function()
+          local item = self.buffer.ui:get_commit_item_under_cursor()
+          if common.divergent_guard(item) then
+            return
+          end
+          popups.open("commit", function(p)
+            p { commit = self.buffer.ui:get_commit_under_cursor() }
+          end)()
+        end,
         [popups.mapping_for("FetchPopup")] = popups.open("fetch"),
-        [popups.mapping_for("PushPopup")] = popups.open("push", function(p)
-          p { commit = self.buffer.ui:get_commit_under_cursor() }
-        end),
-        [popups.mapping_for("RebasePopup")] = popups.open("rebase", function(p)
-          p { commit = self.buffer.ui:get_commit_under_cursor() }
-        end),
+        [popups.mapping_for("PushPopup")] = function()
+          local item = self.buffer.ui:get_commit_item_under_cursor()
+          if common.divergent_guard(item) then
+            return
+          end
+          popups.open("push", function(p)
+            p { commit = self.buffer.ui:get_commit_under_cursor() }
+          end)()
+        end,
+        [popups.mapping_for("RebasePopup")] = function()
+          local item = self.buffer.ui:get_commit_item_under_cursor()
+          if common.divergent_guard(item) then
+            return
+          end
+          popups.open("rebase", function(p)
+            p { commit = self.buffer.ui:get_commit_under_cursor() }
+          end)()
+        end,
         [popups.mapping_for("RemotePopup")] = popups.open("remote"),
         [popups.mapping_for("DiffPopup")] = popups.open("diff", function(p)
           local items = self.buffer.ui:get_ordered_commits_in_selection()
@@ -103,39 +122,87 @@ function M:open()
             item = { name = items },
           }
         end),
-        [popups.mapping_for("BookmarkPopup")] = popups.open("bookmark", function(p)
-          p { commit = self.buffer.ui:get_commit_under_cursor() }
-        end),
-        [popups.mapping_for("SquashPopup")] = popups.open("squash", function(p)
-          p { commit = self.buffer.ui:get_commit_under_cursor() }
-        end),
+        [popups.mapping_for("BookmarkPopup")] = function()
+          local item = self.buffer.ui:get_commit_item_under_cursor()
+          if common.divergent_guard(item) then
+            return
+          end
+          popups.open("bookmark", function(p)
+            p { commit = self.buffer.ui:get_commit_under_cursor() }
+          end)()
+        end,
+        [popups.mapping_for("SquashPopup")] = function()
+          local item = self.buffer.ui:get_commit_item_under_cursor()
+          if common.divergent_guard(item) then
+            return
+          end
+          popups.open("squash", function(p)
+            p { commit = self.buffer.ui:get_commit_under_cursor() }
+          end)()
+        end,
       },
       n = {
-        [popups.mapping_for("CommitPopup")] = popups.open("commit", function(p)
-          p { commit = self.buffer.ui:get_commit_under_cursor() }
-        end),
+        [popups.mapping_for("CommitPopup")] = function()
+          local item = self.buffer.ui:get_commit_item_under_cursor()
+          if common.divergent_guard(item) then
+            return
+          end
+          popups.open("commit", function(p)
+            p { commit = self.buffer.ui:get_commit_under_cursor() }
+          end)()
+        end,
         [popups.mapping_for("FetchPopup")] = popups.open("fetch"),
-        [popups.mapping_for("PushPopup")] = popups.open("push", function(p)
-          p { commit = self.buffer.ui:get_commit_under_cursor() }
-        end),
-        [popups.mapping_for("RebasePopup")] = popups.open("rebase", function(p)
-          p { commit = self.buffer.ui:get_commit_under_cursor() }
-        end),
+        [popups.mapping_for("PushPopup")] = function()
+          local item = self.buffer.ui:get_commit_item_under_cursor()
+          if common.divergent_guard(item) then
+            return
+          end
+          popups.open("push", function(p)
+            p { commit = self.buffer.ui:get_commit_under_cursor() }
+          end)()
+        end,
+        [popups.mapping_for("RebasePopup")] = function()
+          local item = self.buffer.ui:get_commit_item_under_cursor()
+          if common.divergent_guard(item) then
+            return
+          end
+          popups.open("rebase", function(p)
+            p { commit = self.buffer.ui:get_commit_under_cursor() }
+          end)()
+        end,
         [popups.mapping_for("RemotePopup")] = popups.open("remote"),
-        [popups.mapping_for("DiffPopup")] = popups.open("diff", function(p)
-          local item = self.buffer.ui:get_commit_under_cursor()
-          p {
-            section = { name = "log" },
-            item = { name = item },
-          }
-        end),
+        [popups.mapping_for("DiffPopup")] = function()
+          local item = self.buffer.ui:get_commit_item_under_cursor()
+          if common.divergent_guard(item) then
+            return
+          end
+          popups.open("diff", function(p)
+            local commit = self.buffer.ui:get_commit_under_cursor()
+            p {
+              section = { name = "log" },
+              item = { name = commit },
+            }
+          end)()
+        end,
         [popups.mapping_for("LogPopup")] = popups.open("log"),
-        [popups.mapping_for("BookmarkPopup")] = popups.open("bookmark", function(p)
-          p { commit = self.buffer.ui:get_commit_under_cursor() }
-        end),
-        [popups.mapping_for("SquashPopup")] = popups.open("squash", function(p)
-          p { commit = self.buffer.ui:get_commit_under_cursor() }
-        end),
+        [popups.mapping_for("BookmarkPopup")] = function()
+          local item = self.buffer.ui:get_commit_item_under_cursor()
+          if common.divergent_guard(item) then
+            return
+          end
+          popups.open("bookmark", function(p)
+            p { commit = self.buffer.ui:get_commit_under_cursor() }
+          end)()
+        end,
+        [popups.mapping_for("SquashPopup")] = function()
+          local item = self.buffer.ui:get_commit_item_under_cursor()
+          if common.divergent_guard(item) then
+            return
+          end
+          popups.open("squash", function(p)
+            p { commit = self.buffer.ui:get_commit_under_cursor() }
+          end)()
+        end,
         [status_maps["YankSelected"]] = function()
           local yank = self.buffer.ui:get_commit_under_cursor()
           if yank then
@@ -149,12 +216,20 @@ function M:open()
         ["<esc>"] = require("neojj.lib.ui.helpers").close_topmost(self),
         [status_maps["Close"]] = require("neojj.lib.ui.helpers").close_topmost(self),
         [status_maps["GoToFile"]] = function()
+          local item = self.buffer.ui:get_commit_item_under_cursor()
+          if common.divergent_guard(item) then
+            return
+          end
           local commit = self.buffer.ui:get_commit_under_cursor()
           if commit then
             CommitViewBuffer.new(commit, self.files):open()
           end
         end,
         [status_maps["PeekFile"]] = function()
+          local item = self.buffer.ui:get_commit_item_under_cursor()
+          if common.divergent_guard(item) then
+            return
+          end
           local commit = self.buffer.ui:get_commit_under_cursor()
           if commit then
             local buffer = CommitViewBuffer.new(commit, self.files):open()
@@ -164,12 +239,20 @@ function M:open()
           end
         end,
         [status_maps["OpenOrScrollDown"]] = function()
+          local item = self.buffer.ui:get_commit_item_under_cursor()
+          if common.divergent_guard(item) then
+            return
+          end
           local commit = self.buffer.ui:get_commit_under_cursor()
           if commit then
             CommitViewBuffer.open_or_scroll_down(commit, self.files)
           end
         end,
         [status_maps["OpenOrScrollUp"]] = function()
+          local item = self.buffer.ui:get_commit_item_under_cursor()
+          if common.divergent_guard(item) then
+            return
+          end
           local commit = self.buffer.ui:get_commit_under_cursor()
           if commit then
             CommitViewBuffer.open_or_scroll_up(commit, self.files)

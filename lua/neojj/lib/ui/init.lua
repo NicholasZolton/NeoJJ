@@ -292,7 +292,7 @@ function Ui:get_ordered_commits_in_selection()
   local commits = {}
   for i = start, stop, increment do
     local component = self:_find_component_by_index(i, function(node)
-      return node.options.oid ~= nil
+      return node.options.oid ~= nil and not (node.options.item and node.options.item.variants)
     end)
 
     if component then
