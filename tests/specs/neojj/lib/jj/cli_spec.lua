@@ -163,6 +163,12 @@ describe("jj cli builder", function()
       local str = tostring(cli.git_push.dry_run)
       assert.truthy(str:find("%-%-dry%-run"))
     end)
+
+    it("includes --remote option", function()
+      local str = tostring(cli.git_push.bookmark("main").remote("origin"))
+      assert.truthy(str:find("%-%-remote"))
+      assert.truthy(str:find("origin"))
+    end)
   end)
 
   describe("args / files helpers", function()
