@@ -537,8 +537,6 @@ M.n_context_delete = function(self)
       end
       local result = jj.cli.abandon.args(item.change_id).call()
       if result and result.code == 0 then
-        local picker_cache = require("neojj.lib.picker_cache")
-        picker_cache.remove_revision(item.change_id)
         notification.info("Abandoned " .. short, { dismiss = true })
         self:dispatch_refresh(nil, "n_context_delete")
       else
@@ -555,8 +553,6 @@ M.n_context_delete = function(self)
         end
         local result = jj.cli.bookmark_set.args(item.name, "-r", item.name .. "@origin").call()
         if result and result.code == 0 then
-          local picker_cache = require("neojj.lib.picker_cache")
-          picker_cache.invalidate_bookmarks()
           notification.info("Restored bookmark " .. item.name, { dismiss = true })
           self:dispatch_refresh(nil, "n_context_delete")
         else
@@ -569,8 +565,6 @@ M.n_context_delete = function(self)
       end
       local result = jj.cli.bookmark_delete.args(item.name).call()
       if result and result.code == 0 then
-        local picker_cache = require("neojj.lib.picker_cache")
-        picker_cache.invalidate_bookmarks()
         notification.info("Deleted bookmark " .. item.name, { dismiss = true })
         self:dispatch_refresh(nil, "n_context_delete")
       else
@@ -916,8 +910,6 @@ M.n_forget_bookmark = function(self)
       end
       local result = jj.cli.bookmark_track.args(ref).call()
       if result and result.code == 0 then
-        local picker_cache = require("neojj.lib.picker_cache")
-        picker_cache.invalidate_bookmarks()
         notification.info("Tracking " .. ref, { dismiss = true })
         self:dispatch_refresh(nil, "n_forget_bookmark")
       else
@@ -932,8 +924,6 @@ M.n_forget_bookmark = function(self)
 
     local result = jj.cli.bookmark_forget.args(item.name).call()
     if result and result.code == 0 then
-      local picker_cache = require("neojj.lib.picker_cache")
-      picker_cache.invalidate_bookmarks()
       notification.info("Forgot bookmark " .. item.name, { dismiss = true })
       self:dispatch_refresh(nil, "n_forget_bookmark")
     else
@@ -960,8 +950,6 @@ M.n_new_change_on = function(self)
       local ref = item.name .. "@" .. item.remote
       local track_result = jj.cli.bookmark_track.args(ref).call()
       if track_result and track_result.code == 0 then
-        local picker_cache = require("neojj.lib.picker_cache")
-        picker_cache.invalidate_bookmarks()
         notification.info("Tracked " .. ref, { dismiss = true })
       end
     end
@@ -969,8 +957,6 @@ M.n_new_change_on = function(self)
     local short = change_id:sub(1, 8)
     local result = jj.cli.new.revisions(change_id).call()
     if result and result.code == 0 then
-      local picker_cache = require("neojj.lib.picker_cache")
-      picker_cache.invalidate_revisions()
       notification.info("Created new change on " .. short, { dismiss = true })
       self:dispatch_refresh(nil, "n_new_change_on")
     else
@@ -994,8 +980,6 @@ M.n_new_change_before = function(self)
     local short = change_id:sub(1, 8)
     local result = jj.cli.new.insert_before.revisions(change_id).call()
     if result and result.code == 0 then
-      local picker_cache = require("neojj.lib.picker_cache")
-      picker_cache.invalidate_revisions()
       notification.info("Created new change before " .. short, { dismiss = true })
       self:dispatch_refresh(nil, "n_new_change_before")
     else

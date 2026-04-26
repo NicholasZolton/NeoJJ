@@ -33,7 +33,6 @@ function M.new_change(popup)
   end
   local result = builder.call()
   if result and result.code == 0 then
-    picker_cache.invalidate_revisions()
     notification.info("Created new change", { dismiss = true })
   else
     notification.warn("Failed to create new change: " .. picker_cache.error_msg(result), { dismiss = true })
@@ -110,7 +109,6 @@ function M.new_change_on(popup)
   end
   local result = builder.call()
   if result and result.code == 0 then
-    picker_cache.invalidate_revisions()
     notification.info("Created new change on " .. rev, { dismiss = true })
   else
     notification.warn("Failed to create change: " .. picker_cache.error_msg(result), { dismiss = true })
@@ -137,7 +135,6 @@ function M.new_change_on_with_bookmark(popup)
   end
 
   local moved, failed = advance_bookmarks()
-  picker_cache.invalidate_revisions()
   if #failed > 0 then
     notification.warn("Failed to move bookmarks: " .. table.concat(failed, "; "), { dismiss = true })
   elseif #moved > 0 then
@@ -148,7 +145,7 @@ function M.new_change_on_with_bookmark(popup)
 end
 
 function M.new_change_on_bookmark(popup)
-  local options = picker_cache.get_all_bookmarks()
+  local options = picker_cache.get_local_bookmarks_with_labels()
   local selection = FuzzyFinderBuffer.new(options):open_async { prompt_prefix = "New change on bookmark" }
   local bookmark = picker_cache.parse_selection(selection)
   if not bookmark then
@@ -162,7 +159,6 @@ function M.new_change_on_bookmark(popup)
   end
   local result = builder.call()
   if result and result.code == 0 then
-    picker_cache.invalidate_revisions()
     notification.info("Created new change on " .. bookmark, { dismiss = true })
   else
     notification.warn("Failed to create change: " .. picker_cache.error_msg(result), { dismiss = true })
@@ -170,7 +166,7 @@ function M.new_change_on_bookmark(popup)
 end
 
 function M.new_change_on_bookmark_with_bookmark(popup)
-  local options = picker_cache.get_all_bookmarks()
+  local options = picker_cache.get_local_bookmarks_with_labels()
   local selection = FuzzyFinderBuffer.new(options):open_async { prompt_prefix = "New change on bookmark" }
   local bookmark = picker_cache.parse_selection(selection)
   if not bookmark then
@@ -189,7 +185,6 @@ function M.new_change_on_bookmark_with_bookmark(popup)
   end
 
   local moved, failed = advance_bookmarks()
-  picker_cache.invalidate_revisions()
   if #failed > 0 then
     notification.warn("Failed to move bookmarks: " .. table.concat(failed, "; "), { dismiss = true })
   elseif #moved > 0 then
@@ -214,7 +209,6 @@ function M.new_change_before(popup)
   end
   local result = builder.call()
   if result and result.code == 0 then
-    picker_cache.invalidate_revisions()
     notification.info("Created new change before " .. rev, { dismiss = true })
   else
     notification.warn("Failed to create change: " .. picker_cache.error_msg(result), { dismiss = true })
@@ -234,7 +228,6 @@ function M.new_change_with_bookmark(popup)
   end
 
   local moved, failed = advance_bookmarks()
-  picker_cache.invalidate_revisions()
   if #failed > 0 then
     notification.warn("Failed to move bookmarks: " .. table.concat(failed, "; "), { dismiss = true })
   elseif #moved > 0 then
@@ -262,7 +255,6 @@ function M.commit_with_bookmark(popup)
 
   if code == 0 then
     local moved, failed = advance_bookmarks()
-    picker_cache.invalidate_revisions()
     if #failed > 0 then
       notification.warn("Failed to move bookmarks: " .. table.concat(failed, "; "), { dismiss = true })
     elseif #moved > 0 then
@@ -301,7 +293,6 @@ function M.describe_with_message(popup)
   end
   local result = builder.call()
   if result and result.code == 0 then
-    picker_cache.invalidate_revisions()
     notification.info("Description updated", { dismiss = true })
   else
     notification.warn("Describe failed: " .. picker_cache.error_msg(result), { dismiss = true })
@@ -334,7 +325,7 @@ function M.edit_change(_popup)
 end
 
 function M.edit_bookmark(_popup)
-  local bookmarks = picker_cache.get_all_bookmarks()
+  local bookmarks = picker_cache.get_local_bookmarks_with_labels()
   if #bookmarks == 0 then
     notification.warn("No bookmarks found", { dismiss = true })
     return
@@ -381,7 +372,6 @@ function M.abandon(_popup)
 
   local result = jj.cli.abandon.args(change_id).call()
   if result and result.code == 0 then
-    picker_cache.remove_revision(change_id)
     notification.info("Abandoned " .. change_id, { dismiss = true })
   else
     notification.warn("Failed to abandon change: " .. picker_cache.error_msg(result), { dismiss = true })
@@ -407,7 +397,6 @@ function M.duplicate(_popup)
 
   local result = jj.cli.duplicate.args(change_id).call()
   if result and result.code == 0 then
-    picker_cache.invalidate_revisions()
     notification.info("Duplicated " .. change_id, { dismiss = true })
   else
     notification.warn("Failed to duplicate change: " .. picker_cache.error_msg(result), { dismiss = true })
@@ -433,7 +422,6 @@ function M.revert(_popup)
 
   local result = jj.cli.revert.args(change_id).call()
   if result and result.code == 0 then
-    picker_cache.invalidate_revisions()
     notification.info("Reverted " .. change_id, { dismiss = true })
   else
     notification.warn("Failed to revert change: " .. picker_cache.error_msg(result), { dismiss = true })

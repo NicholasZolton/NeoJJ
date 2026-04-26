@@ -216,6 +216,7 @@ end
 ---Wrapped in vim.schedule to avoid blocking the caller's context.
 function Repo:dispatch_refresh(opts)
   vim.schedule(function()
+    require("neojj.lib.picker_cache").invalidate()
     self:refresh(opts)
   end)
 end
