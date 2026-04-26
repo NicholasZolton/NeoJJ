@@ -218,6 +218,26 @@ function M:open()
           if not (item and item.change_offset ~= nil) then return end
           CommitViewBuffer.new(item.commit_id, self.files):open()
         end,
+        ["x"] = function()
+          local item = self.buffer.ui:get_commit_item_under_cursor()
+          if not (item and item.change_offset ~= nil) then return end
+          local jj = require("neojj.lib.jj")
+          local notification = require("neojj.lib.notification")
+          local short = string.sub(item.commit_id or "", 1, 8)
+          local result = jj.cli.abandon.args(item.commit_id).call()
+          if result and result.code == 0 then
+            notification.info("Abandoned variant " .. short, { dismiss = true })
+            -- Refresh the log view
+            a.run(function()
+              local permit = self.refresh_lock:acquire()
+              self.commits = self.fetch_func(0)
+              self.buffer.ui:render(unpack(ui.View(self.commits, self.remotes, self.internal_args)))
+              permit:forget()
+            end)
+          else
+            notification.warn("Failed to abandon " .. short, { dismiss = true })
+          end
+        end,
         ["<esc>"] = require("neojj.lib.ui.helpers").close_topmost(self),
         [status_maps["Close"]] = require("neojj.lib.ui.helpers").close_topmost(self),
         [status_maps["GoToFile"]] = function()
