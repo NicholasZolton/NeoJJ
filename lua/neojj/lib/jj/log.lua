@@ -189,6 +189,38 @@ function M.list(revset, limit)
   return parse_enriched_lines(result.stdout)
 end
 
+---Parse a single line of `jj log -T 'json(self) ++ if(divergent, "\tdivergent", "")'` output.
+---@param line string
+---@return NeojjChangeLogEntry
+function M.parse_with_graph_line(line)
+  local json_start = line:find("{")
+  if not json_start then
+    return { change_id = nil, graph = line }
+  end
+  local graph = line:sub(1, json_start - 1)
+  local rest = line:sub(json_start)
+
+  -- Find the LAST '}' so we don't mistakenly split inside a JSON string.
+  local last_brace = rest:match("^.*()}")
+  if not last_brace then
+    return { change_id = nil, graph = line }
+  end
+  local json_str = rest:sub(1, last_brace)
+  local trailing = rest:sub(last_brace + 1)
+
+  local ok, obj = pcall(vim.json.decode, json_str)
+  if not ok or not obj then
+    return { change_id = nil, graph = line }
+  end
+
+  local entry = M.json_to_entry(obj)
+  entry.graph = graph
+  entry.divergent = trailing:find("divergent", 1, true) ~= nil
+  entry.immutable = graph:match("◆") ~= nil
+  entry.current_working_copy = graph:match("@") ~= nil
+  return entry
+end
+
 ---Fetch changes with graph characters from `jj log -T 'json(self)'` (with graph).
 ---Each output line is either graph-only (connectors) or graph + JSON.
 ---@param revset? string Revset expression
@@ -201,7 +233,7 @@ function M.list_with_graph(revset, limit)
   revset = revset or ("ancestors(@, " .. limit .. ")")
 
   local result = jj.cli.log
-    .template("json(self)")
+    .template('json(self) ++ if(divergent, "\\tdivergent", "")')
     .revisions(revset)
     .call { hidden = true, trim = true }
 
@@ -211,27 +243,8 @@ function M.list_with_graph(revset, limit)
 
   local entries = {}
   for _, line in ipairs(result.stdout) do
-    local json_start = line:find("{")
-    if json_start then
-      local graph = line:sub(1, json_start - 1)
-      local json_str = line:sub(json_start)
-      local ok, obj = pcall(vim.json.decode, json_str)
-      if ok and obj then
-        local entry = M.json_to_entry(obj)
-        entry.graph = graph
-        entry.immutable = graph:match("◆") ~= nil
-        entry.current_working_copy = graph:match("@") ~= nil
-        table.insert(entries, entry)
-      end
-    else
-      -- Graph-only line (connectors like │, ╭, ~, etc.)
-      table.insert(entries, {
-        change_id = nil,
-        graph = line,
-      })
-    end
+    table.insert(entries, M.parse_with_graph_line(line))
   end
-
   return entries
 end
 

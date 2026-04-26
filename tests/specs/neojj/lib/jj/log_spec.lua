@@ -218,4 +218,25 @@ describe("jj log parser", function()
       assert.are.same({ "main" }, entries[1].bookmarks)
     end)
   end)
+
+  describe("list_with_graph parsing helper", function()
+    it("parses divergent flag from trailing tab-tag", function()
+      local line = '○  {"change_id":"abc","commit_id":"123","description":"x","author":{"name":"","email":"","timestamp":""}}\tdivergent'
+      local entry = log.parse_with_graph_line(line)
+      assert.is_true(entry.divergent)
+      assert.are.equal("abc", entry.change_id)
+    end)
+
+    it("defaults divergent to false when no tab-tag", function()
+      local line = '○  {"change_id":"abc","commit_id":"123","description":"x","author":{"name":"","email":"","timestamp":""}}'
+      local entry = log.parse_with_graph_line(line)
+      assert.is_false(entry.divergent)
+    end)
+
+    it("returns graph-only entry for connector lines", function()
+      local entry = log.parse_with_graph_line("│ ╮")
+      assert.is_nil(entry.change_id)
+      assert.are.equal("│ ╮", entry.graph)
+    end)
+  end)
 end)
