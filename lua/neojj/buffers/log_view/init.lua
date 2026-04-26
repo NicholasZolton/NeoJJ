@@ -213,6 +213,11 @@ function M:open()
             vim.cmd("echo ''")
           end
         end,
+        ["dd"] = function()
+          local item = self.buffer.ui:get_commit_item_under_cursor()
+          if not (item and item.change_offset ~= nil) then return end
+          CommitViewBuffer.new(item.commit_id, self.files):open()
+        end,
         ["<esc>"] = require("neojj.lib.ui.helpers").close_topmost(self),
         [status_maps["Close"]] = require("neojj.lib.ui.helpers").close_topmost(self),
         [status_maps["GoToFile"]] = function()
