@@ -35,7 +35,9 @@ local function wrap_codediff_git_for_jj(codediff_git, git_dir, workspace)
         local ok, ret = pcall(orig, ...)
         vim.env.GIT_DIR = prev_dir
         vim.env.GIT_WORK_TREE = prev_wt
-        if not ok then error(ret) end
+        if not ok then
+          error(ret)
+        end
         return ret
       end
     end
@@ -49,14 +51,12 @@ local function resolve_jj_to_git(ref)
     return ref
   end
 
-  local result = jj.cli.log
-    .args("-r", ref, "--no-graph", "-T", "commit_id")
-    .call()
+  local result = jj.cli.log.args("-r", ref, "--no-graph", "-T", "commit_id").call()
   if result and result.code == 0 and result.stdout then
-    local hash = type(result.stdout) == "table"
-      and result.stdout[1]
-      or result.stdout
-    if hash then return vim.trim(hash) end
+    local hash = type(result.stdout) == "table" and result.stdout[1] or result.stdout
+    if hash then
+      return vim.trim(hash)
+    end
   end
   return ref
 end

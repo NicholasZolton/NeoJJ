@@ -22,8 +22,9 @@ function M.View(commits, remotes, args)
       return Commit(commit, remotes, args)
     elseif args.graph then
       local first_commit = commits[1]
-      local padding = first_commit and first_commit.change_id
-        and #string.sub(first_commit.change_id, 1, 12) + 1
+      local padding = first_commit
+          and first_commit.change_id
+          and #string.sub(first_commit.change_id, 1, 12) + 1
         or 13
       return Graph(commit, padding)
     end

@@ -17,7 +17,9 @@ local jj_backend = require("neojj.integrations.jj_backend")
 
 local function install_adapter_patch()
   local vcs = require("diffview.vcs")
-  if vcs.__neojj_patched then return end
+  if vcs.__neojj_patched then
+    return
+  end
   vcs.__neojj_patched = true
 
   local GitAdapter = require("diffview.vcs.adapters.git").GitAdapter
@@ -31,18 +33,20 @@ local function install_adapter_patch()
     local path_args = (opt.cmd_ctx and opt.cmd_ctx.path_args) or {}
     local cpath = opt.cmd_ctx and opt.cmd_ctx.cpath
 
-    local adapter = GitAdapter({
+    local adapter = GitAdapter {
       toplevel = workspace,
       path_args = path_args,
       cpath = cpath,
-    })
+    }
     adapter.ctx.toplevel = workspace
     adapter.ctx.dir = git_dir
 
     local wrapped = vim.list_extend({}, dv_config.get_config().git_cmd)
     table.insert(wrapped, "--git-dir=" .. git_dir)
     table.insert(wrapped, "--work-tree=" .. workspace)
-    adapter.get_command = function() return wrapped end
+    adapter.get_command = function()
+      return wrapped
+    end
 
     return adapter
   end
@@ -50,7 +54,9 @@ local function install_adapter_patch()
   function vcs.get_adapter(opt)
     opt = opt or {}
     local err, adapter = orig_get_adapter(opt)
-    if not err then return err, adapter end
+    if not err then
+      return err, adapter
+    end
 
     local candidates = {}
     if opt.top_indicators then
@@ -84,14 +90,12 @@ local function resolve_jj_to_git(ref)
     return ref
   end
 
-  local result = jj.cli.log
-    .args("-r", ref, "--no-graph", "-T", "commit_id")
-    .call()
+  local result = jj.cli.log.args("-r", ref, "--no-graph", "-T", "commit_id").call()
   if result and result.code == 0 and result.stdout then
-    local hash = type(result.stdout) == "table"
-      and result.stdout[1]
-      or result.stdout
-    if hash then return vim.trim(hash) end
+    local hash = type(result.stdout) == "table" and result.stdout[1] or result.stdout
+    if hash then
+      return vim.trim(hash)
+    end
   end
   return ref -- fallback to original ref
 end
@@ -143,7 +147,8 @@ local function get_local_diff_view(_, item_name, opts)
     get_file_data = function(_, path, side)
       if side == "left" then
         -- Show file contents from parent revision (@-)
-        local result = jj.cli.file_show.revision("@-").args(path).call { await = true, trim = false, ignore_error = true }
+        local result =
+          jj.cli.file_show.revision("@-").args(path).call { await = true, trim = false, ignore_error = true }
         if result and result.code == 0 then
           return result.stdout
         end
@@ -182,12 +187,17 @@ function M.open(section_name, item_name, opts)
   local view
   -- selene: allow(if_same_then_else)
   if
-    (section_name == "recent" or section_name == "log" or section_name == "bookmarks" or (section_name and section_name:match("unmerged$")))
-    and item_name
+    (
+      section_name == "recent"
+      or section_name == "log"
+      or section_name == "bookmarks"
+      or (section_name and section_name:match("unmerged$"))
+    ) and item_name
   then
     local range
     if type(item_name) == "table" then
-      range = string.format("%s..%s", resolve_jj_to_git(item_name[1]), resolve_jj_to_git(item_name[#item_name]))
+      range =
+        string.format("%s..%s", resolve_jj_to_git(item_name[1]), resolve_jj_to_git(item_name[#item_name]))
     else
       range = string.format("%s^!", resolve_jj_to_git(item_name:match("[a-f0-9]+") or item_name))
     end

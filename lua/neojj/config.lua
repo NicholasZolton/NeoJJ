@@ -107,6 +107,7 @@ end
 ---@field show_diff? boolean Display current changes diff when editing description
 ---@field diff_split_kind? string Split direction for diff view ("split" or "vsplit")
 ---@field spell_check? boolean Enable/Disable spell checking
+---@field describe_editor? boolean Use full editor for `dd` describe action (false = inline input)
 
 ---@alias NeojjConfigSignsIcon { [1]: string, [2]: string }
 
@@ -118,11 +119,14 @@ end
 ---@class NeojjConfigSection A section to show in the Neojj Status buffer, e.g. Modified/Recent/Bookmarks
 ---@field folded boolean Whether or not this section should be open or closed by default
 ---@field hidden boolean Whether or not this section should be shown
+---@field show_deleted? boolean Show deleted bookmarks in the bookmarks section
+---@field show_remote? boolean Show remote-tracking refs in the bookmarks section
 
 ---@class NeojjConfigSections
 ---@field untracked NeojjConfigSection|nil
 ---@field recent NeojjConfigSection|nil
 ---@field sequencer NeojjConfigSection|nil
+---@field bookmarks NeojjConfigSection|nil
 
 ---@class HighlightOptions
 ---@field italic?     boolean
@@ -275,6 +279,7 @@ end
 ---@field jj_binary? string Path to jj binary (bypasses shim detection). "auto" = auto-detect (default).
 ---@field filewatcher? NeojjFilewatcherConfig Values for filewatcher
 ---@field graph_style? NeojjGraphStyle Style for graph
+---@field commit_order? string Commit ordering passed via `--<value>-order` (e.g. "topo", "author-date")
 ---@field commit_date_format? string Commit date format
 ---@field log_date_format? string Log date format
 ---@field disable_hint? boolean Remove the top hint in the Status buffer
@@ -296,7 +301,6 @@ end
 ---@field auto_close_console? boolean Automatically hide the console if the process exits with a 0 status
 ---@field status? NeojjConfigStatusOptions Status buffer options
 ---@field commit_editor? NeojjCommitEditorConfigPopup Commit editor options
----@field commit_select_view? NeojjConfigPopup Commit select view options
 ---@field commit_view? NeojjCommitBufferConfig Commit buffer options
 ---@field log_view? NeojjConfigPopup Log view options
 ---@field reflog_view? NeojjConfigPopup Reflog view options
@@ -396,9 +400,6 @@ function M.get_default_values()
       diff_split_kind = "split",
       spell_check = true,
       describe_editor = true, -- Use full editor for "D" describe action (false = inline input)
-    },
-    commit_select_view = {
-      kind = "tab",
     },
     commit_view = {
       kind = "vsplit",
@@ -983,7 +984,11 @@ function M.validate_config()
     validate_type(config.auto_show_console_on, "auto_show_console_on", "string")
     validate_type(config.auto_close_console, "auto_close_console", "boolean")
     validate_type(config.workspace_open_command, "workspace_open_command", { "string", "function", "nil" })
-    validate_type(config.workspace_initialize_command, "workspace_initialize_command", { "string", "function", "nil" })
+    validate_type(
+      config.workspace_initialize_command,
+      "workspace_initialize_command",
+      { "string", "function", "nil" }
+    )
     validate_type(config.workspace_worktrees_directory, "workspace_worktrees_directory", "string")
     if validate_type(config.status, "status", "table") then
       validate_type(config.status.show_head_commit_hash, "status.show_head_commit_hash", "boolean")
@@ -998,10 +1003,6 @@ function M.validate_config()
     if validate_type(config.commit_editor, "commit_editor", "table") then
       validate_type(config.commit_editor.spell_check, "spell_check", "boolean")
       validate_kind(config.commit_editor.kind, "commit_editor")
-    end
-    -- Commit Select View
-    if validate_type(config.commit_select_view, "commit_select_view", "table") then
-      validate_kind(config.commit_select_view.kind, "config.commit_select_view.kind")
     end
     -- Commit View
     if validate_type(config.commit_view, "commit_view", "table") then
@@ -1039,13 +1040,13 @@ function M.validate_config()
   return errors
 end
 
----@param name string
----@return boolean
 -- Map integration config keys to their actual Lua module names
 local integration_modules = {
   mini_pick = "mini.pick",
 }
 
+---@param name string
+---@return boolean
 function M.check_integration(name)
   local logger = require("neojj.logger")
   local enabled = M.values.integrations[name]

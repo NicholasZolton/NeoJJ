@@ -54,8 +54,10 @@ local M = {
 ---@return CommitInfo
 local function build_commit_info(change_id)
   -- Get change metadata via jj log (not jj show, which appends the diff after template output)
-  local tpl = 'change_id.short(12) ++ "\\n" ++ commit_id.short(12) ++ "\\n" ++ author.name() ++ "\\n" ++ author.email() ++ "\\n" ++ author.timestamp() ++ "\\n" ++ description'
-  local meta_result = jj.cli.log.no_graph.revisions(change_id).template(tpl).call { hidden = true, trim = false }
+  local tpl =
+    'change_id.short(12) ++ "\\n" ++ commit_id.short(12) ++ "\\n" ++ author.name() ++ "\\n" ++ author.email() ++ "\\n" ++ author.timestamp() ++ "\\n" ++ description'
+  local meta_result =
+    jj.cli.log.no_graph.revisions(change_id).template(tpl).call { hidden = true, trim = false }
 
   local info = {
     oid = change_id,
@@ -212,9 +214,7 @@ function M:update(change_id, filter)
   self.commit_info = commit_info
   self.commit_overview = commit_overview
 
-  self.buffer.ui:render(
-    unpack(ui.CommitView(self.commit_info, self.commit_overview, self.item_filter))
-  )
+  self.buffer.ui:render(unpack(ui.CommitView(self.commit_info, self.commit_overview, self.item_filter)))
 
   self.buffer:win_call(vim.cmd, "normal! gg")
 end

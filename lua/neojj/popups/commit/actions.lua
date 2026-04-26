@@ -7,7 +7,6 @@ local notification = require("neojj.lib.notification")
 local FuzzyFinderBuffer = require("neojj.buffers.fuzzy_finder")
 local picker_cache = require("neojj.lib.picker_cache")
 
-
 function M.commit(popup)
   local args = popup:get_arguments()
   local builder = jj.cli.commit
@@ -43,10 +42,8 @@ end
 ---@param rev string revision specifier (e.g. "@")
 ---@return string[]
 local function get_local_bookmarks_at(rev)
-  local result = jj.cli.bookmark_list
-    .template('if(!self.remote(), self.name() ++ "\\n")')
-    .revisions(rev)
-    .call()
+  local result =
+    jj.cli.bookmark_list.template('if(!self.remote(), self.name() ++ "\\n")').revisions(rev).call()
   if not result or result.code ~= 0 or not result.stdout then
     return {}
   end
@@ -138,7 +135,10 @@ function M.new_change_on_with_bookmark(popup)
   if #failed > 0 then
     notification.warn("Failed to move bookmarks: " .. table.concat(failed, "; "), { dismiss = true })
   elseif #moved > 0 then
-    notification.info("Created new change on " .. rev .. ", moved: " .. table.concat(moved, ", "), { dismiss = true })
+    notification.info(
+      "Created new change on " .. rev .. ", moved: " .. table.concat(moved, ", "),
+      { dismiss = true }
+    )
   else
     notification.info("Created new change on " .. rev .. " (no bookmarks to move)", { dismiss = true })
   end
@@ -188,7 +188,10 @@ function M.new_change_on_bookmark_with_bookmark(popup)
   if #failed > 0 then
     notification.warn("Failed to move bookmarks: " .. table.concat(failed, "; "), { dismiss = true })
   elseif #moved > 0 then
-    notification.info("Created new change on " .. bookmark .. ", moved: " .. table.concat(moved, ", "), { dismiss = true })
+    notification.info(
+      "Created new change on " .. bookmark .. ", moved: " .. table.concat(moved, ", "),
+      { dismiss = true }
+    )
   else
     notification.info("Created new change on " .. bookmark .. " (no bookmarks to move)", { dismiss = true })
   end

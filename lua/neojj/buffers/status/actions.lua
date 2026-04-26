@@ -13,7 +13,7 @@ local fn = vim.fn
 ---@class CursorContext
 ---@field change_id string|nil The change ID under cursor (from item, yankable, or head fallback)
 ---@field section string|nil Section name (e.g. "files", "recent", "bookmarks")
----@field item table|nil The item under cursor (from get_selection)
+---@field item StatusItem|nil The item under cursor (from get_selection)
 ---@field yank string|nil Raw yankable value under cursor
 ---@field immutable boolean Whether the change is immutable
 
@@ -103,8 +103,7 @@ end
 M.v_diff_popup = function(self)
   return popups.open("diff", function(p)
     local section = self.buffer.ui:get_selection().section
-    local ref = self.buffer.ui:get_commit_under_cursor()
-      or self.buffer.ui:get_yankable_under_cursor()
+    local ref = self.buffer.ui:get_commit_under_cursor() or self.buffer.ui:get_yankable_under_cursor()
     p { section = { name = section and section.name }, item = { name = ref } }
   end)
 end
@@ -386,7 +385,9 @@ end
 M.n_yank_commit_hash = function(self)
   return function()
     local ctx = cursor_context(self)
-    if common.divergent_guard(ctx.item) then return end
+    if common.divergent_guard(ctx.item) then
+      return
+    end
     if ctx.item and ctx.item.commit_id then
       local short = ctx.item.commit_id:sub(1, 8)
       vim.fn.setreg("+", short)
@@ -517,7 +518,14 @@ M.n_context_delete = function(self)
       end
     elseif ctx.section == "bookmarks" and item and item.name then
       if item.remote and item.remote ~= "" then
-        notification.warn("Cannot delete remote bookmark " .. item.name .. "@" .. item.remote .. " — delete locally and push to remove", { dismiss = true })
+        notification.warn(
+          "Cannot delete remote bookmark "
+            .. item.name
+            .. "@"
+            .. item.remote
+            .. " — delete locally and push to remove",
+          { dismiss = true }
+        )
         return
       end
       if item.deleted then
@@ -629,8 +637,7 @@ M.n_goto_file = function(self)
     end
 
     -- Goto CHANGE (by change_id from oid, then yankable as fallback)
-    local ref = self.buffer.ui:get_commit_under_cursor()
-      or self.buffer.ui:get_yankable_under_cursor()
+    local ref = self.buffer.ui:get_commit_under_cursor() or self.buffer.ui:get_yankable_under_cursor()
     if ref then
       require("neojj.buffers.commit_view").new(ref):open()
     end
@@ -643,7 +650,9 @@ M.n_open_variant_diff = function(self)
   return function()
     local ctx = cursor_context(self)
     local item = ctx.item
-    if not (item and item.change_offset ~= nil) then return end
+    if not (item and item.change_offset ~= nil) then
+      return
+    end
     require("neojj.buffers.commit_view").new(item.commit_id):open()
   end
 end
@@ -729,7 +738,9 @@ M.n_describe = function(self)
   return a.void(function()
     local config = require("neojj.config")
     local ctx = cursor_context(self)
-    if common.divergent_guard(ctx.item) then return end
+    if common.divergent_guard(ctx.item) then
+      return
+    end
 
     if ctx.immutable then
       notification.warn("Cannot describe immutable commit", { dismiss = true })
@@ -795,7 +806,9 @@ end
 M.n_edit_change = function(self)
   return a.void(function()
     local ctx = cursor_context(self)
-    if common.divergent_guard(ctx.item) then return end
+    if common.divergent_guard(ctx.item) then
+      return
+    end
     local change_id = ctx.change_id
     if not change_id then
       notification.warn("No change under cursor", { dismiss = true })
@@ -813,10 +826,8 @@ M.n_edit_change = function(self)
       notification.info("Now editing " .. short, { dismiss = true })
       self:dispatch_refresh(nil, "n_edit_change")
     else
-      local stderr = result and result.stderr
-      if type(stderr) == "table" then
-        stderr = table.concat(stderr, "\n")
-      end
+      local raw_stderr = result and result.stderr
+      local stderr = type(raw_stderr) == "table" and table.concat(raw_stderr, "\n") or raw_stderr
       local msg = "Failed to edit " .. short
       if stderr and stderr ~= "" then
         msg = msg .. ": " .. stderr
@@ -831,7 +842,9 @@ end
 M.n_new_change = function(self)
   return a.void(function()
     local ctx = cursor_context(self)
-    if common.divergent_guard(ctx.item) then return end
+    if common.divergent_guard(ctx.item) then
+      return
+    end
     jj.cli.new.call()
     notification.info("Created new change")
     self:dispatch_refresh(nil, "n_new_change")
@@ -843,7 +856,9 @@ end
 M.n_abandon = function(self)
   return a.void(function()
     local ctx = cursor_context(self)
-    if common.divergent_guard(ctx.item) then return end
+    if common.divergent_guard(ctx.item) then
+      return
+    end
     if input.get_permission("Abandon current change?") then
       jj.cli.abandon.call()
       notification.info("Change abandoned")
@@ -874,10 +889,12 @@ M.n_forget_bookmark = function(self)
       return
     end
 
-    local item = ctx.item
-    if item.remote and item.remote ~= "" then
+    local item = assert(ctx.item, "ctx.item is nil")
+    local name = assert(item.name, "bookmark item has no name")
+    local remote = item.remote
+    if remote and remote ~= "" then
       -- Track remote bookmark
-      local ref = item.name .. "@" .. item.remote
+      local ref = name .. "@" .. remote
       if not input.get_permission("Track bookmark " .. ref .. "?") then
         return
       end
@@ -891,16 +908,16 @@ M.n_forget_bookmark = function(self)
       return
     end
 
-    if not input.get_permission("Forget bookmark " .. item.name .. "?") then
+    if not input.get_permission("Forget bookmark " .. name .. "?") then
       return
     end
 
-    local result = jj.cli.bookmark_forget.args(item.name).call()
+    local result = jj.cli.bookmark_forget.args(name).call()
     if result and result.code == 0 then
-      notification.info("Forgot bookmark " .. item.name, { dismiss = true })
+      notification.info("Forgot bookmark " .. name, { dismiss = true })
       self:dispatch_refresh(nil, "n_forget_bookmark")
     else
-      notification.warn("Failed to forget bookmark " .. item.name, { dismiss = true })
+      notification.warn("Failed to forget bookmark " .. name, { dismiss = true })
     end
   end)
 end
@@ -910,7 +927,9 @@ end
 M.n_new_change_on = function(self)
   return a.void(function()
     local ctx = cursor_context(self)
-    if common.divergent_guard(ctx.item) then return end
+    if common.divergent_guard(ctx.item) then
+      return
+    end
     local change_id = ctx.change_id
     if not change_id then
       notification.warn("No change under cursor", { dismiss = true })
@@ -943,7 +962,9 @@ end
 M.n_new_change_before = function(self)
   return a.void(function()
     local ctx = cursor_context(self)
-    if common.divergent_guard(ctx.item) then return end
+    if common.divergent_guard(ctx.item) then
+      return
+    end
     local change_id = ctx.change_id
     if not change_id then
       notification.warn("No change under cursor", { dismiss = true })
@@ -978,8 +999,7 @@ M.n_command = function(self)
   local runner = require("neojj.runner")
 
   return a.void(function()
-    local cmd =
-      input.get_user_input(("Run command in %s"):format(jj.repo.worktree_root), { prepend = "jj " })
+    local cmd = input.get_user_input(("Run command in %s"):format(jj.repo.worktree_root), { prepend = "jj " })
     if not cmd then
       return
     end
@@ -1032,8 +1052,7 @@ end
 M.n_diff_popup = function(self)
   return popups.open("diff", function(p)
     local section = self.buffer.ui:get_selection().section
-    local ref = self.buffer.ui:get_commit_under_cursor()
-      or self.buffer.ui:get_yankable_under_cursor()
+    local ref = self.buffer.ui:get_commit_under_cursor() or self.buffer.ui:get_yankable_under_cursor()
     p {
       section = { name = section and section.name },
       item = { name = ref },
@@ -1051,8 +1070,7 @@ M.n_help_popup = function(self)
       section_name = section.name
     end
 
-    local ref = self.buffer.ui:get_commit_under_cursor()
-      or self.buffer.ui:get_yankable_under_cursor()
+    local ref = self.buffer.ui:get_commit_under_cursor() or self.buffer.ui:get_yankable_under_cursor()
 
     p {
       bookmark = {},
@@ -1090,17 +1108,17 @@ M.n_log_popup = function(_self)
   return popups.open("log")
 end
 
----@param self StatusBuffer
+---@param _self StatusBuffer
 ---@return fun(): nil
-M.n_push_popup = function(self)
+M.n_push_popup = function(_self)
   return popups.open("push", function(p)
     p {}
   end)
 end
 
----@param self StatusBuffer
+---@param _self StatusBuffer
 ---@return fun(): nil
-M.n_rebase_popup = function(self)
+M.n_rebase_popup = function(_self)
   return popups.open("rebase", function(p)
     p {}
   end)
@@ -1123,7 +1141,9 @@ end
 M.n_open_in_browser = function(self)
   return function()
     local ctx = cursor_context(self)
-    if common.divergent_guard(ctx.item) then return end
+    if common.divergent_guard(ctx.item) then
+      return
+    end
 
     -- Helper to resolve remote URL
     local function get_remote_browser_url()
@@ -1145,7 +1165,9 @@ M.n_open_in_browser = function(self)
         end
       end
 
-      if not remote_url then return nil end
+      if not remote_url then
+        return nil
+      end
 
       return remote_url
         :gsub("%.git$", "")
@@ -1172,7 +1194,11 @@ M.n_open_in_browser = function(self)
     end
 
     -- Get the git commit hash for this change
-    local result = jj.cli.log.no_graph.template('"" ++ commit_id ++ ""').revisions(change_id).limit(1).call { hidden = true, trim = true }
+    local result = jj.cli.log.no_graph
+      .template('"" ++ commit_id ++ ""')
+      .revisions(change_id)
+      .limit(1)
+      .call { hidden = true, trim = true }
     if not result or result.code ~= 0 or not result.stdout[1] then
       notification.warn("Could not resolve commit", { dismiss = true })
       return

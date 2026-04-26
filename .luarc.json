@@ -7,7 +7,9 @@
         "vim",
         "it",
         "describe",
-        "before_each"
+        "before_each",
+        "after_each",
+        "pending"
     ],
     "workspace.checkThirdParty": false,
     "runtime.version": "LuaJIT"

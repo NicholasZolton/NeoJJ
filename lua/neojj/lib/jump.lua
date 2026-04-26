@@ -221,8 +221,10 @@ end
 ---@param cursor integer[]
 ---@param reopen_cb fun()
 function M.goto_file_in_commit_at(target_commit, path, cursor, reopen_cb)
-  local file_contents =
-    jj.cli.file_show.revision(target_commit).args(path).call { hidden = true, trim = false, ignore_error = true }
+  local file_contents = jj.cli.file_show
+    .revision(target_commit)
+    .args(path)
+    .call { hidden = true, trim = false, ignore_error = true }
   if not file_contents or file_contents.code ~= 0 then
     notification.error(("Unable to read %s at %s"):format(path, target_commit))
     return

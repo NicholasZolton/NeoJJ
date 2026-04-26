@@ -1,3 +1,16 @@
+---@class NeojjBookmark
+---@field parse_list fun(lines: string[]): NeojjBookmarkItem[]
+---@field list fun(): NeojjBookmarkItem[]
+---@field create fun(name: string, revision?: string): ProcessResult?
+---@field move fun(name: string, to: string, allow_backwards?: boolean): ProcessResult?
+---@field delete fun(name: string): ProcessResult?
+---@field track fun(bookmark_at_remote: string): ProcessResult?
+---@field forget fun(name: string): ProcessResult?
+---@field rename fun(old_name: string, new_name: string): ProcessResult?
+---@field set fun(name: string, revision: string, allow_backwards?: boolean): ProcessResult?
+---@field untrack fun(bookmark_at_remote: string): ProcessResult?
+---@field advance fun(to: string): ProcessResult?
+---@field parse_template_list fun(lines: string[]): NeojjBookmarkItem[]
 local M = {}
 
 ---@class NeojjBookmarkMeta
@@ -15,11 +28,8 @@ function M.parse_list(lines)
   local current_name = nil
 
   for _, line in ipairs(lines) do
-    -- Skip hint lines
-    if line:match("^Hint:") then
-      -- skip
-    -- Remote tracking line (indented): "  @remote: change_id commit_id desc"
-    elseif line:match("^%s+@") then
+    if line:match("^%s+@") then
+      -- Remote tracking line (indented): "  @remote: change_id commit_id desc"
       local remote, rchange, rcommit, rdesc = line:match("^%s+@(%S+):%s+(%S+)%s+(%S+)%s*(.*)")
       if remote and current_name then
         table.insert(items, {
@@ -30,7 +40,7 @@ function M.parse_list(lines)
           remote = remote,
         })
       end
-    else
+    elseif not line:match("^Hint:") then
       -- Remote bookmark: "name@remote: change_id commit_id desc"
       local rname, remote, change_id, commit_id, rest = line:match("^(.-)@(%S+):%s+(%S+)%s+(%S+)%s*(.*)")
       if rname and remote then
@@ -176,45 +186,44 @@ end
 function M.parse_template_list(lines)
   local items = {}
   for _, line in ipairs(lines) do
-    if line == "" or line:match("^Hint:") then
-      goto continue
-    end
-    local parts = vim.split(line, "\t", { plain = true })
-    if #parts >= 8 then
-      local name = parts[1]
-      local remote = parts[2] ~= "" and parts[2] or nil
-      local change_id = parts[3]
-      local commit_id = parts[4]
-      local timestamp = parts[5]
-      local description = parts[6]
-      local present = parts[7] == "1"
-      local conflict = parts[8] == "1"
-      local deleted = not present
+    if line ~= "" and not line:match("^Hint:") then
+      local parts = vim.split(line, "\t", { plain = true })
+      if #parts >= 8 then
+        local name = parts[1]
+        local remote = parts[2] ~= "" and parts[2] or nil
+        local change_id = parts[3]
+        local commit_id = parts[4]
+        local timestamp = parts[5]
+        local description = parts[6]
+        local present = parts[7] == "1"
+        local conflict = parts[8] == "1"
+        local deleted = not present
 
-      if conflict then
-        description = "(conflicted)"
-      elseif deleted then
-        description = "(deleted)"
+        if conflict then
+          description = "(conflicted)"
+        elseif deleted then
+          description = "(deleted)"
+        end
+
+        table.insert(items, {
+          name = name,
+          change_id = change_id,
+          commit_id = commit_id,
+          description = description,
+          remote = remote,
+          timestamp = timestamp,
+          deleted = deleted,
+          conflict = conflict,
+        })
       end
-
-      table.insert(items, {
-        name = name,
-        change_id = change_id,
-        commit_id = commit_id,
-        description = description,
-        remote = remote,
-        timestamp = timestamp,
-        deleted = deleted,
-        conflict = conflict,
-      })
     end
-    ::continue::
   end
   return items
 end
 
 -- Template for structured bookmark output with timestamps
-local BOOKMARK_TEMPLATE = 'self.name() ++ "\\t" ++ if(self.remote(), self.remote(), "") ++ "\\t" ++ if(self.normal_target(), self.normal_target().change_id() ++ "\\t" ++ self.normal_target().commit_id() ++ "\\t" ++ self.normal_target().committer().timestamp() ++ "\\t" ++ self.normal_target().description().first_line(), "\\t\\t\\t") ++ "\\t" ++ if(self.present(), "1", "0") ++ "\\t" ++ if(self.conflict(), "1", "0") ++ "\\n"'
+local BOOKMARK_TEMPLATE =
+  'self.name() ++ "\\t" ++ if(self.remote(), self.remote(), "") ++ "\\t" ++ if(self.normal_target(), self.normal_target().change_id() ++ "\\t" ++ self.normal_target().commit_id() ++ "\\t" ++ self.normal_target().committer().timestamp() ++ "\\t" ++ self.normal_target().description().first_line(), "\\t\\t\\t") ++ "\\t" ++ if(self.present(), "1", "0") ++ "\\t" ++ if(self.conflict(), "1", "0") ++ "\\n"'
 
 ---Update repository state with bookmark data
 ---@param state NeojjRepoState
@@ -225,10 +234,17 @@ function meta.update(state)
   local show_remote = section_config.show_remote ~= false
 
   local shell = require("neojj.lib.jj.shell")
-  local lines, code = shell.exec(
-    { "jj", "--no-pager", "--color=never", "--ignore-working-copy", "bookmark", "list", "--all", "-T", BOOKMARK_TEMPLATE },
-    state.worktree_root
-  )
+  local lines, code = shell.exec({
+    "jj",
+    "--no-pager",
+    "--color=never",
+    "--ignore-working-copy",
+    "bookmark",
+    "list",
+    "--all",
+    "-T",
+    BOOKMARK_TEMPLATE,
+  }, state.worktree_root)
 
   if code == 0 and lines then
     local items = M.parse_template_list(lines)
@@ -237,13 +253,10 @@ function meta.update(state)
     local filtered = {}
     for _, item in ipairs(items) do
       local is_remote = item.remote and item.remote ~= ""
-      if item.remote == "git" then
-        -- skip @git bookmarks (jj internal tracking refs)
-      elseif item.deleted and not show_deleted then
-        -- skip
-      elseif is_remote and not show_remote then
-        -- skip
-      else
+      local skip = item.remote == "git"
+        or (item.deleted and not show_deleted)
+        or (is_remote and not show_remote)
+      if not skip then
         table.insert(filtered, item)
       end
     end

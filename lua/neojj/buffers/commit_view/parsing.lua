@@ -45,8 +45,7 @@ function M.parse_commit_overview(raw)
     if raw[i] ~= "" then
       -- matches: lua/neojj/config.lua              | 10 +++++-----
       -- jj stat lines have no leading space, so match from start
-      file.path, file.changes, file.insertions, file.deletions =
-        raw[i]:match("^(.-)%s+|%s+(%d+) ?(%+*)(%-*)")
+      file.path, file.changes, file.insertions, file.deletions = raw[i]:match("^(.-)%s+|%s+(%d+) ?(%+*)(%-*)")
 
       if vim.tbl_isempty(file) then
         -- matches: .../db/b8571c4f873daff059c04443077b43a703338a      | Bin 0 -> 192 bytes

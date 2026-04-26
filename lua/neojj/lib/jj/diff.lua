@@ -1,5 +1,15 @@
 local insert = table.insert
 
+---@class Diff
+---@field kind string
+---@field lines string[]
+---@field file string
+---@field info table
+---@field stats { additions: integer, deletions: integer }
+---@field hunks Hunk[]
+
+---@class NeojjDiff
+---@field parse fun(raw_diff: string[]): Diff
 local M = {}
 
 -- ============================================================
@@ -30,7 +40,7 @@ end
 ---@return string
 local function build_file(header, kind)
   if kind == "modified" then
-    return header[3] and header[3]:match("%-%-%- ./(.*)" ) or ""
+    return header[3] and header[3]:match("%-%-%- ./(.*)") or ""
   elseif kind == "renamed" then
     local from = header[3] and header[3]:match("rename from (.*)") or ""
     local to = header[4] and header[4]:match("rename to (.*)") or ""
@@ -204,7 +214,9 @@ function M.build(item)
         local cwd
         local ok, jj_mod = pcall(require, "neojj.lib.jj")
         if ok then
-          local rok, repo = pcall(function() return jj_mod.repo end)
+          local rok, repo = pcall(function()
+            return jj_mod.repo
+          end)
           if rok and repo then
             cwd = repo.worktree_root
           end
@@ -213,9 +225,16 @@ function M.build(item)
         local target_cwd = cwd or vim.fn.getcwd()
         local shell = require("neojj.lib.jj.shell")
         local lines, exit_code = shell.exec({
-          "jj", "--no-pager", "--color=never", "--ignore-working-copy",
-          "-R", target_cwd,
-          "diff", "--git", "--", "file:" .. item.name,
+          "jj",
+          "--no-pager",
+          "--color=never",
+          "--ignore-working-copy",
+          "-R",
+          target_cwd,
+          "diff",
+          "--git",
+          "--",
+          "file:" .. item.name,
         }, target_cwd)
         lines = lines or {}
 

@@ -93,11 +93,11 @@ end
 ---@class WorkspaceHookContext
 ---@field path string
 
----@param hook string|fun(ctx: WorkspaceHookContext)
+---@param hook string|fun(ctx: WorkspaceHookContext)|nil
 ---@param path string
 local function run_workspace_hook(hook, path)
   if type(hook) == "function" then
-    hook({ path = path })
+    hook { path = path }
     return
   end
 
@@ -172,7 +172,8 @@ function M.add_at_revision(popup)
   local revisions = picker_cache.get_all_revisions()
   local revision = nil
   if #revisions > 0 then
-    local selection = FuzzyFinderBuffer.new(revisions):open_async { prompt_prefix = "Base revision (empty = same parent as @)" }
+    local selection = FuzzyFinderBuffer.new(revisions)
+      :open_async { prompt_prefix = "Base revision (empty = same parent as @)" }
     revision = picker_cache.parse_selection(selection)
   end
 
@@ -190,7 +191,8 @@ function M.quick_add_at_revision(popup)
   local revisions = picker_cache.get_all_revisions()
   local revision = nil
   if #revisions > 0 then
-    local selection = FuzzyFinderBuffer.new(revisions):open_async { prompt_prefix = "Base revision (empty = same parent as @)" }
+    local selection = FuzzyFinderBuffer.new(revisions)
+      :open_async { prompt_prefix = "Base revision (empty = same parent as @)" }
     revision = picker_cache.parse_selection(selection)
   end
 
@@ -236,7 +238,8 @@ function M.delete(_popup)
     return
   end
 
-  local selection = FuzzyFinderBuffer.new(names):open_async { prompt_prefix = "Delete workspace (forget + rm)" }
+  local selection = FuzzyFinderBuffer.new(names)
+    :open_async { prompt_prefix = "Delete workspace (forget + rm)" }
   if not selection then
     return
   end

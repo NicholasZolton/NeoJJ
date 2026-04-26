@@ -6,17 +6,25 @@ local picker_cache = require("neojj.lib.picker_cache")
 
 function M.source_onto(popup)
   local options = picker_cache.get_all_revisions()
-  local source_sel = FuzzyFinderBuffer.new(options):open_async { prompt_prefix = "Rebase source", refocus_status = false }
+  local source_sel = FuzzyFinderBuffer.new(options)
+    :open_async { prompt_prefix = "Rebase source", refocus_status = false }
   local source = picker_cache.parse_selection(source_sel)
-  if not source then return end
+  if not source then
+    return
+  end
 
-  local dest_sel = FuzzyFinderBuffer.new(options):open_async { prompt_prefix = "onto destination", refocus_status = false }
+  local dest_sel = FuzzyFinderBuffer.new(options)
+    :open_async { prompt_prefix = "onto destination", refocus_status = false }
   local dest = picker_cache.parse_selection(dest_sel)
-  if not dest then return end
+  if not dest then
+    return
+  end
 
   local args = popup:get_arguments()
   local builder = jj.cli.rebase.source(source).destination(dest)
-  if #args > 0 then builder = builder.args(unpack(args)) end
+  if #args > 0 then
+    builder = builder.args(unpack(args))
+  end
   local result = builder.call()
   if result and result.code == 0 then
     notification.info("Rebased " .. source .. " onto " .. dest, { dismiss = true })
@@ -27,19 +35,29 @@ end
 
 function M.bookmark_onto(popup)
   local bookmarks = picker_cache.get_local_bookmarks_with_labels()
-  local bm_sel = FuzzyFinderBuffer.new(bookmarks):open_async { prompt_prefix = "Rebase bookmark", refocus_status = false }
-  if not bm_sel then return end
+  local bm_sel = FuzzyFinderBuffer.new(bookmarks)
+    :open_async { prompt_prefix = "Rebase bookmark", refocus_status = false }
+  if not bm_sel then
+    return
+  end
   local bm = picker_cache.parse_selection(bm_sel)
-  if not bm then return end
+  if not bm then
+    return
+  end
 
   local options = picker_cache.get_all_revisions()
-  local dest_sel = FuzzyFinderBuffer.new(options):open_async { prompt_prefix = "onto destination", refocus_status = false }
+  local dest_sel = FuzzyFinderBuffer.new(options)
+    :open_async { prompt_prefix = "onto destination", refocus_status = false }
   local dest = picker_cache.parse_selection(dest_sel)
-  if not dest then return end
+  if not dest then
+    return
+  end
 
   local args = popup:get_arguments()
   local builder = jj.cli.rebase.branch(bm).destination(dest)
-  if #args > 0 then builder = builder.args(unpack(args)) end
+  if #args > 0 then
+    builder = builder.args(unpack(args))
+  end
   local result = builder.call()
   if result and result.code == 0 then
     notification.info("Rebased bookmark " .. bm .. " onto " .. dest, { dismiss = true })
@@ -50,17 +68,25 @@ end
 
 function M.revision_onto(popup)
   local options = picker_cache.get_all_revisions()
-  local rev_sel = FuzzyFinderBuffer.new(options):open_async { prompt_prefix = "Rebase revision", refocus_status = false }
+  local rev_sel = FuzzyFinderBuffer.new(options)
+    :open_async { prompt_prefix = "Rebase revision", refocus_status = false }
   local rev = picker_cache.parse_selection(rev_sel)
-  if not rev then return end
+  if not rev then
+    return
+  end
 
-  local dest_sel = FuzzyFinderBuffer.new(options):open_async { prompt_prefix = "onto destination", refocus_status = false }
+  local dest_sel = FuzzyFinderBuffer.new(options)
+    :open_async { prompt_prefix = "onto destination", refocus_status = false }
   local dest = picker_cache.parse_selection(dest_sel)
-  if not dest then return end
+  if not dest then
+    return
+  end
 
   local args = popup:get_arguments()
   local builder = jj.cli.rebase.revision(rev).destination(dest)
-  if #args > 0 then builder = builder.args(unpack(args)) end
+  if #args > 0 then
+    builder = builder.args(unpack(args))
+  end
   local result = builder.call()
   if result and result.code == 0 then
     notification.info("Rebased " .. rev .. " onto " .. dest, { dismiss = true })
@@ -73,11 +99,15 @@ function M.here_onto(popup)
   local options = picker_cache.get_all_revisions()
   local dest_sel = FuzzyFinderBuffer.new(options):open_async { prompt_prefix = "Rebase @ onto" }
   local dest = picker_cache.parse_selection(dest_sel)
-  if not dest then return end
+  if not dest then
+    return
+  end
 
   local args = popup:get_arguments()
   local builder = jj.cli.rebase.source("@").destination(dest)
-  if #args > 0 then builder = builder.args(unpack(args)) end
+  if #args > 0 then
+    builder = builder.args(unpack(args))
+  end
   local result = builder.call()
   if result and result.code == 0 then
     notification.info("Rebased @ onto " .. dest, { dismiss = true })
@@ -96,7 +126,9 @@ local function fetch_and_rebase(popup, mode_flag, mode_value, desc)
 
   local args = popup:get_arguments()
   local builder = jj.cli.rebase[mode_flag](mode_value).destination("trunk()")
-  if #args > 0 then builder = builder.args(unpack(args)) end
+  if #args > 0 then
+    builder = builder.args(unpack(args))
+  end
   local result = builder.call()
   if result and result.code == 0 then
     notification.info(desc, { dismiss = true })
@@ -119,7 +151,9 @@ function M.parallelize(_popup)
   local options = picker_cache.get_all_revisions()
   local sel = FuzzyFinderBuffer.new(options):open_async { prompt_prefix = "Parallelize from" }
   local change_id = picker_cache.parse_selection(sel)
-  if not change_id then return end
+  if not change_id then
+    return
+  end
 
   local result = jj.cli.parallelize.args(change_id .. "::@").call()
   if result and result.code == 0 then

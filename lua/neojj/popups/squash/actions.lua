@@ -63,7 +63,8 @@ function M.squash_revision(popup)
     return
   end
 
-  local selection = FuzzyFinderBuffer.new(options):open_async { prompt_prefix = "Squash revision into its parent" }
+  local selection = FuzzyFinderBuffer.new(options)
+    :open_async { prompt_prefix = "Squash revision into its parent" }
   local rev = picker_cache.parse_selection(selection)
   if not rev then
     return
@@ -84,19 +85,22 @@ function M.squash_range(popup)
     return
   end
 
-  local from_sel = FuzzyFinderBuffer.new(options):open_async { prompt_prefix = "Squash range from", refocus_status = false }
+  local from_sel = FuzzyFinderBuffer.new(options)
+    :open_async { prompt_prefix = "Squash range from", refocus_status = false }
   local from_rev = picker_cache.parse_selection(from_sel)
   if not from_rev then
     return
   end
 
-  local to_sel = FuzzyFinderBuffer.new(options):open_async { prompt_prefix = "Squash range to", refocus_status = false }
+  local to_sel = FuzzyFinderBuffer.new(options)
+    :open_async { prompt_prefix = "Squash range to", refocus_status = false }
   local to_rev = picker_cache.parse_selection(to_sel)
   if not to_rev then
     return
   end
 
-  local into_sel = FuzzyFinderBuffer.new(options):open_async { prompt_prefix = "Squash into", refocus_status = false }
+  local into_sel = FuzzyFinderBuffer.new(options)
+    :open_async { prompt_prefix = "Squash into", refocus_status = false }
   local into_rev = picker_cache.parse_selection(into_sel)
   if not into_rev then
     return

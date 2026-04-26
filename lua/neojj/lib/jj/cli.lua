@@ -1,6 +1,125 @@
 local Process = require("neojj.process")
 local runner = require("neojj.runner")
 
+---@class NeojjCliBuilder
+-- Built-in chainable methods
+---@field args fun(...: string|number): NeojjCliBuilder
+---@field arguments fun(...: string|number): NeojjCliBuilder
+---@field files fun(...: string): NeojjCliBuilder
+---@field paths fun(...: string): NeojjCliBuilder
+---@field input fun(value: string): NeojjCliBuilder
+---@field stdin fun(value: string): NeojjCliBuilder
+---@field env fun(cfg: table<string, string>): NeojjCliBuilder
+---@field in_pty fun(v: boolean): NeojjCliBuilder
+---@field call fun(opts?: table): ProcessResult?
+---@field to_process fun(opts?: table): Process
+-- Flags: setting the property mutates and returns the builder for further chaining.
+---@field no_graph NeojjCliBuilder
+---@field patch NeojjCliBuilder
+---@field summary NeojjCliBuilder
+---@field stat NeojjCliBuilder
+---@field reversed NeojjCliBuilder
+---@field git NeojjCliBuilder
+---@field color_words NeojjCliBuilder
+---@field types NeojjCliBuilder
+---@field name_only NeojjCliBuilder
+---@field no_edit NeojjCliBuilder
+---@field reset_author NeojjCliBuilder
+---@field insert_before NeojjCliBuilder
+---@field insert_after NeojjCliBuilder
+---@field interactive NeojjCliBuilder
+---@field keep_emptied NeojjCliBuilder
+---@field use_destination_message NeojjCliBuilder
+---@field skip_emptied NeojjCliBuilder
+---@field keep_divergent NeojjCliBuilder
+---@field simplify_parents NeojjCliBuilder
+---@field list NeojjCliBuilder
+---@field all_remotes NeojjCliBuilder
+---@field allow_backwards NeojjCliBuilder
+---@field overwrite_existing NeojjCliBuilder
+---@field all NeojjCliBuilder
+---@field dry_run NeojjCliBuilder
+---@field deleted NeojjCliBuilder
+---@field repo NeojjCliBuilder
+---@field user NeojjCliBuilder
+-- Options: invoking with a value appends the option pair and returns the builder.
+---@field template fun(value: string): NeojjCliBuilder
+---@field revisions fun(...: string): NeojjCliBuilder
+---@field revision fun(value: string): NeojjCliBuilder
+---@field limit fun(value: integer|string): NeojjCliBuilder
+---@field from fun(value: string): NeojjCliBuilder
+---@field to fun(value: string): NeojjCliBuilder
+---@field context fun(value: integer|string): NeojjCliBuilder
+---@field tool fun(value: string): NeojjCliBuilder
+---@field message fun(value: string): NeojjCliBuilder
+---@field source fun(value: string): NeojjCliBuilder
+---@field branch fun(value: string): NeojjCliBuilder
+---@field destination fun(value: string): NeojjCliBuilder
+---@field before fun(value: string): NeojjCliBuilder
+---@field after fun(value: string): NeojjCliBuilder
+---@field what fun(value: string): NeojjCliBuilder
+---@field name fun(value: string): NeojjCliBuilder
+---@field sparse_patterns fun(value: string): NeojjCliBuilder
+---@field into fun(value: string): NeojjCliBuilder
+---@field remote fun(value: string): NeojjCliBuilder
+---@field bookmark fun(value: string): NeojjCliBuilder
+---@field change fun(value: string): NeojjCliBuilder
+
+---@class NeojjCLI
+---@field status NeojjCliBuilder
+---@field log NeojjCliBuilder
+---@field diff NeojjCliBuilder
+---@field show NeojjCliBuilder
+---@field describe NeojjCliBuilder
+---@field new NeojjCliBuilder
+---@field commit NeojjCliBuilder
+---@field squash NeojjCliBuilder
+---@field split NeojjCliBuilder
+---@field edit NeojjCliBuilder
+---@field abandon NeojjCliBuilder
+---@field restore NeojjCliBuilder
+---@field rebase NeojjCliBuilder
+---@field duplicate NeojjCliBuilder
+---@field resolve NeojjCliBuilder
+---@field bookmark_list NeojjCliBuilder
+---@field bookmark_create NeojjCliBuilder
+---@field bookmark_move NeojjCliBuilder
+---@field bookmark_delete NeojjCliBuilder
+---@field bookmark_forget NeojjCliBuilder
+---@field bookmark_track NeojjCliBuilder
+---@field bookmark_untrack NeojjCliBuilder
+---@field bookmark_rename NeojjCliBuilder
+---@field bookmark_set NeojjCliBuilder
+---@field bookmark_advance NeojjCliBuilder
+---@field git_push NeojjCliBuilder
+---@field git_fetch NeojjCliBuilder
+---@field git_remote_add NeojjCliBuilder
+---@field git_remote_remove NeojjCliBuilder
+---@field git_remote_rename NeojjCliBuilder
+---@field git_remote_list NeojjCliBuilder
+---@field undo NeojjCliBuilder
+---@field redo NeojjCliBuilder
+---@field op_restore NeojjCliBuilder
+---@field op_log NeojjCliBuilder
+---@field revert NeojjCliBuilder
+---@field diffedit NeojjCliBuilder
+---@field file_list NeojjCliBuilder
+---@field file_untrack NeojjCliBuilder
+---@field file_annotate NeojjCliBuilder
+---@field file_show NeojjCliBuilder
+---@field config_get NeojjCliBuilder
+---@field config_set NeojjCliBuilder
+---@field config_unset NeojjCliBuilder
+---@field workspace_add NeojjCliBuilder
+---@field workspace_forget NeojjCliBuilder
+---@field workspace_list NeojjCliBuilder
+---@field workspace_rename NeojjCliBuilder
+---@field workspace_root NeojjCliBuilder
+---@field workspace_update_stale NeojjCliBuilder
+---@field absorb NeojjCliBuilder
+---@field parallelize NeojjCliBuilder
+---@field obslog NeojjCliBuilder
+---@field find_workspace_root fun(dir?: string): string?
 local M = {}
 
 -- Private metatable keys
@@ -165,7 +284,9 @@ function M._to_process(tbl, opts)
   local cwd
   local ok, jj = pcall(require, "neojj.lib.jj")
   if ok then
-    local repo_ok, repo = pcall(function() return jj.repo end)
+    local repo_ok, repo = pcall(function()
+      return jj.repo
+    end)
     if repo_ok and repo then
       cwd = repo.worktree_root
     end

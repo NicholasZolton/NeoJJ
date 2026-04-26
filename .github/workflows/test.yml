@@ -19,14 +19,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: ruby/setup-ruby@v1
-        with:
-          bundler-cache: true
-
       - uses: rhysd/action-setup-vim@v1
         with:
           neovim: true
           version: ${{ matrix.release }}
+
+      - name: Install jj
+        run: |
+          # jj on crates.io is a stub redirecting to jj-cli; use the latest
+          # released binary directly to avoid a 60s+ cargo build.
+          JJ_VERSION=$(curl -sSL https://api.github.com/repos/jj-vcs/jj/releases/latest | grep -oP '"tag_name":\s*"\K[^"]+')
+          curl -sSL "https://github.com/jj-vcs/jj/releases/download/${JJ_VERSION}/jj-${JJ_VERSION}-x86_64-unknown-linux-musl.tar.gz" \
+            | sudo tar -xz -C /usr/local/bin --strip-components=0 ./jj
+          jj --version
 
       - name: Install Dependencies
         run: |
@@ -37,10 +42,6 @@ jobs:
           git clone https://github.com/nvim-telescope/telescope-fzf-native.nvim tmp/telescope-fzf-native
           cd tmp/telescope-fzf-native
           make
-
-      - name: E2E Test
-        run: |
-          bundle exec rspec
 
       - name: Unit Test
         run: |

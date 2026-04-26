@@ -102,7 +102,7 @@ describe("jj log parser", function()
     end)
 
     it("defaults to empty string for missing fields", function()
-      local entry = log.json_to_entry({})
+      local entry = log.json_to_entry {}
       assert.are.equal("", entry.change_id)
       assert.are.equal("", entry.commit_id)
       assert.are.equal("", entry.description)
@@ -125,31 +125,31 @@ describe("jj log parser", function()
     end)
 
     it("handles description without trailing newline", function()
-      local entry = log.json_to_entry({
+      local entry = log.json_to_entry {
         change_id = "abc",
         commit_id = "def",
         description = "no trailing newline",
-      })
+      }
       assert.are.equal("no trailing newline", entry.description)
     end)
 
     it("handles missing author gracefully", function()
-      local entry = log.json_to_entry({
+      local entry = log.json_to_entry {
         change_id = "abc",
         commit_id = "def",
         description = "test",
-      })
+      }
       assert.are.equal("", entry.author_name)
       assert.are.equal("", entry.author_email)
       assert.are.equal("", entry.author_date)
     end)
 
     it("takes only first line of multi-line descriptions", function()
-      local entry = log.json_to_entry({
+      local entry = log.json_to_entry {
         change_id = "abc",
         commit_id = "def",
         description = "subject line\n\nmore details\nand more\n",
-      })
+      }
       assert.are.equal("subject line", entry.description)
     end)
   end)
@@ -167,26 +167,26 @@ describe("jj log parser", function()
 
     it("extracts shortest_prefix from the 7th tab field", function()
       local line = make_line(sample_json, "0\t0\t0\t0\t\t\tmuvq")
-      local entries = log.parse_enriched_lines({ line })
+      local entries = log.parse_enriched_lines { line }
       assert.are.equal(1, #entries)
       assert.are.equal("muvq", entries[1].shortest_prefix)
     end)
 
     it("handles single-character shortest_prefix", function()
       local line = make_line(sample_json, "0\t0\t0\t0\t\t\tm")
-      local entries = log.parse_enriched_lines({ line })
+      local entries = log.parse_enriched_lines { line }
       assert.are.equal("m", entries[1].shortest_prefix)
     end)
 
     it("sets shortest_prefix to nil when 7th field is empty", function()
       local line = make_line(sample_json, "0\t0\t0\t0\t\t")
-      local entries = log.parse_enriched_lines({ line })
+      local entries = log.parse_enriched_lines { line }
       assert.is_nil(entries[1].shortest_prefix)
     end)
 
     it("parses bookmarks and shortest_prefix together", function()
       local line = make_line(sample_json, "0\t0\t0\t0\tmain,dev\torigin@main\tmuvq")
-      local entries = log.parse_enriched_lines({ line })
+      local entries = log.parse_enriched_lines { line }
       assert.are.same({ "main", "dev" }, entries[1].bookmarks)
       assert.are.same({ "origin@main" }, entries[1].remote_bookmarks)
       assert.are.equal("muvq", entries[1].shortest_prefix)
@@ -194,26 +194,26 @@ describe("jj log parser", function()
 
     it("parses immutable, empty, and conflict flags", function()
       local line = make_line(sample_json, "1\t1\t1\t0\t\t\tmuvq")
-      local entries = log.parse_enriched_lines({ line })
+      local entries = log.parse_enriched_lines { line }
       assert.is_true(entries[1].immutable)
       assert.is_true(entries[1].empty)
       assert.is_true(entries[1].conflict)
     end)
 
     it("skips empty lines", function()
-      local entries = log.parse_enriched_lines({ "", "" })
+      local entries = log.parse_enriched_lines { "", "" }
       assert.are.equal(0, #entries)
     end)
 
     it("parses divergent flag (4th flag field)", function()
       local line = make_line(sample_json, "0\t0\t0\t1\t\t\tmuvq")
-      local entries = log.parse_enriched_lines({ line })
+      local entries = log.parse_enriched_lines { line }
       assert.is_true(entries[1].divergent)
     end)
 
     it("defaults divergent to false when flag is 0", function()
       local line = make_line(sample_json, "0\t0\t0\t0\tmain\t\tmuvq")
-      local entries = log.parse_enriched_lines({ line })
+      local entries = log.parse_enriched_lines { line }
       assert.is_false(entries[1].divergent)
       assert.are.same({ "main" }, entries[1].bookmarks)
     end)
@@ -221,14 +221,16 @@ describe("jj log parser", function()
 
   describe("list_with_graph parsing helper", function()
     it("parses divergent flag from trailing tab-tag", function()
-      local line = '○  {"change_id":"abc","commit_id":"123","description":"x","author":{"name":"","email":"","timestamp":""}}\tdivergent'
+      local line =
+        '○  {"change_id":"abc","commit_id":"123","description":"x","author":{"name":"","email":"","timestamp":""}}\tdivergent'
       local entry = log.parse_with_graph_line(line)
       assert.is_true(entry.divergent)
       assert.are.equal("abc", entry.change_id)
     end)
 
     it("defaults divergent to false when no tab-tag", function()
-      local line = '○  {"change_id":"abc","commit_id":"123","description":"x","author":{"name":"","email":"","timestamp":""}}'
+      local line =
+        '○  {"change_id":"abc","commit_id":"123","description":"x","author":{"name":"","email":"","timestamp":""}}'
       local entry = log.parse_with_graph_line(line)
       assert.is_false(entry.divergent)
     end)
@@ -361,7 +363,7 @@ describe("jj log parser", function()
     it("drops graph-only connector lines that follow a removed variant", function()
       local input = {
         entry { change_id = "x", commit_id = "a", divergent = true, graph = "○  " },
-        { change_id = nil, graph = "│ ╮" },                                 -- connector for the relocated variant
+        { change_id = nil, graph = "│ ╮" }, -- connector for the relocated variant
         entry { change_id = "x", commit_id = "b", divergent = true, graph = "│ ○  " },
         entry { change_id = "y", commit_id = "c", graph = "○  " },
       }

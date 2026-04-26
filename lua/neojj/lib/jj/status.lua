@@ -1,3 +1,8 @@
+---@class NeojjStatus
+---@field parse_diff_summary fun(lines: string[], root: string): NeojjFileItem[]
+---@field parse_status_files fun(lines: string[], root: string): NeojjFileItem[]
+---@field parse_status_lines fun(lines: string[]): NeojjStatusInfo
+---@field parse_conflicts fun(lines: string[], root: string): NeojjConflictItem[]
 local M = {}
 
 ---@class NeojjStatusMeta
@@ -69,10 +74,15 @@ function M.parse_status_files(lines, root)
   return items
 end
 
+---@class NeojjStatusInfo
+---@field head NeojjRepoHead
+---@field parent NeojjRepoParent
+
 ---Parse `jj status` output for working copy and parent info
 ---@param lines string[]
----@return { head: NeojjRepoHead, parent: NeojjRepoParent }
+---@return NeojjStatusInfo
 function M.parse_status_lines(lines)
+  ---@type NeojjRepoHead
   local head = {
     change_id = "",
     commit_id = "",
@@ -81,6 +91,7 @@ function M.parse_status_lines(lines)
     empty = true,
     conflict = false,
   }
+  ---@type NeojjRepoParent
   local parent = {
     change_id = "",
     commit_id = "",

@@ -14,6 +14,8 @@ local pad = util.pad_right
 ---@field on_unload function callback invoked when buffer is unloaded
 ---@field show_diff boolean show the diff view or not
 ---@field buffer Buffer
+---@field revision string|nil optional revision the editor was opened against
+---@field diff_view table|nil
 local M = {}
 
 --- Creates a new EditorBuffer
@@ -40,7 +42,9 @@ end
 ---@param index number 0-based index into recent changes
 ---@return string[]
 local function log_message(index)
-  local ok, repo = pcall(function() return jj.repo end)
+  local ok, repo = pcall(function()
+    return jj.repo
+  end)
   if ok and repo and repo.state and repo.state.recent then
     local items = repo.state.recent.items
     -- index is 0-based from the caller perspective, offset by 1 for past entries
@@ -195,7 +199,9 @@ function M:open(kind)
       end
 
       -- Highlight current bookmarks if available
-      local ok, repo = pcall(function() return jj.repo end)
+      local ok, repo = pcall(function()
+        return jj.repo
+      end)
       if ok and repo and repo.state then
         for _, bm in ipairs(repo.state.head.bookmarks or {}) do
           if bm and bm ~= "" then
@@ -208,9 +214,7 @@ function M:open(kind)
         and config.values.commit_editor.show_diff ~= false
         and kind ~= "floating"
       if show_diff then
-        local diff_header = self.revision
-          and ("Changes in " .. self.revision:sub(1, 8))
-          or "Current Changes"
+        local diff_header = self.revision and ("Changes in " .. self.revision:sub(1, 8)) or "Current Changes"
         logger.debug("[EDITOR] Opening Diffview for " .. diff_header)
         self.diff_view = DiffViewBuffer:new(diff_header, self.revision):open()
       end

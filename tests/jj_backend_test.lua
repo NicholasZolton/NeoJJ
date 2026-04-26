@@ -9,13 +9,19 @@ package.preload["plenary.async"] = function()
   return {
     run = function() end,
     util = { run_all = function() end },
-    wrap = function(fn) return fn end,
+    wrap = function(fn)
+      return fn
+    end,
   }
 end
 package.preload["plenary.path"] = function()
   local Path = {}
   Path.__index = Path
-  setmetatable(Path, { __call = function(_, opts) return setmetatable(opts, Path) end })
+  setmetatable(Path, {
+    __call = function(_, opts)
+      return setmetatable(opts, Path)
+    end,
+  })
   return Path
 end
 
@@ -43,7 +49,9 @@ local function mock_require(mod)
   end
   if mod == "neojj.runner" then
     return {
-      call = function() return { code = 1, stdout = {}, stderr = {} } end,
+      call = function()
+        return { code = 1, stdout = {}, stderr = {} }
+      end,
       history = {},
     }
   end
@@ -106,7 +114,10 @@ test("CLI builder readonly flag", function()
   assert(str:find("%-%-ignore%-working%-copy"), "Expected --ignore-working-copy for log: " .. str)
 
   local str2 = tostring(cli.describe.message("test"))
-  assert(not str2:find("%-%-ignore%-working%-copy"), "Should NOT have --ignore-working-copy for describe: " .. str2)
+  assert(
+    not str2:find("%-%-ignore%-working%-copy"),
+    "Should NOT have --ignore-working-copy for describe: " .. str2
+  )
 end)
 
 -- Test 5: JSON parser
@@ -189,11 +200,11 @@ end)
 -- Test 11: Bookmark parser
 test("Bookmark parser parses local and remote", function()
   local bookmark = require("neojj.lib.jj.bookmark")
-  local items = bookmark.parse_list({
+  local items = bookmark.parse_list {
     "main: tvonrrpo 63990385 initial commit",
     "  @git: tvonrrpo 63990385 initial commit",
     "feature: muvqvxnn 7809cff3 wip",
-  })
+  }
   assert(#items == 3, "Expected 3 items, got " .. #items)
   assert(items[1].name == "main")
   assert(items[1].remote == nil)
@@ -205,7 +216,7 @@ end)
 -- Test 12: Log JSON to entry conversion
 test("Log entry conversion strips trailing newline", function()
   local log = require("neojj.lib.jj.log")
-  local entry = log.json_to_entry({
+  local entry = log.json_to_entry {
     change_id = "muvqvxnnyrwstlmspzqvvqzmqstxmzwq",
     commit_id = "7809cff3fa826599726c858a8c387ddc46fb7a72",
     description = "add feature\n",
@@ -214,7 +225,7 @@ test("Log entry conversion strips trailing newline", function()
       email = "test@example.com",
       timestamp = "2026-03-07T02:38:46-05:00",
     },
-  })
+  }
   assert(entry.change_id == "muvqvxnnyrwstlmspzqvvqzmqstxmzwq")
   assert(entry.description == "add feature", "desc: " .. entry.description)
   assert(entry.author_name == "Test User")

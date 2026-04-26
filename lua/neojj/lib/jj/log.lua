@@ -1,3 +1,14 @@
+---@alias CommitLogEntry NeojjChangeLogEntry
+
+---@class NeojjLog
+---@field parse_json_objects fun(text: string): table[]
+---@field json_to_entry fun(obj: table): NeojjChangeLogEntry
+---@field parse_graph fun(lines: string[]): NeojjChangeLogEntry[]
+---@field group_divergent fun(entries: NeojjChangeLogEntry[]): NeojjChangeLogEntry[]
+---@field merge_unique_by_commit_id fun(primary: NeojjChangeLogEntry[], additional: NeojjChangeLogEntry[]): NeojjChangeLogEntry[]
+---@field list fun(revset?: string, limit?: integer): NeojjChangeLogEntry[]
+---@field parse_with_graph_line fun(line: string): NeojjChangeLogEntry?
+---@field list_with_graph fun(revset?: string, limit?: integer): NeojjChangeLogEntry[]
 local M = {}
 
 ---@class NeojjLogMeta
@@ -130,12 +141,9 @@ function M.parse_graph(lines)
   return entries
 end
 
----Fetch recent changes via JSON template (no graph)
----@param revset? string Revset expression (default: ancestors(@, N))
----@param limit? number Max entries
----@return NeojjChangeLogEntry[]
 -- Template that appends immutable/empty/conflict/bookmarks as tab-separated fields after json
-local LIST_TEMPLATE = 'json(self) ++ if(immutable, "\\t1", "\\t0") ++ if(empty, "\\t1", "\\t0") ++ if(conflict, "\\t1", "\\t0") ++ if(divergent, "\\t1", "\\t0") ++ "\\t" ++ local_bookmarks.map(|b| b.name()).join(",") ++ "\\t" ++ remote_bookmarks.filter(|b| b.remote() != "git").map(|b| b.name() ++ "@" ++ b.remote()).join(",") ++ "\\t" ++ change_id.shortest(8).prefix() ++ "\\n"'
+local LIST_TEMPLATE =
+  'json(self) ++ if(immutable, "\\t1", "\\t0") ++ if(empty, "\\t1", "\\t0") ++ if(conflict, "\\t1", "\\t0") ++ if(divergent, "\\t1", "\\t0") ++ "\\t" ++ local_bookmarks.map(|b| b.name()).join(",") ++ "\\t" ++ remote_bookmarks.filter(|b| b.remote() != "git").map(|b| b.name() ++ "@" ++ b.remote()).join(",") ++ "\\t" ++ change_id.shortest(8).prefix() ++ "\\n"'
 
 --- Parse lines produced by LIST_TEMPLATE into entries
 ---@param lines string[]
@@ -181,8 +189,12 @@ local function synthesize_parent(variants)
   local working_copy = false
   local immutable = false
   for _, v in ipairs(variants) do
-    if v.current_working_copy then working_copy = true end
-    if v.immutable then immutable = true end
+    if v.current_working_copy then
+      working_copy = true
+    end
+    if v.immutable then
+      immutable = true
+    end
     for _, b in ipairs(v.bookmarks or {}) do
       if not seen[b] then
         seen[b] = true
@@ -290,6 +302,10 @@ function M.merge_unique_by_commit_id(primary, additional)
   return primary
 end
 
+---Fetch recent changes via JSON template (no graph)
+---@param revset? string Revset expression (default: ancestors(@, N))
+---@param limit? number Max entries
+---@return NeojjChangeLogEntry[]
 function M.list(revset, limit)
   local jj = require("neojj.lib.jj")
   local config = require("neojj.config")
@@ -381,8 +397,16 @@ function meta.update(state)
   local limit = config.values.status.recent_commit_count
   local revset = "ancestors(@, " .. limit .. ")"
   local lines, code = shell.exec({
-    "jj", "--no-pager", "--color=never", "--ignore-working-copy",
-    "log", "--no-graph", "-T", LIST_TEMPLATE, "-r", revset,
+    "jj",
+    "--no-pager",
+    "--color=never",
+    "--ignore-working-copy",
+    "log",
+    "--no-graph",
+    "-T",
+    LIST_TEMPLATE,
+    "-r",
+    revset,
   }, state.worktree_root)
 
   local entries = (code == 0 and lines) and parse_enriched_lines(lines) or {}
@@ -402,8 +426,16 @@ function meta.update(state)
   if #divergent_revsets > 0 then
     local sibling_revset = table.concat(divergent_revsets, " | ")
     local sibling_lines, sibling_code = shell.exec({
-      "jj", "--no-pager", "--color=never", "--ignore-working-copy",
-      "log", "--no-graph", "-T", LIST_TEMPLATE, "-r", sibling_revset,
+      "jj",
+      "--no-pager",
+      "--color=never",
+      "--ignore-working-copy",
+      "log",
+      "--no-graph",
+      "-T",
+      LIST_TEMPLATE,
+      "-r",
+      sibling_revset,
     }, state.worktree_root)
     if sibling_code == 0 and sibling_lines then
       local sibling_entries = parse_enriched_lines(sibling_lines)
@@ -417,12 +449,17 @@ function meta.update(state)
   if #entries > 0 then
     for _, entry in ipairs(entries) do
       -- Match head
-      if state.head.change_id ~= "" and (
-        entry.change_id == state.head.change_id
-        or state.head.change_id:find(entry.change_id, 1, true) == 1
-        or entry.change_id:find(state.head.change_id, 1, true) == 1
-      ) then
-        if entry.description ~= "" and (state.head.description == "" or state.head.description:match("^%(")) then
+      if
+        state.head.change_id ~= ""
+        and (
+          entry.change_id == state.head.change_id
+          or state.head.change_id:find(entry.change_id, 1, true) == 1
+          or entry.change_id:find(state.head.change_id, 1, true) == 1
+        )
+      then
+        if
+          entry.description ~= "" and (state.head.description == "" or state.head.description:match("^%("))
+        then
           state.head.description = entry.description
         end
         if entry.shortest_prefix then
@@ -430,11 +467,14 @@ function meta.update(state)
         end
       end
       -- Match parent
-      if state.parent.change_id ~= "" and (
-        entry.change_id == state.parent.change_id
-        or state.parent.change_id:find(entry.change_id, 1, true) == 1
-        or entry.change_id:find(state.parent.change_id, 1, true) == 1
-      ) then
+      if
+        state.parent.change_id ~= ""
+        and (
+          entry.change_id == state.parent.change_id
+          or state.parent.change_id:find(entry.change_id, 1, true) == 1
+          or entry.change_id:find(state.parent.change_id, 1, true) == 1
+        )
+      then
         if entry.shortest_prefix then
           state.parent.shortest_prefix = entry.shortest_prefix
         end

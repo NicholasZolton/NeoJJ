@@ -1,5 +1,7 @@
 local M = {}
 
+---@alias ConfigEntry JjConfigEntry
+
 ---@class JjConfigEntry
 ---@field value string
 ---@field name string
@@ -65,7 +67,8 @@ end
 ---@return JjConfigEntry
 function M.get(key)
   local jj = require("neojj.lib.jj")
-  local result = jj.cli.config_get.args(key).call { hidden = true, trim = true, ignore_error = true, await = true }
+  local result =
+    jj.cli.config_get.args(key).call { hidden = true, trim = true, ignore_error = true, await = true }
   local value = ""
   if result and result.code == 0 and result.stdout and result.stdout[1] then
     value = result.stdout[1]

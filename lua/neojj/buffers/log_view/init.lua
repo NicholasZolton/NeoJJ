@@ -158,12 +158,16 @@ function M:open()
         end,
         ["dd"] = function()
           local item = self.buffer.ui:get_commit_item_under_cursor()
-          if not (item and item.change_offset ~= nil) then return end
+          if not (item and item.change_offset ~= nil) then
+            return
+          end
           CommitViewBuffer.new(item.commit_id, self.files):open()
         end,
         ["x"] = function()
           local item = self.buffer.ui:get_commit_item_under_cursor()
-          if not (item and item.change_offset ~= nil) then return end
+          if not (item and item.change_offset ~= nil) then
+            return
+          end
           common.abandon_variant(item, function()
             a.run(function()
               local permit = self.refresh_lock:acquire()
@@ -278,8 +282,12 @@ function M:open()
             -- Stop on: the original commit lines (start with non-space) AND on variant rows
             -- (start with spaces but contain a '/' followed by a digit after the indent).
             local is_landable = line:sub(1, 1) ~= " " or line:match("^%s+/%d")
-            if is_landable then break end
-            if vim.fn.line(".") == vim.fn.line("$") then break end
+            if is_landable then
+              break
+            end
+            if vim.fn.line(".") == vim.fn.line("$") then
+              break
+            end
             vim.cmd("norm! j")
           end
         end,
@@ -293,8 +301,12 @@ function M:open()
           while true do
             local line = self.buffer:get_current_line()[1]
             local is_landable = line:sub(1, 1) ~= " " or line:match("^%s+/%d")
-            if is_landable then break end
-            if vim.fn.line(".") == 1 then break end
+            if is_landable then
+              break
+            end
+            if vim.fn.line(".") == 1 then
+              break
+            end
             vim.cmd("norm! k")
           end
         end,

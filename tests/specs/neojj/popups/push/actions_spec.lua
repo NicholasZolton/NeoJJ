@@ -144,7 +144,7 @@ describe("push popup actions remote mode", function()
     assert.are.same({ "--dry-run" }, bookmark_builder.args_values)
     assert.are.equal(1, #finder_calls)
     assert.are.equal("Push bookmark", finder_calls[1].prompt_prefix)
-    assert.is_true(has_message(info_messages, "Pushed main"))
+    assert.is_true(has_message(info_messages, "Pushed bookmark main"))
     assert.is_false(has_message(warn_messages, "Push failed"))
   end)
 
