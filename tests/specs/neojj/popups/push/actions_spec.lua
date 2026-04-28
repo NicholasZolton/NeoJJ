@@ -26,8 +26,9 @@ local function with_actions_module(stubs, fn)
 end
 
 ---@param kind string
+---@param result table?
 ---@return table
-local function new_builder(kind)
+local function new_builder(kind, result)
   local builder = {
     kind = kind,
     called = false,
@@ -48,7 +49,7 @@ local function new_builder(kind)
 
   builder.call = function()
     builder.called = true
-    return { code = 0, stderr = {} }
+    return result or { code = 0, stderr = {} }
   end
 
   return builder
@@ -498,6 +499,200 @@ describe("push popup actions remote mode", function()
     assert.are.same({ "--dry-run" }, push_builder.args_values)
     assert.is_nil(push_builder.remote_value)
     assert.is_true(has_message(info_messages, "Pushed"))
+  end)
+
+  it("surfaces jj warnings when push exits 0", function()
+    local push_builder = new_builder("push", {
+      code = 0,
+      stderr = {
+        "Warning: Non-tracking remote bookmark foo@origin exists",
+        "Hint: Run `jj bookmark track foo --remote=origin` to import the remote bookmark.",
+        "Nothing changed.",
+      },
+    })
+    local info_messages = {}
+    local warn_messages = {}
+
+    with_actions_module({
+      ["neojj.lib.jj"] = {
+        cli = {
+          git_push = push_builder,
+          git_remote_list = {
+            call = function()
+              return { code = 0, stdout = { "origin git@example/origin" } }
+            end,
+          },
+        },
+      },
+      ["neojj.lib.notification"] = {
+        info = function(msg)
+          table.insert(info_messages, msg)
+        end,
+        warn = function(msg)
+          table.insert(warn_messages, msg)
+        end,
+      },
+      ["neojj.buffers.fuzzy_finder"] = {
+        new = function()
+          error("unexpected remote picker invocation")
+        end,
+      },
+      ["neojj.lib.picker_cache"] = {
+        get_local_bookmark_names = function()
+          return {}
+        end,
+        get_all_revisions = function()
+          return {}
+        end,
+        parse_selection = function(selection)
+          return selection
+        end,
+        error_msg = function()
+          return "err"
+        end,
+      },
+    }, function(actions)
+      local popup = {
+        get_arguments = function()
+          return {}
+        end,
+        get_internal_arguments = function()
+          return {}
+        end,
+      }
+      actions.push(popup)
+    end)
+
+    assert.is_true(push_builder.called)
+    assert.is_false(has_message(info_messages, "Pushed"))
+    assert.is_true(has_message(warn_messages, "with warnings"))
+    assert.is_true(has_message(warn_messages, "Non-tracking remote bookmark foo@origin"))
+    assert.is_true(has_message(warn_messages, "jj bookmark track foo"))
+  end)
+
+  it("captures indented continuation lines after a warning", function()
+    local push_builder = new_builder("push", {
+      code = 0,
+      stderr = {
+        "Warning: Failed to export some bookmarks:",
+        "  fred@git: Ref cannot point to the root commit in Git",
+        "Nothing changed.",
+      },
+    })
+    local warn_messages = {}
+
+    with_actions_module({
+      ["neojj.lib.jj"] = {
+        cli = {
+          git_push = push_builder,
+          git_remote_list = {
+            call = function()
+              return { code = 0, stdout = {} }
+            end,
+          },
+        },
+      },
+      ["neojj.lib.notification"] = {
+        info = function() end,
+        warn = function(msg)
+          table.insert(warn_messages, msg)
+        end,
+      },
+      ["neojj.buffers.fuzzy_finder"] = {
+        new = function()
+          error("unexpected remote picker invocation")
+        end,
+      },
+      ["neojj.lib.picker_cache"] = {
+        get_local_bookmark_names = function()
+          return {}
+        end,
+        get_all_revisions = function()
+          return {}
+        end,
+        parse_selection = function(s)
+          return s
+        end,
+        error_msg = function()
+          return "err"
+        end,
+      },
+    }, function(actions)
+      local popup = {
+        get_arguments = function()
+          return {}
+        end,
+        get_internal_arguments = function()
+          return {}
+        end,
+      }
+      actions.push(popup)
+    end)
+
+    assert.is_true(has_message(warn_messages, "Failed to export some bookmarks"))
+    assert.is_true(has_message(warn_messages, "fred@git: Ref cannot point to the root commit"))
+  end)
+
+  it("does not flag success notifications when stderr has only status lines", function()
+    local push_builder = new_builder("push", {
+      code = 0,
+      stderr = { "Changes to push to origin:", "  Add bookmark main" },
+    })
+    local info_messages = {}
+    local warn_messages = {}
+
+    with_actions_module({
+      ["neojj.lib.jj"] = {
+        cli = {
+          git_push = push_builder,
+          git_remote_list = {
+            call = function()
+              return { code = 0, stdout = {} }
+            end,
+          },
+        },
+      },
+      ["neojj.lib.notification"] = {
+        info = function(msg)
+          table.insert(info_messages, msg)
+        end,
+        warn = function(msg)
+          table.insert(warn_messages, msg)
+        end,
+      },
+      ["neojj.buffers.fuzzy_finder"] = {
+        new = function()
+          error("unexpected remote picker invocation")
+        end,
+      },
+      ["neojj.lib.picker_cache"] = {
+        get_local_bookmark_names = function()
+          return {}
+        end,
+        get_all_revisions = function()
+          return {}
+        end,
+        parse_selection = function(s)
+          return s
+        end,
+        error_msg = function()
+          return "err"
+        end,
+      },
+    }, function(actions)
+      local popup = {
+        get_arguments = function()
+          return {}
+        end,
+        get_internal_arguments = function()
+          return {}
+        end,
+      }
+      actions.push(popup)
+    end)
+
+    assert.is_true(has_message(info_messages, "Pushed"))
+    assert.is_false(has_message(warn_messages, "with warnings"))
   end)
 
   it("applies selected remote for plain push", function()

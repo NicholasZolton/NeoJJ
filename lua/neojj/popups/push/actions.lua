@@ -19,6 +19,38 @@ local function push_error_msg(result)
   return stderr
 end
 
+--- Extract jj `Warning:` blocks (and their `Hint:`/indented continuations) from stderr.
+--- Returns the joined block text when at least one `Warning:` line is present, otherwise nil.
+--- jj emits all warnings via a centralized `Warning: ` prefix helper, so prefix matching is reliable.
+---@param stderr string[]?
+---@return string?
+local function extract_warnings(stderr)
+  if not stderr or #stderr == 0 then
+    return nil
+  end
+  local lines = {}
+  local in_block = false
+  local saw_warning = false
+  for _, line in ipairs(stderr) do
+    if line:match("^Warning:") then
+      table.insert(lines, line)
+      in_block = true
+      saw_warning = true
+    elseif line:match("^Hint:") then
+      table.insert(lines, line)
+      in_block = true
+    elseif in_block and line:match("^%s") then
+      table.insert(lines, line)
+    else
+      in_block = false
+    end
+  end
+  if not saw_warning then
+    return nil
+  end
+  return table.concat(lines, "\n")
+end
+
 ---@param lines string[]?
 ---@return string[]
 local function parse_remotes(lines)
@@ -85,7 +117,15 @@ local function run_push(popup, base_builder, subject)
 
   local result = builder.call()
   if result and result.code == 0 then
-    notification.info("Pushed" .. subject_str .. remote_str, { dismiss = true })
+    local warnings = extract_warnings(result.stderr)
+    if warnings then
+      notification.warn(
+        "Pushed" .. subject_str .. remote_str .. " with warnings:\n" .. warnings,
+        { dismiss = true }
+      )
+    else
+      notification.info("Pushed" .. subject_str .. remote_str, { dismiss = true })
+    end
   else
     notification.warn("Push failed: " .. push_error_msg(result), { dismiss = true })
   end
