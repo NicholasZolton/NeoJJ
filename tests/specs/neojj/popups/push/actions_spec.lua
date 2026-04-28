@@ -585,7 +585,11 @@ describe("push popup actions remote mode", function()
       ["neojj.lib.jj"] = {
         cli = {
           git_push = push_builder,
-          git_remote_list = { call = function() return { code = 0, stdout = {} } end },
+          git_remote_list = {
+            call = function()
+              return { code = 0, stdout = {} }
+            end,
+          },
         },
       },
       ["neojj.lib.notification"] = {
@@ -600,15 +604,27 @@ describe("push popup actions remote mode", function()
         end,
       },
       ["neojj.lib.picker_cache"] = {
-        get_local_bookmark_names = function() return {} end,
-        get_all_revisions = function() return {} end,
-        parse_selection = function(s) return s end,
-        error_msg = function() return "err" end,
+        get_local_bookmark_names = function()
+          return {}
+        end,
+        get_all_revisions = function()
+          return {}
+        end,
+        parse_selection = function(s)
+          return s
+        end,
+        error_msg = function()
+          return "err"
+        end,
       },
     }, function(actions)
       local popup = {
-        get_arguments = function() return {} end,
-        get_internal_arguments = function() return {} end,
+        get_arguments = function()
+          return {}
+        end,
+        get_internal_arguments = function()
+          return {}
+        end,
       }
       actions.push(popup)
     end)
@@ -629,7 +645,11 @@ describe("push popup actions remote mode", function()
       ["neojj.lib.jj"] = {
         cli = {
           git_push = push_builder,
-          git_remote_list = { call = function() return { code = 0, stdout = {} } end },
+          git_remote_list = {
+            call = function()
+              return { code = 0, stdout = {} }
+            end,
+          },
         },
       },
       ["neojj.lib.notification"] = {
@@ -646,15 +666,27 @@ describe("push popup actions remote mode", function()
         end,
       },
       ["neojj.lib.picker_cache"] = {
-        get_local_bookmark_names = function() return {} end,
-        get_all_revisions = function() return {} end,
-        parse_selection = function(s) return s end,
-        error_msg = function() return "err" end,
+        get_local_bookmark_names = function()
+          return {}
+        end,
+        get_all_revisions = function()
+          return {}
+        end,
+        parse_selection = function(s)
+          return s
+        end,
+        error_msg = function()
+          return "err"
+        end,
       },
     }, function(actions)
       local popup = {
-        get_arguments = function() return {} end,
-        get_internal_arguments = function() return {} end,
+        get_arguments = function()
+          return {}
+        end,
+        get_internal_arguments = function()
+          return {}
+        end,
       }
       actions.push(popup)
     end)
