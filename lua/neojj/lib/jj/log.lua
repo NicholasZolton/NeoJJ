@@ -143,7 +143,7 @@ end
 
 -- Template that appends immutable/empty/conflict/bookmarks as tab-separated fields after json
 local LIST_TEMPLATE =
-  'json(self) ++ if(immutable, "\\t1", "\\t0") ++ if(empty, "\\t1", "\\t0") ++ if(conflict, "\\t1", "\\t0") ++ if(divergent, "\\t1", "\\t0") ++ "\\t" ++ local_bookmarks.map(|b| b.name()).join(",") ++ "\\t" ++ remote_bookmarks.filter(|b| b.remote() != "git").map(|b| b.name() ++ "@" ++ b.remote()).join(",") ++ "\\t" ++ change_id.shortest(8).prefix() ++ "\\n"'
+  'json(self) ++ if(immutable, "\\t1", "\\t0") ++ if(empty, "\\t1", "\\t0") ++ if(conflict, "\\t1", "\\t0") ++ if(divergent, "\\t1", "\\t0") ++ "\\t" ++ local_bookmarks.map(|b| b.name()).join(",") ++ "\\t" ++ remote_bookmarks.filter(|b| b.remote() != "git").map(|b| b.name() ++ "@" ++ b.remote()).join(",") ++ "\\t" ++ change_id.shortest(8).prefix() ++ "\\t" ++ self.change_offset() ++ "\\n"'
 
 --- Parse lines produced by LIST_TEMPLATE into entries
 ---@param lines string[]
@@ -170,6 +170,12 @@ local function parse_enriched_lines(lines)
           end
           if parts[7] and parts[7] ~= "" then
             entry.shortest_prefix = parts[7]
+          end
+          -- jj's `self.change_offset()` returns 0 for non-divergent commits; only
+          -- carry it through for actual variants so the field's "this is a divergent
+          -- variant" semantics are preserved.
+          if entry.divergent and parts[8] and parts[8] ~= "" then
+            entry.change_offset = tonumber(parts[8])
           end
           table.insert(entries, entry)
         end
@@ -243,11 +249,16 @@ function M.group_divergent(entries)
   for _, indices in pairs(groups) do
     if #indices >= 2 then
       local variants = {}
-      for offset, idx in ipairs(indices) do
-        local v = vim.deepcopy(entries[idx])
-        v.change_offset = offset - 1
-        table.insert(variants, v)
+      for _, idx in ipairs(indices) do
+        table.insert(variants, vim.deepcopy(entries[idx]))
       end
+      -- Sort by jj's authoritative change_offset so the rendered /0, /1, ...
+      -- order matches what `jj log` shows. Falls back to original index when
+      -- offset is missing (shouldn't happen for divergent entries from the
+      -- template, but defensive against older callers that build entries by hand).
+      table.sort(variants, function(a, b)
+        return (a.change_offset or 0) < (b.change_offset or 0)
+      end)
       parent_at[indices[1]] = synthesize_parent(variants)
       for k = 2, #indices do
         removed[indices[k]] = true
@@ -327,7 +338,10 @@ function M.list(revset, limit)
   return M.group_divergent(parse_enriched_lines(result.stdout))
 end
 
----Parse a single line of `jj log -T 'json(self) ++ if(divergent, "\tdivergent", "")'` output.
+---Parse a single line of `jj log -T 'json(self) ++ "\tdivergent\t" ++ N or "\t\t"'` output.
+---Trailing format is `\t<divergent>\t<change_offset>` where `<divergent>` is
+---literally "divergent" or empty, and `<change_offset>` is jj's variant index
+---for divergent commits (empty otherwise).
 ---@param line string
 ---@return NeojjChangeLogEntry
 function M.parse_with_graph_line(line)
@@ -353,7 +367,11 @@ function M.parse_with_graph_line(line)
 
   local entry = M.json_to_entry(obj)
   entry.graph = graph
-  entry.divergent = trailing:find("divergent", 1, true) ~= nil
+  local trailing_parts = vim.split(trailing, "\t", { plain = true })
+  entry.divergent = trailing_parts[2] == "divergent"
+  if entry.divergent and trailing_parts[3] and trailing_parts[3] ~= "" then
+    entry.change_offset = tonumber(trailing_parts[3])
+  end
   entry.immutable = graph:match("◆") ~= nil
   entry.current_working_copy = graph:match("@") ~= nil
   return entry
@@ -369,7 +387,9 @@ function M.list_with_graph(revset, limit)
   local config = require("neojj.config")
   limit = limit or config.values.status.recent_commit_count
 
-  local builder = jj.cli.log.template('json(self) ++ if(divergent, "\\tdivergent", "")')
+  local builder = jj.cli.log.template(
+    'json(self) ++ "\\t" ++ if(divergent, "divergent", "") ++ "\\t" ++ if(divergent, self.change_offset(), "")'
+  )
   if revset and revset ~= "" then
     builder = builder.revisions(revset)
   end
@@ -445,17 +465,16 @@ function meta.update(state)
 
   state.recent.items = M.group_divergent(entries)
 
-  -- Enrich head and parent from log data (description, shortest_prefix)
+  -- Enrich head and parent from log data (description, shortest_prefix).
+  -- Match by commit_id so divergent variants (which share a change_id) resolve
+  -- to the right entry. state.{head,parent}.commit_id is the short prefix from
+  -- `jj status`; entry.commit_id is the full hash from the JSON template.
   if #entries > 0 then
     for _, entry in ipairs(entries) do
-      -- Match head
       if
-        state.head.change_id ~= ""
-        and (
-          entry.change_id == state.head.change_id
-          or state.head.change_id:find(entry.change_id, 1, true) == 1
-          or entry.change_id:find(state.head.change_id, 1, true) == 1
-        )
+        state.head.commit_id ~= ""
+        and entry.commit_id ~= ""
+        and entry.commit_id:find(state.head.commit_id, 1, true) == 1
       then
         if
           entry.description ~= "" and (state.head.description == "" or state.head.description:match("^%("))
@@ -466,14 +485,10 @@ function meta.update(state)
           state.head.shortest_prefix = entry.shortest_prefix
         end
       end
-      -- Match parent
       if
-        state.parent.change_id ~= ""
-        and (
-          entry.change_id == state.parent.change_id
-          or state.parent.change_id:find(entry.change_id, 1, true) == 1
-          or entry.change_id:find(state.parent.change_id, 1, true) == 1
-        )
+        state.parent.commit_id ~= ""
+        and entry.commit_id ~= ""
+        and entry.commit_id:find(state.parent.commit_id, 1, true) == 1
       then
         if entry.shortest_prefix then
           state.parent.shortest_prefix = entry.shortest_prefix
