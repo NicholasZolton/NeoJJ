@@ -1186,24 +1186,15 @@ M.n_open_in_browser = function(self)
       return
     end
 
-    local change_id = ctx.change_id or jj.repo.state.head.change_id
+    -- Use commit_id directly: it's unambiguous (a divergent change_id like
+    -- `kumtokwn` resolves to multiple commits and `jj log -r` errors).
+    local commit_hash = (ctx.item and ctx.item.commit_id ~= "" and ctx.item.commit_id)
+      or jj.repo.state.head.commit_id
 
-    if not change_id or change_id == "" then
+    if not commit_hash or commit_hash == "" then
       notification.warn("No change under cursor", { dismiss = true })
       return
     end
-
-    -- Get the git commit hash for this change
-    local result = jj.cli.log.no_graph
-      .template('"" ++ commit_id ++ ""')
-      .revisions(change_id)
-      .limit(1)
-      .call { hidden = true, trim = true }
-    if not result or result.code ~= 0 or not result.stdout[1] then
-      notification.warn("Could not resolve commit", { dismiss = true })
-      return
-    end
-    local commit_hash = result.stdout[1]
 
     local browser_url = get_remote_browser_url()
     if not browser_url then

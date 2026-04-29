@@ -206,33 +206,51 @@ describe("jj log parser", function()
     end)
 
     it("parses divergent flag (4th flag field)", function()
-      local line = make_line(sample_json, "0\t0\t0\t1\t\t\tmuvq")
+      local line = make_line(sample_json, "0\t0\t0\t1\t\t\tmuvq\t0")
       local entries = log.parse_enriched_lines { line }
       assert.is_true(entries[1].divergent)
     end)
 
     it("defaults divergent to false when flag is 0", function()
-      local line = make_line(sample_json, "0\t0\t0\t0\tmain\t\tmuvq")
+      local line = make_line(sample_json, "0\t0\t0\t0\tmain\t\tmuvq\t0")
       local entries = log.parse_enriched_lines { line }
       assert.is_false(entries[1].divergent)
       assert.are.same({ "main" }, entries[1].bookmarks)
+    end)
+
+    it("parses change_offset (8th tab field) for divergent entries", function()
+      local line = make_line(sample_json, "0\t0\t0\t1\t\t\tmuvq\t2")
+      local entries = log.parse_enriched_lines { line }
+      assert.is_true(entries[1].divergent)
+      assert.are.equal(2, entries[1].change_offset)
+    end)
+
+    it("ignores change_offset for non-divergent entries", function()
+      -- jj's `self.change_offset()` returns 0 for non-divergent commits; we don't
+      -- store it so callers can distinguish "this is a variant" via change_offset != nil.
+      local line = make_line(sample_json, "0\t0\t0\t0\t\t\tmuvq\t0")
+      local entries = log.parse_enriched_lines { line }
+      assert.is_false(entries[1].divergent)
+      assert.is_nil(entries[1].change_offset)
     end)
   end)
 
   describe("list_with_graph parsing helper", function()
     it("parses divergent flag from trailing tab-tag", function()
       local line =
-        '○  {"change_id":"abc","commit_id":"123","description":"x","author":{"name":"","email":"","timestamp":""}}\tdivergent'
+        '○  {"change_id":"abc","commit_id":"123","description":"x","author":{"name":"","email":"","timestamp":""}}\tdivergent\t1'
       local entry = log.parse_with_graph_line(line)
       assert.is_true(entry.divergent)
       assert.are.equal("abc", entry.change_id)
+      assert.are.equal(1, entry.change_offset)
     end)
 
-    it("defaults divergent to false when no tab-tag", function()
+    it("defaults divergent to false when trailing tag is empty", function()
       local line =
-        '○  {"change_id":"abc","commit_id":"123","description":"x","author":{"name":"","email":"","timestamp":""}}'
+        '○  {"change_id":"abc","commit_id":"123","description":"x","author":{"name":"","email":"","timestamp":""}}\t\t'
       local entry = log.parse_with_graph_line(line)
       assert.is_false(entry.divergent)
+      assert.is_nil(entry.change_offset)
     end)
 
     it("returns graph-only entry for connector lines", function()
@@ -277,8 +295,8 @@ describe("jj log parser", function()
 
     it("collapses two divergent entries into a parent + two variants", function()
       local input = {
-        entry { change_id = "x", commit_id = "1", divergent = true, description = "v1" },
-        entry { change_id = "x", commit_id = "2", divergent = true, description = "v2" },
+        entry { change_id = "x", commit_id = "1", divergent = true, change_offset = 0, description = "v1" },
+        entry { change_id = "x", commit_id = "2", divergent = true, change_offset = 1, description = "v2" },
         entry { change_id = "y", commit_id = "3" },
       }
       local out = log.group_divergent(input)
@@ -296,6 +314,29 @@ describe("jj log parser", function()
       assert.are.equal("y", out[2].change_id)
     end)
 
+    it("sorts variants by jj's change_offset, not by parser iteration order", function()
+      -- Graph mode emits @ first, so a divergent variant labelled /1 by jj can
+      -- arrive before /0. Output must still render /0 before /1.
+      local input = {
+        entry {
+          change_id = "x",
+          commit_id = "wc",
+          divergent = true,
+          change_offset = 1,
+          current_working_copy = true,
+        },
+        entry { change_id = "x", commit_id = "other", divergent = true, change_offset = 0 },
+      }
+      local out = log.group_divergent(input)
+      assert.are.equal(1, #out)
+      local parent = out[1]
+      assert.are.equal(2, #parent.variants)
+      assert.are.equal(0, parent.variants[1].change_offset)
+      assert.are.equal("other", parent.variants[1].commit_id)
+      assert.are.equal(1, parent.variants[2].change_offset)
+      assert.are.equal("wc", parent.variants[2].commit_id)
+    end)
+
     it("treats a divergent entry alone in the revset as non-divergent", function()
       local input = {
         entry { change_id = "x", commit_id = "1", divergent = true, description = "lonely" },
@@ -309,9 +350,9 @@ describe("jj log parser", function()
 
     it("handles three variants in order", function()
       local input = {
-        entry { change_id = "x", commit_id = "a", divergent = true },
-        entry { change_id = "x", commit_id = "b", divergent = true },
-        entry { change_id = "x", commit_id = "c", divergent = true },
+        entry { change_id = "x", commit_id = "a", divergent = true, change_offset = 0 },
+        entry { change_id = "x", commit_id = "b", divergent = true, change_offset = 1 },
+        entry { change_id = "x", commit_id = "c", divergent = true, change_offset = 2 },
       }
       local out = log.group_divergent(input)
       assert.are.equal(1, #out)
