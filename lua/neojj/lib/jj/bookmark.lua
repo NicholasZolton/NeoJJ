@@ -127,6 +127,10 @@ end
 ---@param bookmark_at_remote string e.g., "main@origin"
 function M.track(bookmark_at_remote)
   local jj = require("neojj.lib.jj")
+  local name, remote = bookmark_at_remote:match("^(.+)@(.+)$")
+  if name and remote then
+    return jj.cli.bookmark_track.args(name).remote(remote).call()
+  end
   return jj.cli.bookmark_track.args(bookmark_at_remote).call()
 end
 

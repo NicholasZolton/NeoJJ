@@ -898,7 +898,7 @@ M.n_forget_bookmark = function(self)
       if not input.get_permission("Track bookmark " .. ref .. "?") then
         return
       end
-      local result = jj.cli.bookmark_track.args(ref).call()
+      local result = jj.cli.bookmark_track.args(name).remote(remote).call()
       if result and result.code == 0 then
         notification.info("Tracking " .. ref, { dismiss = true })
         self:dispatch_refresh(nil, "n_forget_bookmark")
@@ -940,7 +940,7 @@ M.n_new_change_on = function(self)
     local item = ctx.item
     if item and item.remote and item.remote ~= "" and ctx.section == "bookmarks" then
       local ref = item.name .. "@" .. item.remote
-      local track_result = jj.cli.bookmark_track.args(ref).call()
+      local track_result = jj.cli.bookmark_track.args(item.name).remote(item.remote).call()
       if track_result and track_result.code == 0 then
         notification.info("Tracked " .. ref, { dismiss = true })
       end

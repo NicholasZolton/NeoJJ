@@ -175,13 +175,28 @@ function M.forget(_popup)
 end
 
 function M.track(_popup)
-  local bookmarks = picker_cache.get_remote_bookmark_names()
-  local name = FuzzyFinderBuffer.new(bookmarks):open_async { prompt_prefix = "Track bookmark" }
+  local remotes_result = jj.cli.git_remote_list.call { hidden = true, trim = true }
+  local remotes = {}
+  if remotes_result and remotes_result.code == 0 then
+    for _, line in ipairs(remotes_result.stdout or {}) do
+      local remote_name = line:match("^(%S+)")
+      if remote_name then
+        table.insert(remotes, remote_name)
+      end
+    end
+  end
+  local targets = {}
+  for _, branch in ipairs(picker_cache.get_local_bookmark_names()) do
+    for _, remote in ipairs(remotes) do
+      table.insert(targets, branch .. "@" .. remote)
+    end
+  end
+  local name = FuzzyFinderBuffer.new(targets):open_async { prompt_prefix = "Track bookmark" }
   if not name then
     return
   end
 
-  local result = jj.cli.bookmark_track.args(name).call()
+  local result = require("neojj.lib.jj.bookmark").track(name)
   if result and result.code == 0 then
     notification.info("Tracking " .. name, { dismiss = true })
   else
