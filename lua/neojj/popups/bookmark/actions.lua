@@ -196,7 +196,7 @@ function M.track(_popup)
     return
   end
 
-  local result = jj.cli.bookmark_track.args(name).call()
+  local result = require("neojj.lib.jj.bookmark").track(name)
   if result and result.code == 0 then
     notification.info("Tracking " .. name, { dismiss = true })
   else

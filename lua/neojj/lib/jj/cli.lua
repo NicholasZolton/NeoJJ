@@ -540,7 +540,11 @@ define_command("bookmark delete", {})
 define_command("bookmark forget", {})
 
 -- jj bookmark track
-define_command("bookmark track", {})
+define_command("bookmark track", {
+  options = {
+    remote = "--remote",
+  },
+})
 
 -- jj bookmark untrack
 define_command("bookmark untrack", {

@@ -33,10 +33,14 @@ local function base_stubs(overrides)
         bookmark_track = {
           args = function(name)
             return {
-              call = function()
-                return { code = 0, stderr = {} }
-              end,
               _name = name,
+              remote = function()
+                return {
+                  call = function()
+                    return { code = 0, stderr = {} }
+                  end,
+                }
+              end,
             }
           end,
         },
@@ -98,46 +102,56 @@ describe("bookmark track action", function()
     local selections = { "main@origin" }
 
     local tracked_name = nil
+    local tracked_remote = nil
     local track_builder_factory = function(name)
       tracked_name = name
       return {
-        call = function()
-          return { code = 0, stderr = {} }
+        remote = function(r)
+          tracked_remote = r
+          return {
+            call = function()
+              return { code = 0, stderr = {} }
+            end,
+          }
         end,
       }
     end
 
-    with_actions_module(base_stubs({
-      ["neojj.lib.jj"] = {
-        cli = {
-          bookmark_track = { args = track_builder_factory },
-          git_remote_list = {
-            call = function()
-              return { code = 0, stdout = { "origin git@example.com:org/repo.git" } }
-            end,
+    with_actions_module(
+      base_stubs {
+        ["neojj.lib.jj"] = {
+          cli = {
+            bookmark_track = { args = track_builder_factory },
+            git_remote_list = {
+              call = function()
+                return { code = 0, stdout = { "origin git@example.com:org/repo.git" } }
+              end,
+            },
           },
         },
+        ["neojj.buffers.fuzzy_finder"] = {
+          new = function(items)
+            return {
+              open_async = function(_, opts)
+                table.insert(finder_calls, { items = items, prompt_prefix = opts.prompt_prefix })
+                return table.remove(selections, 1)
+              end,
+            }
+          end,
+        },
       },
-      ["neojj.buffers.fuzzy_finder"] = {
-        new = function(items)
-          return {
-            open_async = function(_, opts)
-              table.insert(finder_calls, { items = items, prompt_prefix = opts.prompt_prefix })
-              return table.remove(selections, 1)
-            end,
-          }
-        end,
-      },
-    }), function(actions)
-      actions.track()
-    end)
+      function(actions)
+        actions.track()
+      end
+    )
 
     assert.are.equal(1, #finder_calls)
     assert.are.equal("Track bookmark", finder_calls[1].prompt_prefix)
     local items = finder_calls[1].items
     table.sort(items)
     assert.are.same({ "dev@origin", "main@origin" }, items)
-    assert.are.equal("main@origin", tracked_name)
+    assert.are.equal("main", tracked_name)
+    assert.are.equal("origin", tracked_remote)
   end)
 
   it("builds cross-product for multiple remotes", function()
@@ -145,84 +159,105 @@ describe("bookmark track action", function()
     local selections = { "dev@upstream" }
 
     local tracked_name = nil
+    local tracked_remote = nil
 
-    with_actions_module(base_stubs({
-      ["neojj.lib.jj"] = {
-        cli = {
-          bookmark_track = {
-            args = function(name)
-              tracked_name = name
-              return { call = function() return { code = 0, stderr = {} } end }
-            end,
-          },
-          git_remote_list = {
-            call = function()
-              return {
-                code = 0,
-                stdout = {
-                  "origin git@example.com:org/repo.git",
-                  "upstream git@example.com:upstream/repo.git",
-                },
-              }
-            end,
+    with_actions_module(
+      base_stubs {
+        ["neojj.lib.jj"] = {
+          cli = {
+            bookmark_track = {
+              args = function(name)
+                tracked_name = name
+                return {
+                  remote = function(r)
+                    tracked_remote = r
+                    return {
+                      call = function()
+                        return { code = 0, stderr = {} }
+                      end,
+                    }
+                  end,
+                }
+              end,
+            },
+            git_remote_list = {
+              call = function()
+                return {
+                  code = 0,
+                  stdout = {
+                    "origin git@example.com:org/repo.git",
+                    "upstream git@example.com:upstream/repo.git",
+                  },
+                }
+              end,
+            },
           },
         },
+        ["neojj.buffers.fuzzy_finder"] = {
+          new = function(items)
+            return {
+              open_async = function(_, opts)
+                table.insert(finder_calls, { items = items, prompt_prefix = opts.prompt_prefix })
+                return table.remove(selections, 1)
+              end,
+            }
+          end,
+        },
       },
-      ["neojj.buffers.fuzzy_finder"] = {
-        new = function(items)
-          return {
-            open_async = function(_, opts)
-              table.insert(finder_calls, { items = items, prompt_prefix = opts.prompt_prefix })
-              return table.remove(selections, 1)
-            end,
-          }
-        end,
-      },
-    }), function(actions)
-      actions.track()
-    end)
+      function(actions)
+        actions.track()
+      end
+    )
 
     local items = finder_calls[1].items
     table.sort(items)
     assert.are.same({ "dev@origin", "dev@upstream", "main@origin", "main@upstream" }, items)
-    assert.are.equal("dev@upstream", tracked_name)
+    assert.are.equal("dev", tracked_name)
+    assert.are.equal("upstream", tracked_remote)
   end)
 
   it("aborts when picker is canceled", function()
     local track_called = false
 
-    with_actions_module(base_stubs({
-      ["neojj.lib.jj"] = {
-        cli = {
-          bookmark_track = {
-            args = function()
-              return {
-                call = function()
-                  track_called = true
-                  return { code = 0, stderr = {} }
-                end,
-              }
-            end,
-          },
-          git_remote_list = {
-            call = function()
-              return { code = 0, stdout = { "origin git@example.com:org/repo.git" } }
-            end,
+    with_actions_module(
+      base_stubs {
+        ["neojj.lib.jj"] = {
+          cli = {
+            bookmark_track = {
+              args = function()
+                return {
+                  remote = function()
+                    return {
+                      call = function()
+                        track_called = true
+                        return { code = 0, stderr = {} }
+                      end,
+                    }
+                  end,
+                }
+              end,
+            },
+            git_remote_list = {
+              call = function()
+                return { code = 0, stdout = { "origin git@example.com:org/repo.git" } }
+              end,
+            },
           },
         },
+        ["neojj.buffers.fuzzy_finder"] = {
+          new = function()
+            return {
+              open_async = function()
+                return nil
+              end,
+            }
+          end,
+        },
       },
-      ["neojj.buffers.fuzzy_finder"] = {
-        new = function()
-          return {
-            open_async = function()
-              return nil
-            end,
-          }
-        end,
-      },
-    }), function(actions)
-      actions.track()
-    end)
+      function(actions)
+        actions.track()
+      end
+    )
 
     assert.is_false(track_called)
   end)
@@ -230,34 +265,45 @@ describe("bookmark track action", function()
   it("shows empty picker when no remotes are configured", function()
     local finder_calls = {}
 
-    with_actions_module(base_stubs({
-      ["neojj.lib.jj"] = {
-        cli = {
-          bookmark_track = {
-            args = function()
-              return { call = function() return { code = 0, stderr = {} } end }
-            end,
-          },
-          git_remote_list = {
-            call = function()
-              return { code = 0, stdout = {} }
-            end,
+    with_actions_module(
+      base_stubs {
+        ["neojj.lib.jj"] = {
+          cli = {
+            bookmark_track = {
+              args = function()
+                return {
+                  remote = function()
+                    return {
+                      call = function()
+                        return { code = 0, stderr = {} }
+                      end,
+                    }
+                  end,
+                }
+              end,
+            },
+            git_remote_list = {
+              call = function()
+                return { code = 0, stdout = {} }
+              end,
+            },
           },
         },
+        ["neojj.buffers.fuzzy_finder"] = {
+          new = function(items)
+            return {
+              open_async = function(_, opts)
+                table.insert(finder_calls, { items = items, prompt_prefix = opts.prompt_prefix })
+                return nil
+              end,
+            }
+          end,
+        },
       },
-      ["neojj.buffers.fuzzy_finder"] = {
-        new = function(items)
-          return {
-            open_async = function(_, opts)
-              table.insert(finder_calls, { items = items, prompt_prefix = opts.prompt_prefix })
-              return nil
-            end,
-          }
-        end,
-      },
-    }), function(actions)
-      actions.track()
-    end)
+      function(actions)
+        actions.track()
+      end
+    )
 
     assert.are.equal(1, #finder_calls)
     assert.are.same({}, finder_calls[1].items)
@@ -267,39 +313,50 @@ describe("bookmark track action", function()
     local warn_messages = {}
     local selections = { "main@origin" }
 
-    with_actions_module(base_stubs({
-      ["neojj.lib.jj"] = {
-        cli = {
-          bookmark_track = {
-            args = function()
-              return { call = function() return { code = 1, stderr = { "error" } } end }
-            end,
-          },
-          git_remote_list = {
-            call = function()
-              return { code = 0, stdout = { "origin git@example.com:org/repo.git" } }
-            end,
+    with_actions_module(
+      base_stubs {
+        ["neojj.lib.jj"] = {
+          cli = {
+            bookmark_track = {
+              args = function()
+                return {
+                  remote = function()
+                    return {
+                      call = function()
+                        return { code = 1, stderr = { "error" } }
+                      end,
+                    }
+                  end,
+                }
+              end,
+            },
+            git_remote_list = {
+              call = function()
+                return { code = 0, stdout = { "origin git@example.com:org/repo.git" } }
+              end,
+            },
           },
         },
+        ["neojj.lib.notification"] = {
+          info = function() end,
+          warn = function(msg)
+            table.insert(warn_messages, msg)
+          end,
+        },
+        ["neojj.buffers.fuzzy_finder"] = {
+          new = function()
+            return {
+              open_async = function()
+                return table.remove(selections, 1)
+              end,
+            }
+          end,
+        },
       },
-      ["neojj.lib.notification"] = {
-        info = function() end,
-        warn = function(msg)
-          table.insert(warn_messages, msg)
-        end,
-      },
-      ["neojj.buffers.fuzzy_finder"] = {
-        new = function()
-          return {
-            open_async = function()
-              return table.remove(selections, 1)
-            end,
-          }
-        end,
-      },
-    }), function(actions)
-      actions.track()
-    end)
+      function(actions)
+        actions.track()
+      end
+    )
 
     assert.are.equal(1, #warn_messages)
     assert.is_truthy(warn_messages[1]:find("Failed to track bookmark", 1, true))
