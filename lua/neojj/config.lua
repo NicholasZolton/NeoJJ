@@ -189,6 +189,7 @@ end
 ---| "Depth4"
 ---| "Toggle"
 ---| "Discard"
+---| "Track"
 ---| "Untrack"
 ---| "RefreshBuffer"
 ---| "GoToFile"
@@ -525,6 +526,7 @@ function M.get_default_values()
         ["zc"] = "CloseFold",
         ["zC"] = "Depth1",
         ["zO"] = "Depth4",
+        ["T"] = "Track",
         ["x"] = "Discard",
         ["K"] = "Untrack",
         ["R"] = "Rename",
